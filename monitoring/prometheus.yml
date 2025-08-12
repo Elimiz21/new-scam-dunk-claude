@@ -1,0 +1,49 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # NestJS API metrics
+  - job_name: 'api'
+    static_configs:
+      - targets: ['api:4000']
+    metrics_path: /metrics
+
+  # Next.js Web metrics
+  - job_name: 'web'
+    static_configs:
+      - targets: ['web:3000']
+    metrics_path: /api/metrics
+
+  # AI Service metrics
+  - job_name: 'ai'
+    static_configs:
+      - targets: ['ai:8001']
+    metrics_path: /metrics
+
+  # Blockchain Service metrics
+  - job_name: 'blockchain'
+    static_configs:
+      - targets: ['blockchain:3002']
+    metrics_path: /metrics
+
+  # PostgreSQL exporter
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+
+  # Redis exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  # Elasticsearch metrics
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets: ['elasticsearch:9200']
+    metrics_path: /_prometheus/metrics
+
+  # Node exporter for system metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']

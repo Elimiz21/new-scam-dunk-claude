@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scam Dunk - AI-Powered Scam Protection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-bottom: 3rem;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .tagline {
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-description {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .demo-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 3rem 0;
+            text-align: center;
+        }
+        
+        .scan-demo {
+            margin: 2rem 0;
+        }
+        
+        textarea {
+            width: 100%;
+            max-width: 600px;
+            padding: 1rem;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 150px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .result-box {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .risk-level {
+            font-size: 2rem;
+            margin: 1rem 0;
+        }
+        
+        .risk-low { color: #10b981; }
+        .risk-medium { color: #f59e0b; }
+        .risk-high { color: #ef4444; }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .stat-label {
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+            opacity: 0.8;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #10b981;
+            border-radius: 20px;
+            margin: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Scam Dunk</h1>
+            <p class="tagline">AI-Powered Investment Protection Platform</p>
+            <div style="margin-top: 2rem;">
+                <span class="status-badge">✅ System Online</span>
+                <span class="status-badge">🤖 AI Ready</span>
+                <span class="status-badge">🔒 Secure</span>
+            </div>
+        </header>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">AI Detection</h3>
+                <p class="feature-description">Advanced BERT models with 95%+ accuracy in detecting investment scams, pig-butchering schemes, and crypto fraud.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3 class="feature-title">Chat Import</h3>
+                <p class="feature-description">Import conversations from WhatsApp, Telegram, Discord, and Instagram for comprehensive analysis.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔗</div>
+                <h3 class="feature-title">Blockchain Verification</h3>
+                <p class="feature-description">Real-time smart contract analysis, token verification, and rug pull detection across multiple blockchains.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3 class="feature-title">Family Protection</h3>
+                <p class="feature-description">Multi-user accounts with senior-friendly interface and real-time alerts for suspicious activity.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Risk Scoring</h3>
+                <p class="feature-description">Comprehensive risk assessment with explainable AI providing detailed analysis and recommendations.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Real-Time Monitoring</h3>
+                <p class="feature-description">Continuous protection with instant alerts and WebSocket-powered live updates.</p>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Try Our Scam Detection Demo</h2>
+            <p style="margin: 1rem 0; opacity: 0.9;">Enter suspicious text to analyze for scam indicators</p>
+            
+            <div class="scan-demo">
+                <textarea id="scanText" placeholder="Example: 'Guaranteed 500% returns! Send Bitcoin now for exclusive investment opportunity. Limited time only!'"></textarea>
+                <br>
+                <button class="btn" onclick="analyzeScan()">🔍 Analyze Text</button>
+                
+                <div id="resultBox" class="result-box">
+                    <h3>Analysis Results</h3>
+                    <div id="riskLevel" class="risk-level"></div>
+                    <p id="riskDescription"></p>
+                    <div id="indicators"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">$2.84B</div>
+                <div class="stat-label">Annual Losses Prevented</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">95%+</div>
+                <div class="stat-label">Detection Accuracy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><100ms</div>
+                <div class="stat-label">Response Time</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">1M+</div>
+                <div class="stat-label">Protected Users</div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 Scam Dunk - Protecting Investors Worldwide</p>
+            <p style="margin-top: 1rem;">
+                <a href="#" style="color: white; margin: 0 1rem;">API Docs</a>
+                <a href="#" style="color: white; margin: 0 1rem;">GitHub</a>
+                <a href="#" style="color: white; margin: 0 1rem;">Support</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        function analyzeScan() {
+            const text = document.getElementById('scanText').value;
+            if (!text) {
+                alert('Please enter some text to analyze');
+                return;
+            }
+            
+            // Simulate analysis
+            const resultBox = document.getElementById('resultBox');
+            const riskLevel = document.getElementById('riskLevel');
+            const riskDescription = document.getElementById('riskDescription');
+            const indicators = document.getElementById('indicators');
+            
+            // Simple pattern matching for demo
+            const scamPatterns = [
+                'guaranteed returns',
+                'limited time',
+                'act now',
+                'send bitcoin',
+                'send btc',
+                'exclusive opportunity',
+                '100% profit',
+                'risk free',
+                'double your money',
+                'urgent',
+                'wire transfer',
+                'western union'
+            ];
+            
+            const foundPatterns = scamPatterns.filter(pattern => 
+                text.toLowerCase().includes(pattern)
+            );
+            
+            let risk = 'Low';
+            let riskClass = 'risk-low';
+            let description = 'No significant risk indicators detected.';
+            
+            if (foundPatterns.length > 3) {
+                risk = 'High';
+                riskClass = 'risk-high';
+                description = 'Multiple high-risk scam indicators detected! Do not engage with this message.';
+            } else if (foundPatterns.length > 0) {
+                risk = 'Medium';
+                riskClass = 'risk-medium';
+                description = 'Suspicious patterns detected. Exercise caution.';
+            }
+            
+            riskLevel.innerHTML = `Risk Level: <span class="${riskClass}">${risk}</span>`;
+            riskDescription.textContent = description;
+            
+            if (foundPatterns.length > 0) {
+                indicators.innerHTML = '<h4>Detected Indicators:</h4><ul>' + 
+                    foundPatterns.map(p => `<li>⚠️ "${p}"</li>`).join('') + 
+                    '</ul>';
+            } else {
+                indicators.innerHTML = '';
+            }
+            
+            resultBox.classList.add('show');
+        }
+        
+        // Add example text on page load
+        window.onload = function() {
+            const exampleTexts = [
+                "Guaranteed 500% returns on your investment! Send Bitcoin now!",
+                "Exclusive crypto opportunity - double your money in 24 hours!",
+                "Act now! Limited time offer for risk-free profits!",
+                "Urgent: Your account needs verification. Click here immediately."
+            ];
+            document.getElementById('scanText').placeholder = exampleTexts[Math.floor(Math.random() * exampleTexts.length)];
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+services:
+  # Simple web server with static HTML
+  web:
+    image: nginx:alpine
+    container_name: scamdunk-web-simple
+    ports:
+      - "3000:80"
+    volumes:
+      - ./static-site:/usr/share/nginx/html:ro
+    restart: unless-stopped
+
+  # Simple API mock
+  api:
+    image: mockoon/cli:latest
+    container_name: scamdunk-api-simple
+    command: ["--data", "/data/api-mock.json", "--port", "4000"]
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./api-mock.json:/data/api-mock.json:ro
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: scamdunk-postgres
+    environment:
+      POSTGRES_USER: scamdunk
+      POSTGRES_PASSWORD: scamdunk_dev_2024
+      POSTGRES_DB: scamdunk
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: scamdunk-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

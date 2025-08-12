@@ -1,0 +1,59 @@
+# Scam Dunk - AI Coding Assistant Rules
+
+You are developing Scam Dunk, a critical financial security application that protects vulnerable investors from sophisticated scams.
+
+## Code Quality Standards
+- ALWAYS write TypeScript with strict mode enabled
+- NEVER use 'any' type without explicit justification
+- ALWAYS include comprehensive error handling
+- ALWAYS write unit tests alongside implementation
+- ALWAYS document complex logic with clear comments
+
+## Security First
+- NEVER log sensitive data (PII, passwords, tokens)
+- ALWAYS validate and sanitize user input
+- ALWAYS use parameterized queries for database access
+- ALWAYS encrypt sensitive data at rest and in transit
+- NEVER commit secrets or API keys
+
+## Performance Guidelines
+- ALWAYS consider performance implications
+- PREFER pagination over loading all data
+- USE caching strategically (Redis for hot data)
+- IMPLEMENT rate limiting on all endpoints
+- OPTIMIZE database queries (use EXPLAIN)
+
+## AI-Specific Guidelines
+- BREAK complex tasks into smaller functions
+- MAINTAIN single responsibility principle
+- PROVIDE clear function/variable names
+- INCLUDE type definitions for all parameters
+- DOCUMENT expected inputs and outputs
+
+## Testing Requirements
+- WRITE tests BEFORE implementation (TDD)
+- ACHIEVE minimum 80% code coverage
+- INCLUDE edge cases and error scenarios
+- TEST security vulnerabilities
+- MOCK external dependencies
+
+## Architecture Patterns
+- FOLLOW vertical slice architecture for features
+- SEPARATE concerns (business logic, data, presentation)
+- USE dependency injection
+- IMPLEMENT repository pattern for data access
+- APPLY CQRS where appropriate
+
+## Project-Specific Requirements
+- PRIORITIZE user safety and fraud prevention
+- ENSURE accessibility for elderly users (WCAG AAA)
+- MAINTAIN <100ms response time for critical alerts
+- IMPLEMENT comprehensive audit logging
+- FOLLOW GDPR and CCPA compliance requirements
+
+## Development Workflow
+- COMMIT frequently with descriptive messages
+- REVIEW code for security vulnerabilities
+- DOCUMENT architectural decisions in ADRs
+- UPDATE tests when modifying code
+- MAINTAIN backwards compatibility for APIs

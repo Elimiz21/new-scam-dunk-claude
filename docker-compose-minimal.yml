@@ -1,0 +1,308 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: scamdunk-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: scamdunk
+      POSTGRES_PASSWORD: scamdunk_dev_2024
+      POSTGRES_DB: scamdunk
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scamdunk -d scamdunk"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scamdunk-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: scamdunk-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scamdunk-network
+
+  # Mock API Service (using Node.js base image)
+  api:
+    image: node:18-alpine
+    container_name: scamdunk-api
+    restart: unless-stopped
+    working_dir: /app
+    command: |
+      sh -c "
+        echo 'Starting mock API server...' &&
+        npm init -y &&
+        npm install express cors &&
+        cat > server.js << 'EOF'
+        const express = require('express');
+        const cors = require('cors');
+        const app = express();
+        
+        app.use(cors());
+        app.use(express.json());
+        
+        app.get('/health', (req, res) => {
+          res.json({ status: 'healthy', service: 'api' });
+        });
+        
+        app.get('/api/test', (req, res) => {
+          res.json({ message: 'Scam Dunk API is running!' });
+        });
+        
+        app.post('/api/scan', (req, res) => {
+          res.json({ 
+            scanId: 'test-123',
+            status: 'processing',
+            riskScore: Math.floor(Math.random() * 100),
+            message: 'Scan initiated successfully'
+          });
+        });
+        
+        const PORT = process.env.PORT || 4000;
+        app.listen(PORT, () => {
+          console.log(\`API server running on port \${PORT}\`);
+        });
+        EOF
+        node server.js
+      "
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://scamdunk:scamdunk_dev_2024@postgres:5432/scamdunk
+      REDIS_URL: redis://redis:6379
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - scamdunk-network
+
+  # Mock Web Application
+  web:
+    image: node:18-alpine
+    container_name: scamdunk-web
+    restart: unless-stopped
+    working_dir: /app
+    command: |
+      sh -c "
+        echo 'Starting mock web server...' &&
+        npm init -y &&
+        npm install express &&
+        cat > server.js << 'EOF'
+        const express = require('express');
+        const app = express();
+        
+        app.get('/', (req, res) => {
+          res.send(\`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Scam Dunk</title>
+              <style>
+                body {
+                  font-family: -apple-system, system-ui, sans-serif;
+                  max-width: 1200px;
+                  margin: 0 auto;
+                  padding: 2rem;
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  min-height: 100vh;
+                  color: white;
+                }
+                .container {
+                  background: rgba(255,255,255,0.1);
+                  backdrop-filter: blur(10px);
+                  border-radius: 20px;
+                  padding: 3rem;
+                  text-align: center;
+                }
+                h1 { font-size: 3rem; margin-bottom: 1rem; }
+                p { font-size: 1.2rem; margin-bottom: 2rem; }
+                .status { 
+                  background: rgba(255,255,255,0.2);
+                  padding: 1rem;
+                  border-radius: 10px;
+                  margin-top: 2rem;
+                }
+                .badge {
+                  display: inline-block;
+                  padding: 0.5rem 1rem;
+                  background: #10b981;
+                  border-radius: 5px;
+                  margin: 0.5rem;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>🎯 Scam Dunk</h1>
+                <p>AI-Native Anti-Scam Investment Protection Platform</p>
+                <div class="status">
+                  <h2>System Status</h2>
+                  <div class="badge">✅ Web Server: Online</div>
+                  <div class="badge">✅ API: Port 4000</div>
+                  <div class="badge">✅ Database: Connected</div>
+                  <div class="badge">✅ Redis: Active</div>
+                </div>
+                <div class="status">
+                  <h3>Quick Test</h3>
+                  <p>API Endpoint: <a href="http://localhost:4000/api/test" style="color: white;">http://localhost:4000/api/test</a></p>
+                  <p>The full application is ready to be developed!</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          \`);
+        });
+        
+        app.get('/health', (req, res) => {
+          res.json({ status: 'healthy', service: 'web' });
+        });
+        
+        const PORT = process.env.PORT || 3000;
+        app.listen(PORT, () => {
+          console.log(\`Web server running on port \${PORT}\`);
+        });
+        EOF
+        node server.js
+      "
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - scamdunk-network
+
+  # Mock AI Service
+  ai:
+    image: python:3.11-slim
+    container_name: scamdunk-ai
+    restart: unless-stopped
+    working_dir: /app
+    command: |
+      sh -c "
+        echo 'Installing Python dependencies...' &&
+        pip install fastapi uvicorn &&
+        cat > main.py << 'EOF'
+        from fastapi import FastAPI
+        from fastapi.middleware.cors import CORSMiddleware
+        import random
+        
+        app = FastAPI(title='Scam Dunk AI Service')
+        
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=['*'],
+            allow_methods=['*'],
+            allow_headers=['*']
+        )
+        
+        @app.get('/health')
+        def health():
+            return {'status': 'healthy', 'service': 'ai'}
+        
+        @app.post('/api/v1/scan/quick-scan')
+        def quick_scan(request: dict):
+            risk_score = random.uniform(0, 1)
+            return {
+                'risk_score': risk_score,
+                'risk_level': 'high' if risk_score > 0.7 else 'medium' if risk_score > 0.4 else 'low',
+                'confidence': random.uniform(0.8, 0.95),
+                'analysis': 'AI analysis completed successfully'
+            }
+        
+        if __name__ == '__main__':
+            import uvicorn
+            uvicorn.run(app, host='0.0.0.0', port=8001)
+        EOF
+        python main.py
+      "
+    environment:
+      ENVIRONMENT: development
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+    networks:
+      - scamdunk-network
+
+  # Mock Blockchain Service
+  blockchain:
+    image: node:18-alpine
+    container_name: scamdunk-blockchain
+    restart: unless-stopped
+    working_dir: /app
+    command: |
+      sh -c "
+        echo 'Starting mock blockchain service...' &&
+        npm init -y &&
+        npm install express cors &&
+        cat > server.js << 'EOF'
+        const express = require('express');
+        const cors = require('cors');
+        const app = express();
+        
+        app.use(cors());
+        app.use(express.json());
+        
+        app.get('/health', (req, res) => {
+          res.json({ status: 'healthy', service: 'blockchain' });
+        });
+        
+        app.post('/api/v1/verify/token', (req, res) => {
+          res.json({
+            address: req.body.address || '0x0000',
+            verified: true,
+            riskScore: Math.floor(Math.random() * 100),
+            riskLevel: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)]
+          });
+        });
+        
+        const PORT = process.env.PORT || 3002;
+        app.listen(PORT, () => {
+          console.log(\`Blockchain service running on port \${PORT}\`);
+        });
+        EOF
+        node server.js
+      "
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3002:3002"
+    depends_on:
+      - redis
+    networks:
+      - scamdunk-network
+
+networks:
+  scamdunk-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

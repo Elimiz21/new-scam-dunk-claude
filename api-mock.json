@@ -1,0 +1,59 @@
+{
+  "uuid": "scam-dunk-api",
+  "lastMigration": 1,
+  "name": "Scam Dunk API",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 4000,
+  "hostname": "0.0.0.0",
+  "routes": [
+    {
+      "uuid": "health",
+      "documentation": "Health check endpoint",
+      "method": "get",
+      "endpoint": "health",
+      "responses": [
+        {
+          "uuid": "success",
+          "body": "{\"status\": \"healthy\", \"service\": \"Scam Dunk API\", \"version\": \"1.0.0\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [{"key": "Content-Type", "value": "application/json"}]
+        }
+      ]
+    },
+    {
+      "uuid": "scan",
+      "documentation": "Create a new scan",
+      "method": "post",
+      "endpoint": "api/scan",
+      "responses": [
+        {
+          "uuid": "success",
+          "body": "{\"scanId\": \"{{faker 'datatype.uuid'}}\", \"status\": \"processing\", \"riskScore\": {{faker 'datatype.number' min=0 max=100}}, \"message\": \"Scan initiated successfully\"}",
+          "latency": 100,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [{"key": "Content-Type", "value": "application/json"}]
+        }
+      ]
+    },
+    {
+      "uuid": "test",
+      "documentation": "Test endpoint",
+      "method": "get",
+      "endpoint": "api/test",
+      "responses": [
+        {
+          "uuid": "success",
+          "body": "{\"message\": \"Scam Dunk API is running!\", \"timestamp\": \"{{now}}\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [{"key": "Content-Type", "value": "application/json"}]
+        }
+      ]
+    }
+  ]
+}

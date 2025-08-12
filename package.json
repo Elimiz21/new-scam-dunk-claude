@@ -1,0 +1,56 @@
+{
+  "name": "scam-dunk",
+  "version": "1.0.0",
+  "description": "AI-Native Anti-Scam Investment Protection Platform",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "type-check": "turbo type-check",
+    "clean": "turbo clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "postinstall": "husky install",
+    "db:generate": "turbo db:generate",
+    "db:push": "turbo db:push",
+    "db:migrate": "turbo db:migrate",
+    "db:studio": "turbo db:studio",
+    "api:dev": "turbo dev --filter=@scam-dunk/api",
+    "web:dev": "turbo dev --filter=@scam-dunk/web",
+    "ai:dev": "cd packages/ai && python -m uvicorn main:app --reload --host 0.0.0.0 --port 8001",
+    "blockchain:dev": "turbo dev --filter=@scam-dunk/blockchain",
+    "start:all": "concurrently \"npm run api:dev\" \"npm run web:dev\" \"npm run ai:dev\" \"npm run blockchain:dev\"",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^1.10.7",
+    "@types/node": "^20.8.0",
+    "concurrently": "^8.2.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.0.2",
+    "prettier": "^3.0.3",
+    "turbo": "^1.10.7",
+    "typescript": "^5.2.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "packageManager": "npm@9.8.1"
+}
