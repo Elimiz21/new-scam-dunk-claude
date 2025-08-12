@@ -5,7 +5,7 @@ import {
   RegisterCredentials,
   loginCredentialsSchema,
   registerCredentialsSchema,
-} from '@scam-dunk/shared';
+} from '../shared/types';
 
 @Resolver()
 export class AuthResolver {

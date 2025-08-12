@@ -11,7 +11,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ScansService } from './scans.service';
-import { CreateScanRequest, ScanFilters } from '@scam-dunk/shared';
+import { CreateScanRequest, ScanFilters } from '../shared/types';
 
 @ApiTags('scans')
 @ApiBearerAuth()

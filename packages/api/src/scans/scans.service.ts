@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
-import { CreateScanRequest, Scan, ScanFilters } from '@scam-dunk/shared';
+import { CreateScanRequest, Scan, ScanFilters } from '../shared/types';
 
 @Injectable()
 export class ScansService {

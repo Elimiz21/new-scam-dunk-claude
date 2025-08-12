@@ -97,7 +97,7 @@ export function DashboardSidebar() {
                 </div>
                 <nav className="mt-6">
                   <SidebarContent 
-                    pathname={pathname} 
+                    pathname={pathname || ''} 
                     onItemClick={() => setMobileMenuOpen(false)}
                     user={user}
                     onLogout={handleLogout}
@@ -120,7 +120,7 @@ export function DashboardSidebar() {
           </div>
           <nav className="flex flex-1 flex-col">
             <SidebarContent 
-              pathname={pathname} 
+              pathname={pathname || ''} 
               user={user}
               onLogout={handleLogout}
             />

@@ -8,7 +8,7 @@ import ChatResults from '@/components/chat-import/chat-results';
 export default function ChatImportResultsPage() {
   const params = useParams();
   const router = useRouter();
-  const chatImportId = params.id as string;
+  const chatImportId = params?.id as string;
 
   return (
     <div className="container mx-auto py-6">

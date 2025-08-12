@@ -8,7 +8,7 @@ COPY tsconfig.json ./
 COPY next.config.js ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY . .

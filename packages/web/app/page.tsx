@@ -1,439 +1,304 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
-import { 
-  Shield, 
-  Users, 
-  Zap, 
-  MessageSquare, 
-  AlertTriangle, 
-  CheckCircle, 
-  Star,
-  ArrowRight,
-  Lock,
-  Brain,
-  Clock,
-  Heart
-} from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
-}
-
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.2
-    }
+// Temporary inline styles until Tailwind is fixed
+const styles = {
+  page: {
+    minHeight: '100vh',
+    backgroundColor: '#f8fafc',
+    fontFamily: 'Inter, system-ui, sans-serif'
+  },
+  hero: {
+    background: 'linear-gradient(to bottom, #3b82f6, #1e40af)',
+    color: 'white',
+    padding: '80px 20px 120px',
+    textAlign: 'center' as const
+  },
+  container: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '0 20px'
+  },
+  badge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    padding: '8px 16px',
+    borderRadius: '20px',
+    fontSize: '14px',
+    marginBottom: '24px'
+  },
+  title: {
+    fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+    fontWeight: 'bold',
+    marginBottom: '24px',
+    lineHeight: '1.1'
+  },
+  subtitle: {
+    fontSize: '1.25rem',
+    opacity: 0.9,
+    maxWidth: '600px',
+    margin: '0 auto 32px',
+    lineHeight: '1.6'
+  },
+  buttonContainer: {
+    display: 'flex',
+    gap: '16px',
+    justifyContent: 'center',
+    flexWrap: 'wrap' as const,
+    marginBottom: '64px'
+  },
+  button: {
+    padding: '12px 24px',
+    borderRadius: '8px',
+    fontWeight: '600',
+    textDecoration: 'none',
+    display: 'inline-flex',
+    alignItems: 'center',
+    transition: 'all 0.2s'
+  },
+  primaryButton: {
+    backgroundColor: '#ffffff',
+    color: '#1e40af',
+    border: 'none'
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    color: '#ffffff',
+    border: '2px solid rgba(255,255,255,0.3)'
+  },
+  stats: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gap: '32px',
+    marginTop: '64px'
+  },
+  stat: {
+    textAlign: 'center' as const
+  },
+  statValue: {
+    fontSize: '2rem',
+    fontWeight: 'bold',
+    marginBottom: '8px'
+  },
+  statLabel: {
+    fontSize: '0.875rem',
+    opacity: 0.8
+  },
+  section: {
+    padding: '80px 20px',
+    backgroundColor: '#ffffff'
+  },
+  sectionTitle: {
+    fontSize: '2.5rem',
+    fontWeight: 'bold',
+    textAlign: 'center' as const,
+    marginBottom: '16px',
+    color: '#1f2937'
+  },
+  sectionSubtitle: {
+    fontSize: '1.125rem',
+    textAlign: 'center' as const,
+    color: '#6b7280',
+    maxWidth: '600px',
+    margin: '0 auto 48px'
+  },
+  features: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: '24px',
+    marginTop: '48px'
+  },
+  feature: {
+    padding: '24px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '12px',
+    border: '1px solid #e5e7eb'
+  },
+  featureIcon: {
+    width: '40px',
+    height: '40px',
+    color: '#3b82f6',
+    marginBottom: '16px'
+  },
+  featureTitle: {
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    marginBottom: '8px',
+    color: '#1f2937'
+  },
+  featureDescription: {
+    color: '#6b7280',
+    lineHeight: '1.6'
+  },
+  cta: {
+    background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
+    color: 'white',
+    padding: '80px 20px',
+    textAlign: 'center' as const
+  },
+  footer: {
+    backgroundColor: '#f9fafb',
+    borderTop: '1px solid #e5e7eb',
+    padding: '48px 20px',
+    textAlign: 'center' as const,
+    color: '#6b7280'
   }
 }
+import { 
+  Shield, 
+  Brain, 
+  Users, 
+  Zap, 
+  Lock, 
+  AlertTriangle,
+  CheckCircle,
+  ArrowRight,
+  MessageSquare,
+  FileSearch,
+  Globe
+} from 'lucide-react'
 
 export default function LandingPage() {
   const features = [
     {
       icon: Brain,
-      title: "AI-Powered Analysis",
-      description: "Advanced machine learning algorithms detect sophisticated scam patterns in real-time."
-    },
-    {
-      icon: MessageSquare,
-      title: "Chat Screenshot Analysis",
-      description: "Upload screenshots of suspicious conversations for instant threat assessment."
+      title: 'AI-Powered Detection',
+      description: 'Advanced machine learning algorithms detect scams with 95%+ accuracy'
     },
     {
       icon: Shield,
-      title: "Real-Time Protection",
-      description: "Continuous monitoring and instant alerts when potential threats are detected."
+      title: 'Real-Time Protection',
+      description: 'Instant alerts when suspicious content is detected'
     },
     {
       icon: Users,
-      title: "Family Protection",
-      description: "Protect your entire family with shared monitoring and emergency contacts."
-    },
-    {
-      icon: Clock,
-      title: "24/7 Monitoring",
-      description: "Round-the-clock protection with immediate notifications for urgent threats."
-    },
-    {
-      icon: Heart,
-      title: "Senior-Friendly",
-      description: "Designed specifically for seniors with simple, accessible interface."
-    }
-  ]
-
-  const testimonials = [
-    {
-      name: "Margaret Thompson",
-      age: 68,
-      text: "Scam Dunk helped me avoid losing $5,000 to a fake IRS scam. The alert came just in time!",
-      rating: 5
-    },
-    {
-      name: "Robert Chen",
-      age: 72,
-      text: "My daughter set this up for me. It's so easy to use and gives me peace of mind.",
-      rating: 5
-    },
-    {
-      name: "Linda Williams",
-      age: 65,
-      text: "The AI caught a romance scam that I almost fell for. This app is a lifesaver!",
-      rating: 5
-    }
-  ]
-
-  const pricingPlans = [
-    {
-      name: "Personal",
-      price: 9.99,
-      description: "Perfect for individual protection",
-      features: [
-        "Personal scam detection",
-        "Chat screenshot analysis",
-        "Real-time alerts",
-        "24/7 support",
-        "Monthly reports"
-      ]
-    },
-    {
-      name: "Family",
-      price: 19.99,
-      description: "Protect your entire family",
-      features: [
-        "Up to 5 family members",
-        "Shared monitoring dashboard",
-        "Emergency contact system",
-        "Priority support",
-        "Advanced AI analysis",
-        "Family activity reports"
-      ],
-      popular: true
-    },
-    {
-      name: "Pro",
-      price: 39.99,
-      description: "Maximum protection for large families",
-      features: [
-        "Unlimited family members",
-        "Advanced threat intelligence",
-        "Custom alert settings",
-        "White-glove setup",
-        "Dedicated support",
-        "API access"
-      ]
+      title: 'Family Safety',
+      description: 'Protect your entire family with multi-user accounts'
     }
   ]
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      
+    <div style={styles.page}>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-info text-white">
-        <div className="container mx-auto px-4 py-20 sm:py-24">
-          <motion.div
-            className="mx-auto max-w-4xl text-center"
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-          >
-            <motion.h1 
-              className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl"
-              variants={fadeInUp}
-            >
-              Protect Your Family from{' '}
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                Scams & Fraud
-              </span>
-            </motion.h1>
-            
-            <motion.p 
-              className="mx-auto mb-8 max-w-2xl text-xl text-blue-100"
-              variants={fadeInUp}
-            >
-              Advanced AI technology designed specifically for seniors and families. 
-              Analyze suspicious messages, detect scams instantly, and stay protected 24/7.
-            </motion.p>
-            
-            <motion.div 
-              className="flex flex-col gap-4 sm:flex-row sm:justify-center"
-              variants={fadeInUp}
-            >
-              <Button size="xl" variant="secondary" className="group" asChild>
-                <Link href="/register">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-              <Button size="xl" variant="outline" className="border-white text-white hover:bg-white hover:text-primary" asChild>
-                <Link href="#features">
-                  Learn More
-                </Link>
-              </Button>
-            </motion.div>
-          </motion.div>
-        </div>
-        
-        {/* Background decoration */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute -top-40 -right-32 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute -bottom-40 -left-32 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
+      <section style={styles.hero}>
+        <div style={styles.container}>
+          <div style={styles.badge}>
+            <Zap style={{ marginRight: '4px', width: '12px', height: '12px' }} />
+            AI-Powered Protection
+          </div>
+          
+          <h1 style={styles.title}>
+            Stop Scams Before They Strike
+          </h1>
+          
+          <p style={styles.subtitle}>
+            Advanced AI technology protects you and your loved ones from cryptocurrency scams, 
+            pig-butchering schemes, and online fraud. Family protection made simple.
+          </p>
+          
+          <div style={styles.buttonContainer}>
+            <Link href="/register" style={{...styles.button, ...styles.primaryButton}}>
+              Get Started Free
+              <ArrowRight style={{ marginLeft: '8px', width: '16px', height: '16px' }} />
+            </Link>
+            <Link href="/login" style={{...styles.button, ...styles.secondaryButton}}>
+              Sign In
+            </Link>
+          </div>
+
+          {/* Hero Stats */}
+          <div style={styles.stats}>
+            <div style={styles.stat}>
+              <div style={styles.statValue}>99.9%</div>
+              <div style={styles.statLabel}>Uptime SLA</div>
+            </div>
+            <div style={styles.stat}>
+              <div style={styles.statValue}>95%+</div>
+              <div style={styles.statLabel}>Detection Accuracy</div>
+            </div>
+            <div style={styles.stat}>
+              <div style={styles.statValue}>&lt;100ms</div>
+              <div style={styles.statLabel}>Response Time</div>
+            </div>
+            <div style={styles.stat}>
+              <div style={styles.statValue}>24/7</div>
+              <div style={styles.statLabel}>Monitoring</div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            className="mx-auto mb-16 max-w-3xl text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              Advanced Protection Made Simple
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Our AI-powered platform provides comprehensive protection against all types of scams and fraud.
-            </p>
-          </motion.div>
+      <section style={styles.section}>
+        <div style={styles.container}>
+          <h2 style={styles.sectionTitle}>
+            Comprehensive Protection Suite
+          </h2>
+          <p style={styles.sectionSubtitle}>
+            Everything you need to protect yourself and your family from online scams
+          </p>
 
-          <motion.div
-            className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
+          <div style={styles.features}>
             {features.map((feature, index) => (
-              <motion.div key={index} variants={fadeInUp}>
-                <Card className="h-full hover-lift">
-                  <CardHeader>
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                      <feature.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">
-                      {feature.description}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="bg-muted/50 py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="mx-auto mb-16 max-w-3xl text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              How Scam Dunk Works
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Three simple steps to complete protection
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
-            {[
-              {
-                step: 1,
-                title: "Upload Screenshot",
-                description: "Take a screenshot of suspicious messages, emails, or websites and upload them to our secure platform.",
-                icon: MessageSquare
-              },
-              {
-                step: 2,
-                title: "AI Analysis",
-                description: "Our advanced AI analyzes the content for scam patterns, suspicious language, and known fraud indicators.",
-                icon: Brain
-              },
-              {
-                step: 3,
-                title: "Get Instant Results",
-                description: "Receive immediate risk assessment with detailed explanations and recommendations for next steps.",
-                icon: CheckCircle
-              }
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                className="text-center"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-              >
-                <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-info text-white">
-                  <item.icon className="h-8 w-8" />
-                </div>
-                <h3 className="mb-4 text-xl font-semibold">
-                  Step {item.step}: {item.title}
-                </h3>
-                <p className="text-muted-foreground">
-                  {item.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="mx-auto mb-16 max-w-3xl text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              Trusted by Families Everywhere
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              See how Scam Dunk has helped protect our users from fraud and scams.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-              >
-                <Card className="h-full">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex">
-                      {Array.from({ length: testimonial.rating }).map((_, i) => (
-                        <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <p className="mb-4 italic">"{testimonial.text}"</p>
-                    <div className="font-semibold">
-                      {testimonial.name}, {testimonial.age}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="bg-muted/50 py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="mx-auto mb-16 max-w-3xl text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              Choose Your Protection Plan
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Affordable protection for every family size
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            {pricingPlans.map((plan, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-              >
-                <Card className={`relative h-full ${plan.popular ? 'border-primary ring-2 ring-primary' : ''}`}>
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
-                      Most Popular
-                    </div>
-                  )}
-                  <CardHeader>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <CardDescription>{plan.description}</CardDescription>
-                    <div className="mt-4">
-                      <span className="text-4xl font-bold">${plan.price}</span>
-                      <span className="text-muted-foreground">/month</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center">
-                          <CheckCircle className="mr-3 h-5 w-5 text-success" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Button 
-                      className="mt-8 w-full" 
-                      variant={plan.popular ? 'default' : 'outline'}
-                      size="lg"
-                      asChild
-                    >
-                      <Link href="/register">
-                        Start Free Trial
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
+              <div key={index} style={styles.feature}>
+                <feature.icon style={styles.featureIcon} />
+                <h3 style={styles.featureTitle}>{feature.title}</h3>
+                <p style={styles.featureDescription}>{feature.description}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-primary to-info py-20 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <motion.div
-            className="mx-auto max-w-3xl"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="mb-6 text-3xl font-bold sm:text-4xl">
-              Don't Wait for Scammers to Strike
-            </h2>
-            <p className="mb-8 text-xl text-blue-100">
-              Join thousands of families who trust Scam Dunk to keep them safe. 
-              Start your free trial today and experience the peace of mind you deserve.
-            </p>
-            <Button size="xl" variant="secondary" className="group" asChild>
-              <Link href="/register">
-                Get Started Free
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-          </motion.div>
+      <section style={styles.cta}>
+        <div style={styles.container}>
+          <AlertTriangle style={{ width: '48px', height: '48px', margin: '0 auto 16px' }} />
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '16px' }}>
+            Don't Wait Until It's Too Late
+          </h2>
+          <p style={{ fontSize: '1.125rem', opacity: 0.9, maxWidth: '600px', margin: '0 auto 32px', lineHeight: '1.6' }}>
+            Scammers are getting more sophisticated every day. Protect yourself and your 
+            family with AI-powered scam detection.
+          </p>
+          <div style={styles.buttonContainer}>
+            <Link href="/register" style={{...styles.button, backgroundColor: 'rgba(255,255,255,0.9)', color: '#1e40af'}}>
+              Start Free Trial
+              <ArrowRight style={{ marginLeft: '8px', width: '16px', height: '16px' }} />
+            </Link>
+            <Link href="/dashboard" style={{...styles.button, ...styles.secondaryButton}}>
+              View Demo
+            </Link>
+          </div>
         </div>
       </section>
 
-      <Footer />
+      {/* Footer */}
+      <footer style={styles.footer}>
+        <div style={styles.container}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px' }}>
+            <Shield style={{ width: '24px', height: '24px', color: '#3b82f6' }} />
+            <span style={{ fontWeight: '600', color: '#1f2937' }}>Scam Dunk</span>
+          </div>
+          <p style={{ fontSize: '0.875rem', marginBottom: '16px' }}>
+            © 2024 Scam Dunk. Protecting families worldwide.
+          </p>
+          <div style={{ display: 'flex', gap: '24px', justifyContent: 'center' }}>
+            <Link href="/privacy" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
+              Privacy
+            </Link>
+            <Link href="/terms" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
+              Terms
+            </Link>
+            <Link href="/contact" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
+              Contact
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

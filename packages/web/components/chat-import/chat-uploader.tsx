@@ -105,9 +105,9 @@ export default function ChatUploader({ onUploadComplete, onError }: ChatUploader
 
       const platform = selectedPlatform === 'AUTO' ? undefined : selectedPlatform;
       
-      const result = await uploadFile.file.size > 10 * 1024 * 1024 // 10MB
+      const result = await (uploadFile.file.size > 10 * 1024 * 1024 // 10MB
         ? uploadChunkedFile(uploadFile.file, platform)
-        : uploadDirectFile(uploadFile.file, platform);
+        : uploadDirectFile(uploadFile.file, platform));
 
       setUploadFiles(prev =>
         prev.map(f => 

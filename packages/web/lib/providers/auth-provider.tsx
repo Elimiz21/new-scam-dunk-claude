@@ -39,3 +39,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     </AuthContext.Provider>
   )
 }
+
+// Export useAuth hook that uses the auth store directly
+export function useAuth() {
+  return useAuthStore()
+}

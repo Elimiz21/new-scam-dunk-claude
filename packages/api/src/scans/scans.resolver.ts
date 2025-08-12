@@ -3,7 +3,7 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ScansService } from './scans.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { CreateScanRequest } from '@scam-dunk/shared';
+import { CreateScanRequest } from '../shared/types';
 
 @Resolver('Scan')
 @UseGuards(AuthGuard('jwt'))

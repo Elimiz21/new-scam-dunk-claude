@@ -39,7 +39,7 @@ export function DashboardHeader() {
   const [searchQuery, setSearchQuery] = useState('')
   const pathname = usePathname()
   const { user, logout } = useAuthStore()
-  const pageName = pageNames[pathname] || 'Dashboard'
+  const pageName = pathname ? (pageNames[pathname] || 'Dashboard') : 'Dashboard'
 
   const mockNotifications = [
     { id: 1, text: 'New high-risk scan detected', time: '2 min ago', type: 'critical' },

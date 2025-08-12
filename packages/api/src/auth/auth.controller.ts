@@ -22,7 +22,7 @@ import {
   ResendVerificationRequest,
   loginCredentialsSchema,
   registerCredentialsSchema,
-} from '@scam-dunk/shared';
+} from '../shared/types';
 
 @ApiTags('auth')
 @Controller({ path: 'auth', version: '1' })

@@ -1,0 +1,174 @@
+Test Logs - Tue Aug 12 15:26:40 IDT 2025
+========================
+Testing: API Health Check
+Response Code: 200
+Response Body: {"status":"healthy","service":"api","timestamp":"2025-08-12T12:26:40.887Z","version":"1.0.0"}
+---
+Testing: Web Health Check
+Response Code: 500
+Response Body: <!DOCTYPE html><html><head><style data-next-hide-fouc="true">body{display:none}</style><noscript data-next-hide-fouc="true"><style>body{display:block}</style></noscript><meta charSet="utf-8"/><meta name="viewport" content="width=device-width"/><meta name="next-head-count" content="2"/><noscript data-n-css=""></noscript><script defer="" nomodule="" src="/_next/static/chunks/polyfills.js?ts=1755001600967"></script><script src="/_next/static/chunks/fallback/webpack.js?ts=1755001600967" defer=""></script><script src="/_next/static/chunks/fallback/main.js?ts=1755001600967" defer=""></script><script src="/_next/static/chunks/fallback/pages/_app.js?ts=1755001600967" defer=""></script><script src="/_next/static/chunks/fallback/pages/_error.js?ts=1755001600967" defer=""></script><noscript id="__next_css__DO_NOT_USE__"></noscript></head><body><div id="__next"></div><script src="/_next/static/chunks/fallback/react-refresh.js?ts=1755001600967"></script><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"statusCode":500}},"page":"/_error","query":{},"buildId":"development","isFallback":false,"err":{"name":"Error","source":"server","message":"Module not found: Can't resolve '@radix-ui/react-toast'\n  2 |\n  3 | import * as React from 'react'\n\u003e 4 | import * as ToastPrimitives from '@radix-ui/react-toast'\n  5 | import { cva, type VariantProps } from 'class-variance-authority'\n  6 | import { X } from 'lucide-react'\n  7 | import { cn } from '@/lib/utils'\n\nhttps://nextjs.org/docs/messages/module-not-found\n","stack":"Error: Module not found: Can't resolve '@radix-ui/react-toast'\n\u001b[0m \u001b[90m 2 |\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 3 |\u001b[39m \u001b[36mimport\u001b[39m \u001b[33m*\u001b[39m \u001b[36mas\u001b[39m \u001b[33mReact\u001b[39m \u001b[36mfrom\u001b[39m \u001b[32m'react'\u001b[39m\u001b[0m\n\u001b[0m\u001b[31m\u001b[1m\u003e\u001b[22m\u001b[39m\u001b[90m 4 |\u001b[39m \u001b[36mimport\u001b[39m \u001b[33m*\u001b[39m \u001b[36mas\u001b[39m \u001b[33mToastPrimitives\u001b[39m \u001b[36mfrom\u001b[39m \u001b[32m'@radix-ui/react-toast'\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 5 |\u001b[39m \u001b[36mimport\u001b[39m { cva\u001b[33m,\u001b[39m type \u001b[33mVariantProps\u001b[39m } \u001b[36mfrom\u001b[39m \u001b[32m'class-variance-authority'\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 6 |\u001b[39m \u001b[36mimport\u001b[39m { \u001b[33mX\u001b[39m } \u001b[36mfrom\u001b[39m \u001b[32m'lucide-react'\u001b[39m\u001b[0m\n\u001b[0m \u001b[90m 7 |\u001b[39m \u001b[36mimport\u001b[39m { cn } \u001b[36mfrom\u001b[39m \u001b[32m'@/lib/utils'\u001b[39m\u001b[0m\n\nhttps://nextjs.org/docs/messages/module-not-found\n\n    at getNotFoundError (/app/node_modules/next/dist/build/webpack/plugins/wellknown-errors-plugin/parseNotFoundError.js:120:16)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async getModuleBuildError (/app/node_modules/next/dist/build/webpack/plugins/wellknown-errors-plugin/webpackModuleError.js:102:27)\n    at async /app/node_modules/next/dist/build/webpack/plugins/wellknown-errors-plugin/index.js:29:49\n    at async Promise.all (index 0)\n    at async /app/node_modules/next/dist/build/webpack/plugins/wellknown-errors-plugin/index.js:27:21"},"gip":true,"scriptLoader":[]}</script></body></html>
+---
+Testing: AI Service Health Check
+Response Code: 200
+Response Body: {"status":"healthy","service":"ai","timestamp":"2025-08-12T12:26:41.028849","models_loaded":true}
+---
+Testing: Blockchain Service Health Check
+Response Code: 200
+Response Body: {"status":"healthy","service":"blockchain","timestamp":"2025-08-12T12:26:41.058Z"}
+---
+Testing: Auth Register
+Response Code: 200
+Response Body: {"message":"User registered successfully","user":{"id":1755001601087,"email":"test@example.com","name":"Test User","created_at":"2025-08-12T12:26:41.087Z"}}
+---
+Testing: Auth Login
+Response Code: 200
+Response Body: {"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiZXhwIjoxNzU1MDA1MjAxMTA5fQ==","refresh_token":"refresh_1755001601109","user":{"id":1,"email":"test@example.com","name":"Test User"}}
+---
+Testing: Auth Logout
+Response Code: 200
+Response Body: {"message":"Logged out successfully"}
+---
+Testing: Auth Refresh Token
+Response Code: 200
+Response Body: {"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.1755001601158","refresh_token":"refresh_1755001601158"}
+---
+Testing: Auth Forgot Password
+Response Code: 200
+Response Body: {"message":"Password reset email sent"}
+---
+Testing: Auth Reset Password
+Response Code: 200
+Response Body: {"message":"Password reset successfully"}
+---
+Testing: Auth Verify Email
+Response Code: 200
+Response Body: {"message":"Email verified successfully"}
+---
+Testing: Auth Resend Verification
+Response Code: 200
+Response Body: {"message":"Verification email resent"}
+---
+Testing: Get Current User
+Response Code: 200
+Response Body: {"id":1,"email":"user@example.com","name":"Test User","created_at":"2025-08-12T12:26:41.271Z"}
+---
+Testing: Update Current User
+Response Code: 200
+Response Body: {"id":1,"name":"Updated Name","updated_at":"2025-08-12T12:26:41.291Z"}
+---
+Testing: Get User Stats
+Response Code: 200
+Response Body: {"total_scans":45,"threats_detected":10,"risk_score_avg":"0.95","member_since":"2025-07-13T12:26:41.312Z"}
+---
+Testing: Delete Current User
+Response Code: 200
+Response Body: {"message":"Account deleted successfully"}
+---
+Testing: Create New Scan
+Response Code: 200
+Response Body: {"id":"scan_1755001601356","type":"quick","status":"processing","content":"Test scan content","risk_score":null,"created_at":"2025-08-12T12:26:41.356Z"}
+---
+Testing: Get All Scans
+Response Code: 200
+Response Body: [{"id":"scan_1","status":"completed","risk_score":0.2,"created_at":"2025-08-11T12:26:41.381Z"},{"id":"scan_2","status":"completed","risk_score":0.8,"created_at":"2025-08-10T12:26:41.381Z"}]
+---
+Testing: Get Scan by ID
+Response Code: 200
+Response Body: {"id":"test-id","status":"completed","risk_score":0.5020623555170678,"content":"Sample scan content","threats":[{"type":"phishing","confidence":0.9},{"type":"scam","confidence":0.7}],"created_at":"2025-08-12T12:26:41.401Z"}
+---
+Testing: Initialize Chat Upload
+Response Code: 200
+Response Body: {"uploadId":"upload_1755001601423","status":"initialized","chunks_expected":1}
+---
+Testing: Get Supported Formats
+Response Code: 200
+Response Body: {"formats":["whatsapp","telegram","discord","instagram"],"max_file_size":104857600}
+---
+Testing: List Chat Imports
+Response Code: 200
+Response Body: [{"id":"import_1","platform":"whatsapp","status":"completed","created_at":"2025-08-11T12:26:41.466Z"}]
+---
+Testing: Get Detections for Scan
+Response Code: 200
+Response Body: [{"id":"det_1","scan_id":"test-scan-id","type":"phishing","severity":"high","confidence":0.9,"details":{"pattern":"urgent_request"}}]
+---
+Testing: Get Notifications
+Response Code: 200
+Response Body: [{"id":"notif_1","type":"alert","title":"High Risk Detected","message":"A potential scam was detected","read":false,"created_at":"2025-08-12T12:26:41.510Z"}]
+---
+Testing: Mark Notification as Read
+Response Code: 200
+Response Body: {"id":"test-id","read":true}
+---
+Testing: AI Quick Scan
+Response Code: 200
+Response Body: {"scan_id":"scan_8369","risk_score":0.5119139728640363,"risk_level":"medium","confidence":0.9112141171307204,"analysis":{"scam_indicators":4,"suspicious_patterns":1,"sentiment":"neutral","urgency_level":"low"}}
+---
+Testing: AI Analyze Messages
+Response Code: 200
+Response Body: {"results":[{"message":"Test message 1","risk_score":0.8125525207755432,"detected_patterns":0},{"message":"Test message 2","risk_score":0.6240586978970919,"detected_patterns":2}],"overall_risk":0.7183056093363176}
+---
+Testing: AI Batch Detection
+Response Code: 200
+Response Body: {"results":[{"id":"1","risk_score":0.017443318211634584,"processed":true}]}
+---
+Testing: AI Get Detection Patterns
+Response Code: 200
+Response Body: {"patterns":[{"id":"p1","name":"Urgency Pattern","weight":0.8},{"id":"p2","name":"Money Request","weight":0.9},{"id":"p3","name":"Suspicious Links","weight":0.95}]}
+---
+Testing: AI Service Status
+Response Code: 200
+Response Body: {"status":"running","uptime":6046,"requests_processed":7186}
+---
+Testing: AI Available Models
+Response Code: 200
+Response Body: [{"name":"bert-scam-detector","version":"1.0","status":"loaded"},{"name":"pattern-matcher","version":"2.1","status":"loaded"},{"name":"sentiment-analyzer","version":"1.5","status":"loaded"}]
+---
+Testing: AI Service Version
+Response Code: 200
+Response Body: {"version":"1.0.0","api_version":"v1"}
+---
+Testing: Verify Token
+Response Code: 200
+Response Body: {"address":"0x0000000000000000000000000000000000000000","network":"ethereum","verified":true,"riskScore":59,"riskLevel":"medium","details":{"contract_verified":true,"liquidity_locked":true,"ownership_renounced":true,"honeypot_risk":false}}
+---
+Testing: Verify Wallet
+Response Code: 200
+Response Body: {"address":"0x0000000000000000000000000000000000000000","reputation":0.7797281009562447,"transactionCount":281,"firstSeen":"2024-10-13T10:07:37.431Z","riskFactors":{"mixer_interaction":false,"blacklisted":false,"high_risk_interactions":1}}
+---
+Testing: Scan Transaction
+Response Code: 200
+Response Body: {"txHash":"0x0000","network":"ethereum","status":"confirmed","riskScore":0.1944741774012495,"analysis":{"is_suspicious":true,"involves_mixer":false,"large_amount":false}}
+---
+Testing: Get Verification Status
+Response Code: 200
+Response Body: {"requestId":"test-request-id","status":"completed","progress":100,"result":{"verified":true,"timestamp":"2025-08-12T12:26:41.773Z"}}
+---
+Testing: Analyze Contract
+Response Code: 200
+Response Body: {"address":"0x0000","network":"ethereum","analysis":{"is_honeypot":false,"rugpull_risk":0.6557198239538373,"liquidity_locked":false,"ownership_renounced":false,"mint_function":true,"pausable":true,"proxy_contract":true},"score":16.634138426779764,"recommendation":"SAFE"}
+---
+Testing: Detect Honeypot
+Response Code: 200
+Response Body: {"address":"0x0000","is_honeypot":false,"confidence":0.323928860040557,"indicators":[]}
+---
+Testing: Detect Rugpull
+Response Code: 200
+Response Body: {"address":"0x0000","rugpull_risk":0.7694070512415314,"risk_level":"HIGH","indicators":{"unlocked_liquidity":true,"owner_can_mint":false,"no_audit":true,"anonymous_team":true}}
+---
+Testing: Get Supported Networks
+Response Code: 200
+Response Body: [{"id":1,"name":"Ethereum","symbol":"ETH","chainId":1},{"id":56,"name":"BSC","symbol":"BNB","chainId":56},{"id":137,"name":"Polygon","symbol":"MATIC","chainId":137},{"id":42161,"name":"Arbitrum","symbol":"ETH","chainId":42161},{"id":10,"name":"Optimism","symbol":"ETH","chainId":10}]
+---
+Testing: Get Token Price
+Response Code: 200
+Response Body: {"token":"BTC","price":42430.41169389501,"change24h":6.826282684825196,"volume24h":182735.52824878437,"marketCap":16785781177207.617,"timestamp":"2025-08-12T12:26:41.882Z"}
+---
+Testing: Get Historical Price
+Response Code: 200
+Response Body: {"token":"BTC","data":[{"date":"2025-07-13T12:26:41.902Z","price":259.8811458349144,"volume":139052.98815657696},{"date":"2025-07-14T12:26:41.902Z","price":568.6863588820577,"volume":730044.6074986752},{"date":"2025-07-15T12:26:41.902Z","price":339.89506794398915,"volume":932325.1262753874},{"date":"2025-07-16T12:26:41.902Z","price":491.8070753497943,"volume":810549.0639784458},{"date":"2025-07-17T12:26:41.902Z","price":252.10248815464675,"volume":806562.6926023575},{"date":"2025-07-18T12:26:41.902Z","price":739.0302660687403,"volume":358444.2327424655},{"date":"2025-07-19T12:26:41.902Z","price":873.289373465931,"volume":608331.4567644751},{"date":"2025-07-20T12:26:41.902Z","price":89.7339968006805,"volume":861952.5814064601},{"date":"2025-07-21T12:26:41.902Z","price":503.1576504092607,"volume":465403.2193404336},{"date":"2025-07-22T12:26:41.902Z","price":330.3385542152484,"volume":653287.3532423609},{"date":"2025-07-23T12:26:41.902Z","price":532.27072764704,"volume":440933.62969240133},{"date":"2025-07-24T12:26:41.902Z","price":995.1404362838618,"volume":809855.1339688605},{"date":"2025-07-25T12:26:41.902Z","price":647.6331447929435,"volume":278539.4405210195},{"date":"2025-07-26T12:26:41.902Z","price":861.6266539737888,"volume":796515.6213430429},{"date":"2025-07-27T12:26:41.902Z","price":487.8113770880468,"volume":985030.0900360727},{"date":"2025-07-28T12:26:41.902Z","price":428.24458210627193,"volume":730919.2617364016},{"date":"2025-07-29T12:26:41.902Z","price":127.28452224329389,"volume":98700.34586505083},{"date":"2025-07-30T12:26:41.902Z","price":206.39312874101344,"volume":898946.7377305849},{"date":"2025-07-31T12:26:41.902Z","price":536.2188050980483,"volume":2199.344316810015},{"date":"2025-08-01T12:26:41.902Z","price":655.1619984338035,"volume":572471.8820516111},{"date":"2025-08-02T12:26:41.902Z","price":774.548524754006,"volume":542082.532309979},{"date":"2025-08-03T12:26:41.902Z","price":717.1722627637946,"volume":238149.40530099292},{"date":"2025-08-04T12:26:41.902Z","price":361.94727931993407,"volume":520579.08713200863},{"date":"2025-08-05T12:26:41.902Z","price":727.7170883753458,"volume":343973.6845934249},{"date":"2025-08-06T12:26:41.902Z","price":255.84991426525838,"volume":549820.25441268},{"date":"2025-08-07T12:26:41.902Z","price":793.3857471895649,"volume":41365.65946920978},{"date":"2025-08-08T12:26:41.902Z","price":925.6607505774215,"volume":65707.56004052302},{"date":"2025-08-09T12:26:41.902Z","price":704.8118451000191,"volume":697704.8023257107},{"date":"2025-08-10T12:26:41.902Z","price":325.61270411154374,"volume":166775.67530576655},{"date":"2025-08-11T12:26:41.902Z","price":540.3197407269517,"volume":193509.4080002815},{"date":"2025-08-12T12:26:41.902Z","price":997.8932462072598,"volume":259585.8036227976}]}
+---
+Testing: Get Trending Prices
+Response Code: 200
+Response Body: {"token":"TRENDING","price":96.96433478472677,"change24h":8.336295986273177,"volume24h":770324.5717428398,"marketCap":8719012072.56312,"timestamp":"2025-08-12T12:26:41.925Z"}
+---

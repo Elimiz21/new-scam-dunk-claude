@@ -11,7 +11,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
-import { UpdateUserRequest } from '@scam-dunk/shared';
+import { UpdateUserRequest } from '../shared/types';
 
 @ApiTags('users')
 @ApiBearerAuth()

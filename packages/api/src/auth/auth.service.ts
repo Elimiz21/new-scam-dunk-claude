@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { EmailService } from '../email/email.service';
-import { generateId } from '@scam-dunk/shared';
+import { generateId } from '../shared/types';
 
 import {
   LoginCredentials,
@@ -21,7 +21,7 @@ import {
   AuthTokens,
   AuthSession,
   JWTPayload,
-} from '@scam-dunk/shared';
+} from '../shared/types';
 
 @Injectable()
 export class AuthService {

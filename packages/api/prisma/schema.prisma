@@ -33,38 +33,38 @@ model User {
   sessions         Session[]
 
   // Profile
-  bio       String?
-  website   String?
-  location  Json?
-  timezone  String   @default("UTC")
-  language  String   @default("en")
-  currency  String   @default("USD")
-  
+  bio      String?
+  website  String?
+  location Json?
+  timezone String  @default("UTC")
+  language String  @default("en")
+  currency String  @default("USD")
+
   // Preferences
   preferences Json @default("{}")
   settings    Json @default("{}")
 
   // Subscription
-  subscriptionPlan      SubscriptionPlan   @default(FREE)
-  subscriptionStatus    SubscriptionStatus @default(ACTIVE)
-  currentPeriodStart    DateTime?
-  currentPeriodEnd      DateTime?
-  cancelAtPeriodEnd     Boolean            @default(false)
-  trialEnd              DateTime?
-  stripeCustomerId      String?
-  stripeSubscriptionId  String?
+  subscriptionPlan     SubscriptionPlan   @default(FREE)
+  subscriptionStatus   SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  trialEnd             DateTime?
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
 
   // Usage tracking
-  scansUsed     Int @default(0)
-  apiCallsUsed  Int @default(0)
-  usageResetAt  DateTime @default(now())
+  scansUsed    Int      @default(0)
+  apiCallsUsed Int      @default(0)
+  usageResetAt DateTime @default(now())
 
   // Relations
-  scans              Scan[]
-  detectionFeedback  DetectionFeedback[]
-  apiKeys            ApiKey[]
-  notifications      Notification[]
-  chatImports        ChatImport[]
+  scans             Scan[]
+  detectionFeedback DetectionFeedback[]
+  apiKeys           ApiKey[]
+  notifications     Notification[]
+  chatImports       ChatImport[]
 
   @@map("users")
 }
@@ -107,11 +107,11 @@ model ApiKey {
 
   userId      String
   name        String
-  keyHash     String   @unique
+  keyHash     String    @unique
   permissions String[]
   lastUsed    DateTime?
   expiresAt   DateTime?
-  active      Boolean  @default(true)
+  active      Boolean   @default(true)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -129,14 +129,14 @@ model Scan {
 
   // Input data
   input    Json
-  metadata Json @default("{}")
+  metadata Json     @default("{}")
   tags     String[]
 
   // Results
-  result             Json?
+  result              Json?
   processingStartedAt DateTime?
   processingEndedAt   DateTime?
-  processingTime     Int? // milliseconds
+  processingTime      Int? // milliseconds
 
   // Relations
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -154,14 +154,14 @@ model Detection {
   scanId String
   type   DetectionType
 
-  confidence   Float
-  riskScore    Int
-  riskLevel    RiskLevel
-  description  String
-  evidence     Json      @default("[]")
-  indicators   Json      @default("[]")
-  mitigation   Json      @default("{}")
-  references   Json      @default("[]")
+  confidence  Float
+  riskScore   Int
+  riskLevel   RiskLevel
+  description String
+  evidence    Json      @default("[]")
+  indicators  Json      @default("[]")
+  mitigation  Json      @default("{}")
+  references  Json      @default("[]")
 
   // Relations
   scan     Scan                @relation(fields: [scanId], references: [id], onDelete: Cascade)
@@ -273,7 +273,7 @@ model ChatImport {
   updatedAt DateTime @updatedAt
 
   userId   String
-  scanId   String?  @unique // Optional link to scan result
+  scanId   String?          @unique // Optional link to scan result
   platform ChatPlatform
   status   ChatImportStatus @default(UPLOADING)
 
@@ -281,7 +281,7 @@ model ChatImport {
   originalFileName String
   fileSize         Int
   filePath         String? // Temporary file path during processing
-  fileHash         String  // SHA256 hash for deduplication
+  fileHash         String // SHA256 hash for deduplication
 
   // Processing info
   processingStartedAt DateTime?
@@ -290,10 +290,10 @@ model ChatImport {
   errorMessage        String?
 
   // Chat metadata
-  messageCount     Int     @default(0)
-  participantCount Int     @default(0)
+  messageCount     Int   @default(0)
+  participantCount Int   @default(0)
   dateRange        Json? // {from: Date, to: Date}
-  metadata         Json    @default("{}")
+  metadata         Json  @default("{}")
 
   // Analysis results
   overallRiskScore Int?
@@ -302,10 +302,11 @@ model ChatImport {
   summary          String?
 
   // Relations
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  scan         Scan?           @relation(fields: [scanId], references: [id], onDelete: SetNull)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scan         Scan?             @relation(fields: [scanId], references: [id], onDelete: SetNull)
   messages     ChatMessage[]
   participants ChatParticipant[]
+  ChatAnalysis ChatAnalysis?
 
   @@map("chat_imports")
 }
@@ -324,12 +325,12 @@ model ChatMessage {
   messageType  MessageType @default(TEXT)
 
   // Message metadata
-  edited        Boolean   @default(false)
-  editedAt      DateTime?
-  deleted       Boolean   @default(false)
-  forwarded     Boolean   @default(false)
-  replyToId     String?
-  threadId      String?
+  edited    Boolean   @default(false)
+  editedAt  DateTime?
+  deleted   Boolean   @default(false)
+  forwarded Boolean   @default(false)
+  replyToId String?
+  threadId  String?
 
   // Extracted entities
   urls            String[]
@@ -340,7 +341,7 @@ model ChatMessage {
   hashtags        String[]
 
   // Risk assessment
-  riskScore Int     @default(0)
+  riskScore Int      @default(0)
   riskFlags String[]
 
   // Attachments
@@ -361,13 +362,13 @@ model ChatParticipant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chatImportId   String
-  participantId  String // Original participant ID from the platform
-  name           String
-  username       String?
-  phoneNumber    String?
-  avatar         String?
-  role           ParticipantRole @default(MEMBER)
+  chatImportId  String
+  participantId String // Original participant ID from the platform
+  name          String
+  username      String?
+  phoneNumber   String?
+  avatar        String?
+  role          ParticipantRole @default(MEMBER)
 
   // Activity stats
   messageCount Int       @default(0)
@@ -377,7 +378,7 @@ model ChatParticipant {
   leftAt       DateTime?
 
   // Risk assessment
-  riskScore Int     @default(0)
+  riskScore Int      @default(0)
   riskFlags String[]
 
   // Relations
@@ -392,12 +393,12 @@ model ChatAnalysis {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chatImportId String @unique
+  chatImportId String             @unique
   analysisType ChatAnalysisType
   status       ChatAnalysisStatus @default(PENDING)
 
   // Analysis results
-  overallRiskScore    Int
+  overallRiskScore   Int
   riskLevel          RiskLevel
   confidence         Float
   summary            String
@@ -406,10 +407,10 @@ model ChatAnalysis {
   recommendations    String[]
 
   // Performance metrics
-  processingTime     Int // milliseconds
-  messagesAnalyzed   Int
-  patternsDetected   Int
-  entitiesExtracted  Int
+  processingTime    Int // milliseconds
+  messagesAnalyzed  Int
+  patternsDetected  Int
+  entitiesExtracted Int
 
   // Relations
   chatImport ChatImport @relation(fields: [chatImportId], references: [id], onDelete: Cascade)
