@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
-// Temporary inline styles until Tailwind is fixed
+// Inline styles for production - deployed August 14, 2025
 const styles = {
   page: {
     minHeight: '100vh',
