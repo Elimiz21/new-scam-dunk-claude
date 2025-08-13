@@ -21,6 +21,12 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { ChatImportModule } from './chat-import/chat-import.module';
 
+// Detection Services
+import { ContactVerificationModule } from './services/contact-verification/contact-verification.module';
+import { ChatAnalysisModule } from './services/chat-analysis/chat-analysis.module';
+import { TradingAnalysisModule } from './services/trading-analysis/trading-analysis.module';
+import { VeracityCheckingModule } from './services/veracity-checking/veracity-checking.module';
+
 // Common
 import { HealthModule } from './health/health.module';
 
@@ -80,6 +86,12 @@ import { HealthModule } from './health/health.module';
     NotificationsModule,
     WebsocketModule,
     ChatImportModule,
+
+    // Detection Services
+    ContactVerificationModule,
+    ChatAnalysisModule,
+    TradingAnalysisModule,
+    VeracityCheckingModule,
 
     // System modules
     HealthModule,

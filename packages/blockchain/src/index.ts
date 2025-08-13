@@ -43,7 +43,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging
 app.use(morgan('combined', {
-  stream: { write: (message) => logger.info(message.trim()) }
+  stream: { write: (message: string) => logger.info(message.trim()) }
 }));
 app.use(requestLogger);
 

@@ -41,7 +41,7 @@ const createResponse = <T>(success: boolean, data?: T, error?: string): ApiRespo
  * POST /verify/token
  * Verify token contract and analyze risks
  */
-router.post('/verify/token', async (req: Request, res: Response) => {
+router.post('/verify/token', async (req: Request, res: Response): Promise<Response> => {
   const requestId = uuidv4();
   const startTime = Date.now();
 
@@ -108,13 +108,13 @@ router.post('/verify/token', async (req: Request, res: Response) => {
       processingTime: Date.now() - startTime 
     });
 
-    res.json(createResponse(true, result));
+    return res.json(createResponse(true, result));
   } catch (error) {
     logger.error('Token verification failed', { 
       requestId, 
       error: error instanceof Error ? error.message : 'Unknown error' 
     });
-    res.status(500).json(createResponse(false, null, 'Internal server error'));
+    return res.status(500).json(createResponse(false, null, 'Internal server error'));
   }
 });
 
@@ -122,7 +122,7 @@ router.post('/verify/token', async (req: Request, res: Response) => {
  * POST /verify/wallet
  * Check wallet reputation and risk factors
  */
-router.post('/verify/wallet', async (req: Request, res: Response) => {
+router.post('/verify/wallet', async (req: Request, res: Response): Promise<Response> => {
   const requestId = uuidv4();
   const startTime = Date.now();
 
@@ -176,13 +176,13 @@ router.post('/verify/wallet', async (req: Request, res: Response) => {
       processingTime: Date.now() - startTime 
     });
 
-    res.json(createResponse(true, result));
+    return res.json(createResponse(true, result));
   } catch (error) {
     logger.error('Wallet verification failed', { 
       requestId, 
       error: error instanceof Error ? error.message : 'Unknown error' 
     });
-    res.status(500).json(createResponse(false, null, 'Internal server error'));
+    return res.status(500).json(createResponse(false, null, 'Internal server error'));
   }
 });
 
@@ -190,7 +190,7 @@ router.post('/verify/wallet', async (req: Request, res: Response) => {
  * POST /scan/transaction
  * Analyze transaction for suspicious patterns
  */
-router.post('/scan/transaction', async (req: Request, res: Response) => {
+router.post('/scan/transaction', async (req: Request, res: Response): Promise<Response> => {
   const requestId = uuidv4();
   const startTime = Date.now();
 
@@ -226,13 +226,13 @@ router.post('/scan/transaction', async (req: Request, res: Response) => {
       processingTime: Date.now() - startTime 
     });
 
-    res.json(createResponse(true, result));
+    return res.json(createResponse(true, result));
   } catch (error) {
     logger.error('Transaction analysis failed', { 
       requestId, 
       error: error instanceof Error ? error.message : 'Unknown error' 
     });
-    res.status(500).json(createResponse(false, null, 'Internal server error'));
+    return res.status(500).json(createResponse(false, null, 'Internal server error'));
   }
 });
 
@@ -240,7 +240,7 @@ router.post('/scan/transaction', async (req: Request, res: Response) => {
  * POST /verify/bulk
  * Bulk verification for multiple addresses
  */
-router.post('/verify/bulk', async (req: Request, res: Response) => {
+router.post('/verify/bulk', async (req: Request, res: Response): Promise<Response> => {
   const requestId = uuidv4();
   const startTime = Date.now();
 
@@ -333,13 +333,13 @@ router.post('/verify/bulk', async (req: Request, res: Response) => {
       processingTime: Date.now() - startTime 
     });
 
-    res.json(createResponse(true, result));
+    return res.json(createResponse(true, result));
   } catch (error) {
     logger.error('Bulk verification failed', { 
       requestId, 
       error: error instanceof Error ? error.message : 'Unknown error' 
     });
-    res.status(500).json(createResponse(false, null, 'Internal server error'));
+    return res.status(500).json(createResponse(false, null, 'Internal server error'));
   }
 });
 
@@ -360,13 +360,13 @@ router.get('/verify/status/:requestId', async (req: Request, res: Response) => {
       result: null,
     };
 
-    res.json(createResponse(true, result));
+    return res.json(createResponse(true, result));
   } catch (error) {
     logger.error('Status check failed', { 
       requestId: req.params.requestId, 
       error: error instanceof Error ? error.message : 'Unknown error' 
     });
-    res.status(500).json(createResponse(false, null, 'Internal server error'));
+    return res.status(500).json(createResponse(false, null, 'Internal server error'));
   }
 });
 

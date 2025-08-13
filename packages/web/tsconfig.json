@@ -24,6 +24,8 @@
       "@/lib/*": ["./lib/*"],
       "@/styles/*": ["./styles/*"],
       "@/public/*": ["./public/*"],
+      "@/services/*": ["./services/*"],
+      "@/hooks/*": ["./hooks/*"],
       "@/shared/*": ["../shared/src/*"]
     }
   },

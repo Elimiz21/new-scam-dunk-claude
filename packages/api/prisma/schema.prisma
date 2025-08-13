@@ -592,3 +592,74 @@ enum ChatAnalysisStatus {
   COMPLETED
   FAILED
 }
+
+// New models for detection services
+
+model ContactVerification {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  contactType       String
+  contactValue      String
+  isScammer         Boolean
+  riskScore         Int
+  riskLevel         RiskLevel
+  confidence        Int
+  verificationSources Json   @default("[]")
+  scammerDatabases  Json     @default("[]")
+  additionalInfo    Json     @default("{}")
+  flags             Json     @default("[]")
+  recommendations   String[]
+
+  @@map("contact_verifications")
+}
+
+model TradingAnalysis {
+  id                    String   @id @default(cuid())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  symbol                String
+  analysisType          String
+  overallRiskScore      Int
+  riskLevel             RiskLevel
+  confidence            Float
+  summary               String
+  keyFindings           String[]
+  recommendations       String[]
+  alertLevel            String
+  pumpDumpDetection     Json     @default("{}")
+  washTradingDetection  Json     @default("{}")
+  marketAnomalies       Json     @default("[]")
+  processingTime        Int
+  dataPointsAnalyzed    Int
+
+  @@map("trading_analyses")
+}
+
+model VeracityCheck {
+  id                        String   @id @default(cuid())
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  checkType                 String
+  targetType                String
+  targetIdentifier          String
+  isVerified                Boolean
+  verificationStatus        String
+  overallConfidence         Int
+  riskLevel                 RiskLevel
+  summary                   String
+  keyFindings               String[]
+  recommendations           String[]
+  existenceVerification     Json     @default("{}")
+  regulatoryVerification    Json     @default("{}")
+  lawEnforcementVerification Json    @default("{}")
+  warnings                  Json     @default("[]")
+  redFlags                  Json     @default("[]")
+  processingTime            Int
+  sourcesChecked            Int
+
+  @@map("veracity_checks")
+}

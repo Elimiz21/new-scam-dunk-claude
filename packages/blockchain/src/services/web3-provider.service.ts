@@ -171,16 +171,16 @@ export class Web3ProviderService {
           const web3 = this.getWeb3Provider(network);
           if (!web3) return null;
           
-          const balance = await web3.eth.getBalance(address);
-          return web3.utils.fromWei(balance, 'ether');
+          const polygonBalance = await web3.eth.getBalance(address);
+          return web3.utils.fromWei(polygonBalance, 'ether');
         
         case 'solana':
           const connection = this.getSolanaConnection();
           if (!connection) return null;
           
           const publicKey = new PublicKey(address);
-          const balance = await connection.getBalance(publicKey);
-          return (balance / 1e9).toString(); // Convert lamports to SOL
+          const solanaBalance = await connection.getBalance(publicKey);
+          return (solanaBalance / 1e9).toString(); // Convert lamports to SOL
         
         case 'bitcoin':
           // Bitcoin balance lookup would require a different API

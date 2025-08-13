@@ -158,10 +158,41 @@ import {
   ArrowRight,
   MessageSquare,
   FileSearch,
-  Globe
+  Globe,
+  TrendingUp,
+  Search,
+  UserCheck,
+  LineChart
 } from 'lucide-react'
 
 export default function LandingPage() {
+  const mainFeatures = [
+    {
+      icon: UserCheck,
+      title: 'Contact Verification',
+      description: 'Verify group members, managers, and contacts against international scammer databases. Check phone numbers, emails, and workplace information.',
+      highlights: ['International databases', 'Phone & email verification', 'Workplace validation']
+    },
+    {
+      icon: MessageSquare,
+      title: 'Chat Language Analysis',
+      description: 'Detect psychological manipulation patterns and scam language using advanced AI to identify red flags in conversations.',
+      highlights: ['Manipulation detection', 'Psychological patterns', 'Scam phrases']
+    },
+    {
+      icon: TrendingUp,
+      title: 'Trading Activity Analysis',
+      description: 'Identify irregular trading patterns, pump-and-dump schemes, and market manipulation using smart AI analysis.',
+      highlights: ['Volume anomalies', 'Price manipulation', 'News correlation']
+    },
+    {
+      icon: Shield,
+      title: 'Stock/Crypto Veracity',
+      description: 'Verify existence and legitimacy of stocks and cryptocurrencies against law enforcement and regulatory databases.',
+      highlights: ['Existence verification', 'Law enforcement check', 'Regulatory compliance']
+    }
+  ]
+
   const features = [
     {
       icon: Brain,
@@ -231,14 +262,165 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* 4-Test System Section */}
+      <section style={{...styles.section, backgroundColor: '#f0f9ff'}}>
+        <div style={styles.container}>
+          <h2 style={styles.sectionTitle}>
+            4 Powerful Detection Tests
+          </h2>
+          <p style={styles.sectionSubtitle}>
+            Run comprehensive scam detection with our advanced 4-test system. Use all tests together or select specific checks.
+          </p>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '24px',
+            marginTop: '48px'
+          }}>
+            {mainFeatures.map((feature, index) => (
+              <Link 
+                key={index} 
+                href="/scan"
+                style={{
+                  padding: '32px',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '16px',
+                  border: '2px solid #e0f2fe',
+                  transition: 'all 0.3s',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  display: 'block',
+                  textDecoration: 'none',
+                  color: 'inherit'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(59, 130, 246, 0.15)';
+                  e.currentTarget.style.borderColor = '#3b82f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = '#e0f2fe';
+                }}>
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  backgroundColor: '#eff6ff',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '20px'
+                }}>
+                  <feature.icon style={{ width: '32px', height: '32px', color: '#3b82f6' }} />
+                </div>
+                <h3 style={{ 
+                  fontSize: '1.5rem', 
+                  fontWeight: '700', 
+                  marginBottom: '12px', 
+                  color: '#1e293b' 
+                }}>
+                  {feature.title}
+                </h3>
+                <p style={{ 
+                  color: '#64748b', 
+                  lineHeight: '1.6',
+                  marginBottom: '20px',
+                  fontSize: '0.95rem'
+                }}>
+                  {feature.description}
+                </p>
+                <div style={{ marginTop: '16px' }}>
+                  {feature.highlights.map((highlight, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginBottom: '8px'
+                    }}>
+                      <CheckCircle style={{ 
+                        width: '16px', 
+                        height: '16px', 
+                        color: '#10b981',
+                        marginRight: '8px',
+                        flexShrink: 0
+                      }} />
+                      <span style={{ fontSize: '0.875rem', color: '#475569' }}>
+                        {highlight}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                  backgroundColor: '#dcfce7',
+                  color: '#166534',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  fontSize: '0.75rem',
+                  fontWeight: '600'
+                }}>
+                  Test {index + 1}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div style={{
+            textAlign: 'center',
+            marginTop: '48px',
+            padding: '32px',
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            border: '2px solid #e0f2fe'
+          }}>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '12px', color: '#1e293b' }}>
+              Run All Tests Simultaneously
+            </h3>
+            <p style={{ color: '#64748b', marginBottom: '24px' }}>
+              Get comprehensive protection with our one-click scan that runs all 4 tests and provides a detailed risk assessment.
+            </p>
+            <Link href="/scan" style={{
+              ...styles.button,
+              backgroundColor: '#3b82f6',
+              color: '#ffffff',
+              padding: '14px 32px',
+              fontSize: '1.1rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              textDecoration: 'none',
+              borderRadius: '8px',
+              fontWeight: '600',
+              transition: 'all 0.2s',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#2563eb';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#3b82f6';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}>
+              Try Comprehensive Scan
+              <ArrowRight style={{ marginLeft: '8px', width: '20px', height: '20px' }} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section style={styles.section}>
         <div style={styles.container}>
           <h2 style={styles.sectionTitle}>
-            Comprehensive Protection Suite
+            Additional Protection Features
           </h2>
           <p style={styles.sectionSubtitle}>
-            Everything you need to protect yourself and your family from online scams
+            Beyond our 4-test system, enjoy these powerful features
           </p>
 
           <div style={styles.features}>
@@ -269,7 +451,7 @@ export default function LandingPage() {
               Start Free Trial
               <ArrowRight style={{ marginLeft: '8px', width: '16px', height: '16px' }} />
             </Link>
-            <Link href="/dashboard" style={{...styles.button, ...styles.secondaryButton}}>
+            <Link href="/scan" style={{...styles.button, ...styles.secondaryButton}}>
               View Demo
             </Link>
           </div>
