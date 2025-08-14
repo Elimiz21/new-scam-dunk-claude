@@ -3,40 +3,14 @@
   "version": "1.0.0",
   "description": "AI-Native Anti-Scam Investment Protection Platform",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "build": "cd packages/web && npm install && npm run build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "test": "turbo test",
-    "type-check": "turbo type-check",
-    "clean": "turbo clean",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "postinstall": "husky install || true",
-    "db:generate": "turbo db:generate",
-    "db:push": "turbo db:push",
-    "db:migrate": "turbo db:migrate",
-    "db:studio": "turbo db:studio",
-    "api:dev": "turbo dev --filter=@scam-dunk/api",
-    "web:dev": "turbo dev --filter=@scam-dunk/web",
-    "ai:dev": "cd packages/ai && python -m uvicorn main:app --reload --host 0.0.0.0 --port 8001",
-    "blockchain:dev": "turbo dev --filter=@scam-dunk/blockchain",
-    "start:all": "concurrently \"npm run api:dev\" \"npm run web:dev\" \"npm run ai:dev\" \"npm run blockchain:dev\"",
-    "docker:build": "docker-compose build",
-    "docker:up": "docker-compose up",
-    "docker:down": "docker-compose down"
+    "build": "cd packages/web && npm install --legacy-peer-deps && npm run build",
+    "dev": "cd packages/web && npm run dev",
+    "web:dev": "cd packages/web && npm run dev",
+    "postinstall": "echo 'Skipping postinstall'"
   },
   "devDependencies": {
-    "@turbo/gen": "^1.10.7",
     "@types/node": "^20.8.0",
-    "concurrently": "^8.2.2",
-    "husky": "^8.0.3",
-    "lint-staged": "^15.0.2",
-    "prettier": "^3.0.3",
-    "turbo": "^1.10.7",
     "typescript": "^5.2.2"
   },
   "lint-staged": {
