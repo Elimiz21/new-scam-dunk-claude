@@ -1,8 +1,8 @@
 {
-  "buildCommand": "cd packages/web && npm install && npm run build",
+  "buildCommand": "cd packages/web && npm install --legacy-peer-deps && npm run build",
   "outputDirectory": "packages/web/.next",
-  "installCommand": "npm install --legacy-peer-deps",
-  "framework": "nextjs",
+  "installCommand": "echo 'Skipping root install'",
+  "framework": null,
   "regions": ["iad1"],
   "functions": {
     "packages/web/app/api/**/*": {
