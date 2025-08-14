@@ -1,0 +1,14 @@
+# Ignore everything except web package
+packages/api
+packages/blockchain
+packages/ai
+packages/shared
+*.md
+!packages/web/**
+docker*
+*.sh
+scripts/
+monitoring/
+nginx/
+static-site/
+test*
