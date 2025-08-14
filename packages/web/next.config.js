@@ -104,8 +104,8 @@ const nextConfig = {
   
   // Experimental features
   experimental: {
-    optimizeCss: true,
-    scrollRestoration: true,
+    // optimizeCss: true,
+    // scrollRestoration: true,
   },
   
   // TypeScript
