@@ -1,12 +1,13 @@
 {
-  "buildCommand": "cd packages/web && npm run build",
+  "buildCommand": "cd packages/web && npm install && npm run build",
   "outputDirectory": "packages/web/.next",
-  "installCommand": "npm install",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
   "regions": ["iad1"],
   "functions": {
     "packages/web/app/api/**/*": {
       "maxDuration": 30
     }
-  }
+  },
+  "ignoreCommand": "exit 0"
 }
