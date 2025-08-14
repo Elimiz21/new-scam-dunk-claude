@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd packages/web && npm install --legacy-peer-deps && npm run build",
+  "buildCommand": "bash build-vercel.sh",
   "outputDirectory": "packages/web/.next",
   "installCommand": "echo 'Skipping root install'",
   "framework": null,
@@ -8,6 +8,5 @@
     "packages/web/app/api/**/*": {
       "maxDuration": 30
     }
-  },
-  "ignoreCommand": "exit 0"
+  }
 }
