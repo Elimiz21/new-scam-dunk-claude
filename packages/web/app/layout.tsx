@@ -14,15 +14,16 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://ocma.dev'),
   title: {
-    default: 'Scam Dunk - AI-Powered Scam Protection',
-    template: '%s | Scam Dunk'
+    default: 'OCMA - AI-Powered Social Media Management',
+    template: '%s | OCMA'
   },
-  description: 'Advanced AI technology to protect you and your loved ones from scams, fraud, and online threats. Family protection made simple.',
-  keywords: ['scam protection', 'fraud detection', 'AI security', 'family safety', 'elder protection', 'online safety'],
-  authors: [{ name: 'Scam Dunk Team' }],
-  creator: 'Scam Dunk',
-  publisher: 'Scam Dunk',
+  description: 'Advanced AI technology for social media management and content optimization. Streamline your social media strategy.',
+  keywords: ['social media management', 'AI content', 'social strategy', 'content optimization', 'marketing automation'],
+  authors: [{ name: 'OCMA Team' }],
+  creator: 'OCMA',
+  publisher: 'OCMA',
   robots: {
     index: true,
     follow: true,
@@ -37,25 +38,25 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://scamdunk.com',
-    title: 'Scam Dunk - AI-Powered Scam Protection',
-    description: 'Advanced AI technology to protect you and your loved ones from scams, fraud, and online threats.',
-    siteName: 'Scam Dunk',
+    url: 'https://ocma.dev',
+    title: 'OCMA - AI-Powered Social Media Management',
+    description: 'Advanced AI technology for social media management and content optimization.',
+    siteName: 'OCMA',
     images: [
       {
         url: '/images/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Scam Dunk - AI-Powered Scam Protection',
+        alt: 'OCMA - AI-Powered Social Media Management',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Scam Dunk - AI-Powered Scam Protection',
-    description: 'Advanced AI technology to protect you and your loved ones from scams, fraud, and online threats.',
+    title: 'OCMA - AI-Powered Social Media Management',
+    description: 'Advanced AI technology for social media management and content optimization.',
     images: ['/images/og-image.png'],
-    creator: '@scamdunk',
+    creator: '@ocma',
   },
   icons: {
     icon: '/icons/favicon.ico',

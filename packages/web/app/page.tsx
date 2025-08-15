@@ -222,12 +222,12 @@ export default function LandingPage() {
           </div>
           
           <h1 style={styles.title}>
-            Stop Scams Before They Strike
+            AI-Powered Social Media Management
           </h1>
           
           <p style={styles.subtitle}>
-            Advanced AI technology protects you and your loved ones from cryptocurrency scams, 
-            pig-butchering schemes, and online fraud. Family protection made simple.
+            Advanced AI technology to streamline your social media strategy, 
+            optimize content performance, and automate engagement. Social media made simple.
           </p>
           
           <div style={styles.buttonContainer}>
@@ -463,10 +463,10 @@ export default function LandingPage() {
         <div style={styles.container}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px' }}>
             <Shield style={{ width: '24px', height: '24px', color: '#3b82f6' }} />
-            <span style={{ fontWeight: '600', color: '#1f2937' }}>Scam Dunk</span>
+            <span style={{ fontWeight: '600', color: '#1f2937' }}>OCMA</span>
           </div>
           <p style={{ fontSize: '0.875rem', marginBottom: '16px' }}>
-            © 2024 Scam Dunk. Protecting families worldwide.
+            © 2024 OCMA. Streamlining social media worldwide.
           </p>
           <div style={{ display: 'flex', gap: '24px', justifyContent: 'center' }}>
             <Link href="/privacy" style={{ fontSize: '0.875rem', color: '#6b7280', textDecoration: 'none' }}>
