@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm install --legacy-peer-deps && npm run build",
-  "outputDirectory": ".next",
+  "buildCommand": "cd packages/web && npm install --legacy-peer-deps && npm run build",
+  "outputDirectory": "packages/web/.next",
   "installCommand": "cd packages/web && npm install --legacy-peer-deps",
   "framework": "nextjs",
   "regions": ["iad1"],
@@ -11,12 +11,11 @@
     "NODE_ENV": "production"
   },
   "functions": {
-    "app/**/*.ts": {
+    "packages/web/app/**/*.ts": {
       "maxDuration": 10
     },
-    "app/**/*.tsx": {
+    "packages/web/app/**/*.tsx": {
       "maxDuration": 10
     }
-  },
-  "root": "packages/web"
+  }
 }
