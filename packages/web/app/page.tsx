@@ -201,8 +201,8 @@ export default function LandingPage() {
     },
     {
       icon: Shield,
-      title: 'Real-Time Protection',
-      description: 'Instant alerts when suspicious content is detected'
+      title: 'Comprehensive Analysis',
+      description: 'Deep analysis of multiple risk factors and scam indicators'
     },
     {
       icon: Users,
@@ -278,10 +278,18 @@ export default function LandingPage() {
             gap: '24px',
             marginTop: '48px'
           }}>
-            {mainFeatures.map((feature, index) => (
+            {mainFeatures.map((feature, index) => {
+              const scanUrls: { [key: string]: string } = {
+                'Contact Verification': '/scan/contact',
+                'Chat Language Analysis': '/scan/chat',
+                'Trading Activity Analysis': '/scan/trading',
+                'Stock/Crypto Veracity': '/scan/veracity'
+              };
+              
+              return (
               <Link 
                 key={index} 
-                href="/scan"
+                href={scanUrls[feature.title] || '/scan'}
                 style={{
                   padding: '32px',
                   backgroundColor: '#ffffff',
@@ -367,7 +375,8 @@ export default function LandingPage() {
                   Test {index + 1}
                 </div>
               </Link>
-            ))}
+              )
+            })}
           </div>
 
           <div style={{
