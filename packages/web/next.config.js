@@ -13,7 +13,7 @@ const nextConfig = {
   
   // Image optimization
   images: {
-    domains: ['localhost', 'vercel.com', 'ocma.dev', 'api.ocma.dev'],
+    domains: ['localhost', 'vercel.com', 'scam-dunk-production.vercel.app'],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
     remotePatterns: [
@@ -73,7 +73,7 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: process.env.NODE_ENV === 'production'
-              ? "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.ocma.dev wss://api.ocma.dev https://www.google-analytics.com; frame-ancestors 'none';"
+              ? "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://scam-dunk-production.vercel.app wss://scam-dunk-production.vercel.app https://www.google-analytics.com; frame-ancestors 'none';"
               : "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:*"
           }
         ],

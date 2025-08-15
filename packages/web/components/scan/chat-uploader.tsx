@@ -264,7 +264,7 @@ export function ChatUploader({ onScanStart }: ChatUploaderProps) {
                   <FileText className="h-4 w-4 text-purple-500" />
                 </div>
                 <div>
-                  <div className="font-medium text-sm">Social Media</div>
+                  <div className="font-medium text-sm">Chat Platform</div>
                   <div className="text-xs text-muted-foreground">
                     Facebook, Instagram messages
                   </div>
