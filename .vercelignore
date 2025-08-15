@@ -1,10 +1,10 @@
-# Ignore everything except web package
+# Ignore non-web packages
 packages/api
 packages/blockchain
 packages/ai
 packages/shared
-*.md
-!packages/web/**
+
+# Ignore root files we don't need
 docker*
 *.sh
 scripts/
@@ -12,3 +12,11 @@ monitoring/
 nginx/
 static-site/
 test*
+.env*
+.git
+.github
+node_modules
+
+# Don't ignore the web package
+!packages/web
+!packages/web/**/*
