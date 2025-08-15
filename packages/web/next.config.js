@@ -26,11 +26,11 @@ const nextConfig = {
   
   // Environment variables
   env: {
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL || (process.env.NODE_ENV === 'production' ? 'https://ocma.dev' : 'http://localhost:3000'),
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'https://scam-dunk-production.vercel.app',
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production',
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://api.ocma.dev' : 'http://localhost:4000'),
-    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || (process.env.NODE_ENV === 'production' ? 'wss://api.ocma.dev' : 'ws://localhost:4000'),
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'production' ? 'https://ocma.dev' : 'http://localhost:3000'),
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
+    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:4000',
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://scam-dunk-production.vercel.app',
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || '1.0.0',
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
     NEXT_PUBLIC_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA || 'development',
