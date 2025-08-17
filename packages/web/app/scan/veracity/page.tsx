@@ -425,6 +425,7 @@ export default function VeracityCheckPage() {
           </div>
         </motion.div>
       )}
+      </div>
     </div>
   );
 }
