@@ -5,8 +5,8 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import mongoose from 'mongoose';
 import winston from 'winston';
+import { prisma } from './lib/supabase';
 
 // Import routes
 import authRoutes from './routes/auth';
@@ -120,14 +120,15 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Custom middleware
 app.use(loggerMiddleware);
 
-// Connect to MongoDB
+// Connect to Database (Supabase PostgreSQL via Prisma)
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.DATABASE_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/scam-dunk';
-    await mongoose.connect(mongoUri);
-    logger.info('Connected to MongoDB');
+    // Prisma connection is handled in lib/supabase.ts
+    // Just verify connection here
+    await prisma.$queryRaw`SELECT 1`;
+    logger.info('Connected to Supabase PostgreSQL');
   } catch (error) {
-    logger.error('MongoDB connection error:', error);
+    logger.error('Database connection error:', error);
     process.exit(1);
   }
 };
@@ -207,23 +208,21 @@ const startServer = async () => {
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM signal received: closing HTTP server');
-  server.close(() => {
+  server.close(async () => {
     logger.info('HTTP server closed');
-    mongoose.connection.close().then(() => {
-      logger.info('MongoDB connection closed');
-      process.exit(0);
-    });
+    await prisma.$disconnect();
+    logger.info('Database connection closed');
+    process.exit(0);
   });
 });
 
 process.on('SIGINT', async () => {
   logger.info('SIGINT signal received: closing HTTP server');
-  server.close(() => {
+  server.close(async () => {
     logger.info('HTTP server closed');
-    mongoose.connection.close().then(() => {
-      logger.info('MongoDB connection closed');
-      process.exit(0);
-    });
+    await prisma.$disconnect();
+    logger.info('Database connection closed');
+    process.exit(0);
   });
 });
 

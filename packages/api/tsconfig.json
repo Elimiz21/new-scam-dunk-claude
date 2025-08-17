@@ -17,6 +17,6 @@
     "strictPropertyInitialization": false,
     "types": ["node", "express"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/simple-index.ts"],
   "exclude": ["node_modules", "dist"]
 }

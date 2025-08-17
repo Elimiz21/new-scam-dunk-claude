@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { body, validationResult } from 'express-validator';
-import User from '../models/User';
+import { UserService } from '../services/UserService';
 import { 
   generateToken, 
   generateRefreshToken, 
@@ -73,27 +73,25 @@ router.post('/register', registerValidation, asyncHandler(async (req: express.Re
   const { email, password, firstName, lastName } = req.body;
   
   // Check if user already exists
-  const existingUser = await User.findOne({ email: email.toLowerCase() });
+  const existingUser = await UserService.findByEmail(email);
   if (existingUser) {
     throw new ConflictError('User already exists with this email');
   }
   
   // Create new user
-  const user = new User({
-    email: email.toLowerCase(),
+  const user = await UserService.createUser({
+    email,
     password,
     firstName: firstName.trim(),
     lastName: lastName.trim()
   });
-  
-  await user.save();
   
   // Generate tokens
   const token = generateToken(user);
   const refreshToken = generateRefreshToken(user);
   
   logger.info('User registered successfully', {
-    userId: user._id,
+    userId: user.id,
     email: user.email,
     ip: req.ip
   });
@@ -102,7 +100,7 @@ router.post('/register', registerValidation, asyncHandler(async (req: express.Re
     success: true,
     message: 'User registered successfully',
     data: {
-      user: user.toJSON(),
+      user: UserService.sanitizeUser(user),
       token,
       refreshToken
     }
@@ -117,19 +115,14 @@ router.post('/login', loginValidation, asyncHandler(async (req: express.Request,
   
   const { email, password } = req.body;
   
-  // Find user with password field
-  const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+  // Find user
+  const user = await UserService.findByEmail(email);
   if (!user) {
     throw new UnauthorizedError('Invalid credentials');
   }
   
-  // Check if account is active
-  if (!user.isActive) {
-    throw new UnauthorizedError('Account has been deactivated');
-  }
-  
   // Verify password
-  const isPasswordValid = await user.comparePassword(password);
+  const isPasswordValid = await UserService.verifyPassword(password, user.passwordHash);
   if (!isPasswordValid) {
     logger.warn('Failed login attempt', {
       email: user.email,
@@ -140,15 +133,14 @@ router.post('/login', loginValidation, asyncHandler(async (req: express.Request,
   }
   
   // Update last login
-  user.lastLogin = new Date();
-  await user.save();
+  await UserService.updateLastLogin(user.id);
   
   // Generate tokens
   const token = generateToken(user);
   const refreshToken = generateRefreshToken(user);
   
   logger.info('User logged in successfully', {
-    userId: user._id,
+    userId: user.id,
     email: user.email,
     ip: req.ip
   });
@@ -157,7 +149,7 @@ router.post('/login', loginValidation, asyncHandler(async (req: express.Request,
     success: true,
     message: 'Login successful',
     data: {
-      user: user.toJSON(),
+      user: UserService.sanitizeUser(user),
       token,
       refreshToken
     }
@@ -176,9 +168,9 @@ router.post('/refresh', asyncHandler(async (req: express.Request, res: express.R
   
   try {
     const decoded = verifyRefreshToken(refreshToken);
-    const user = await User.findById(decoded.userId);
+    const user = await UserService.findById(decoded.userId);
     
-    if (!user || !user.isActive) {
+    if (!user) {
       throw new UnauthorizedError('Invalid refresh token');
     }
     
@@ -256,7 +248,7 @@ router.put('/profile', [
     success: true,
     message: 'Profile updated successfully',
     data: {
-      user: user.toJSON()
+      user: UserService.sanitizeUser(user)
     }
   });
 }));

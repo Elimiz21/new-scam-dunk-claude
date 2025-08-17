@@ -4,15 +4,17 @@
 
 ### Prerequisites
 1. Create a free account at [Render.com](https://render.com)
-2. Create a free MongoDB Atlas cluster at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Use your existing Supabase project (already connected to this codebase)
 
-### MongoDB Atlas Setup
-1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a free M0 cluster
-3. Choose a cloud provider and region close to your Render deployment (Oregon/US-West)
-4. Create a database user with password
-5. Add `0.0.0.0/0` to IP Whitelist (for Render access)
-6. Get your connection string: `mongodb+srv://<username>:<password>@cluster.xxxxx.mongodb.net/scamdunk?retryWrites=true&w=majority`
+### Supabase Setup
+Your Supabase project is already configured! You just need to get the connection details:
+
+1. Go to your [Supabase Dashboard](https://app.supabase.com)
+2. Select your project
+3. Go to Settings → Database
+4. Copy the **Connection string** under "Connection parameters"
+   - It looks like: `postgresql://postgres:[YOUR-PASSWORD]@db.xxxxxxxxxxxxx.supabase.co:5432/postgres`
+5. Also get your **Project URL** and **Anon Key** from Settings → API
 
 ### Render Deployment Steps
 
@@ -37,7 +39,9 @@
    ```
    NODE_ENV=production
    PORT=3001
-   DATABASE_URL=<your-mongodb-atlas-connection-string>
+   DATABASE_URL=<your-supabase-connection-string>
+   SUPABASE_URL=<your-supabase-project-url>
+   SUPABASE_ANON_KEY=<your-supabase-anon-key>
    JWT_SECRET=<generate-a-secure-random-string>
    JWT_EXPIRES_IN=7d
    REFRESH_TOKEN_EXPIRES_IN=30d

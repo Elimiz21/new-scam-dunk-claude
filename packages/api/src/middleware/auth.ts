@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User, { IUser } from '../models/User';
+import { UserService } from '../services/UserService';
+import { User } from '@prisma/client';
 import { logger } from '../index';
 
 interface AuthRequest extends Request {
-  user?: Omit<IUser, 'password'>;
+  user?: Omit<User, 'passwordHash'>;
 }
 
 interface JWTPayload {
@@ -67,7 +68,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     }
     
     // Find the user
-    const user = await User.findById(decoded.userId).select('+password');
+    const user = await UserService.findById(decoded.userId);
     if (!user) {
       return res.status(401).json({
         error: 'User not found',
@@ -75,25 +76,14 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
       });
     }
     
-    // Check if user is active
-    if (!user.isActive) {
-      return res.status(401).json({
-        error: 'Account deactivated',
-        code: 'ACCOUNT_DEACTIVATED'
-      });
-    }
-    
     // Update last login if it's been more than 1 hour
     const now = new Date();
-    if (!user.lastLogin || (now.getTime() - user.lastLogin.getTime()) > 3600000) {
-      user.lastLogin = now;
-      await user.save();
+    if (!user.lastLoginAt || (now.getTime() - user.lastLoginAt.getTime()) > 3600000) {
+      await UserService.updateLastLogin(user.id);
     }
     
     // Attach user to request (without password)
-    const userWithoutPassword = user.toJSON();
-    const { password, ...userDataWithoutPassword } = userWithoutPassword;
-    req.user = userDataWithoutPassword;
+    req.user = UserService.sanitizeUser(user);
     
     next();
   } catch (error) {
@@ -128,12 +118,10 @@ export const optionalAuthMiddleware = async (req: AuthRequest, res: Response, ne
     
     try {
       const decoded = jwt.verify(token, jwtSecret) as JWTPayload;
-      const user = await User.findById(decoded.userId);
+      const user = await UserService.findById(decoded.userId);
       
-      if (user && user.isActive) {
-        const userWithoutPassword = user.toJSON();
-        const { password, ...userDataWithoutPassword } = userWithoutPassword;
-        req.user = userDataWithoutPassword;
+      if (user) {
+        req.user = UserService.sanitizeUser(user);
       }
     } catch (jwtError) {
       // Ignore JWT errors for optional auth
@@ -250,16 +238,16 @@ export const checkApiLimits = (req: AuthRequest, res: Response, next: NextFuncti
   next();
 };
 
-export const generateToken = (user: IUser): string => {
+export const generateToken = (user: User): string => {
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) {
     throw new Error('JWT_SECRET not configured');
   }
   
   const payload: Omit<JWTPayload, 'iat' | 'exp'> = {
-    userId: user._id,
+    userId: user.id,
     email: user.email,
-    role: user.role
+    role: user.role.toString()
   };
   
   return jwt.sign(payload, jwtSecret, {
@@ -267,14 +255,14 @@ export const generateToken = (user: IUser): string => {
   });
 };
 
-export const generateRefreshToken = (user: IUser): string => {
+export const generateRefreshToken = (user: User): string => {
   const jwtSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
   if (!jwtSecret) {
     throw new Error('JWT_REFRESH_SECRET not configured');
   }
   
   const payload = {
-    userId: user._id,
+    userId: user.id,
     type: 'refresh'
   };
   
