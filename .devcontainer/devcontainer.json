@@ -1,18 +1,59 @@
 {
-  "name": "Alpine Dev Container",
-  "image": "mcr.microsoft.com/devcontainers/base:alpine",
-  "remoteUser": "vscode",
-  "features": {},
-  "settings": {
-    "terminal.integrated.shell.linux": "/bin/sh"
+  "name": "Scam Dunk Development",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {}
   },
-  "mounts": [],
-  "postCreateCommand": "",
-  "postStartCommand": "",
+
   "customizations": {
     "vscode": {
-      "settings": {},
-      "extensions": []
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "mongodb.mongodb-vscode"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"]
+      }
     }
+  },
+
+  "forwardPorts": [3000, 3001, 3002, 27017, 6379],
+  
+  "postCreateCommand": "npm install --legacy-peer-deps && cd packages/api && npm install && cd ../web && npm install --legacy-peer-deps",
+  
+  "postStartCommand": "echo 'DevContainer ready! Run: npm run dev:all to start all services'",
+  
+  "remoteUser": "node",
+  
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+  
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined",
+    "--privileged"
+  ],
+  
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "DANGEROUSLY_SKIP_PERMISSIONS": "true",
+    "NEXT_PUBLIC_API_URL": "http://localhost:3001/api",
+    "NEXT_PUBLIC_WS_URL": "ws://localhost:3001",
+    "DATABASE_URL": "mongodb://mongodb:27017/scamdunk",
+    "REDIS_URL": "redis://redis:6379"
   }
 }

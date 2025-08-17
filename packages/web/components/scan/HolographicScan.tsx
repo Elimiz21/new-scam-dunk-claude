@@ -117,49 +117,78 @@ export function HolographicScan() {
     })));
 
     try {
-      // Simulate running each test
-      for (let i = 0; i < enabledTests.length; i++) {
-        const test = enabledTests[i];
-        
-        // Update test status to running
-        setScanTests(prev => prev.map(t => 
-          t.id === test.id ? { ...t, status: 'running' } : t
-        ));
-
-        // Simulate progress
-        for (let progress = 0; progress <= 100; progress += 20) {
-          await new Promise(resolve => setTimeout(resolve, 200));
-          setScanTests(prev => prev.map(t => 
-            t.id === test.id ? { ...t, progress } : t
-          ));
-          setOverallProgress(((i * 100) + progress) / enabledTests.length);
+      // Prepare data for comprehensive scan
+      const scanData = {
+        contacts: inputData.contacts ? inputData.contacts.split('\n').map(line => {
+          const parts = line.trim().split(',');
+          return {
+            name: parts[0]?.trim(),
+            phone: parts[1]?.trim(),
+            email: parts[2]?.trim()
+          };
+        }).filter(c => c.name || c.phone || c.email) : [],
+        chatContent: inputData.chatContent,
+        ticker: inputData.ticker,
+        assetType: 'stock' as 'stock' | 'crypto',
+        enabledTests: {
+          contactVerification: enabledTests.some(t => t.id === 'contact'),
+          chatAnalysis: enabledTests.some(t => t.id === 'chat'),
+          tradingAnalysis: enabledTests.some(t => t.id === 'trading'),
+          veracityCheck: enabledTests.some(t => t.id === 'veracity')
         }
+      };
 
-        // Mark test as completed
-        setScanTests(prev => prev.map(t => 
-          t.id === test.id ? { 
-            ...t, 
-            status: 'completed',
-            progress: 100,
-            result: { riskScore: Math.floor(Math.random() * 50) + 10 }
-          } : t
-        ));
-      }
+      // Run real comprehensive scan using the service
+      const results = await detectionService.runComprehensiveScan(scanData);
+
+      // Update test results
+      setScanTests(prev => prev.map(test => {
+        let result = null;
+        let status: 'idle' | 'running' | 'completed' | 'error' = 'idle';
+        
+        if (test.id === 'contact' && results.contactVerification) {
+          result = results.contactVerification;
+          status = 'completed';
+        } else if (test.id === 'chat' && results.chatAnalysis) {
+          result = results.chatAnalysis;
+          status = 'completed';
+        } else if (test.id === 'trading' && results.tradingAnalysis) {
+          result = results.tradingAnalysis;
+          status = 'completed';
+        } else if (test.id === 'veracity' && results.veracityCheck) {
+          result = results.veracityCheck;
+          status = 'completed';
+        }
+        
+        return {
+          ...test,
+          status: test.enabled ? status : 'idle',
+          progress: test.enabled ? 100 : 0,
+          result
+        };
+      }));
 
       setOverallProgress(100);
       setScanComplete(true);
-      setOverallRiskScore(35); // Mock overall score
+      setOverallRiskScore(results.overallRiskScore || 0);
 
       toast({
         title: 'Scan Complete',
         description: 'All selected tests have been completed successfully.',
       });
     } catch (error) {
+      console.error('Scan error:', error);
       toast({
         title: 'Scan Failed',
         description: 'An error occurred during the scan. Please try again.',
         variant: 'destructive',
       });
+      
+      // Update test statuses to error
+      setScanTests(prev => prev.map(test => ({
+        ...test,
+        status: test.enabled ? 'error' : 'idle'
+      })));
     } finally {
       setIsScanning(false);
     }

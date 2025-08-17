@@ -1,27 +1,32 @@
-FROM mcr.microsoft.com/devcontainers/typescript-node:1-18-bullseye
+FROM mcr.microsoft.com/devcontainers/typescript-node:18-bullseye
 
-# Install Python and additional tools
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-        python3.11 \
-        python3-pip \
-        python3.11-venv \
-        postgresql-client \
-        redis-tools \
-        curl \
-        wget \
-        git \
-    && apt-get autoremove -y && apt-get clean -y
+# Install additional tools
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    wget \
+    vim \
+    build-essential \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install global npm packages
-RUN npm install -g turbo@latest @nestjs/cli@latest
+RUN npm install -g \
+    nodemon \
+    ts-node \
+    typescript \
+    concurrently \
+    pm2
 
-# Create Python virtual environment
-RUN python3.11 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Set working directory
+# Create workspace directory
 WORKDIR /workspace
 
-# Switch to vscode user
-USER vscode
+# Set up permissions workaround for development
+ENV DANGEROUSLY_SKIP_PERMISSIONS=true
+
+# Expose ports
+EXPOSE 3000 3001 3002 27017 6379
+
+# Set node user
+USER node
