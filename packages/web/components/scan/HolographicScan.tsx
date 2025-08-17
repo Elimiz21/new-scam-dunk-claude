@@ -209,6 +209,15 @@ export function HolographicScan() {
                     : 'border-gray-700 bg-gray-800/30'
                 }`}
                 onClick={() => toggleTest(test.id)}
+                role="checkbox"
+                aria-checked={test.enabled}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleTest(test.id);
+                  }
+                }}
               >
                 <div className="flex items-start gap-3">
                   <div className="relative">
