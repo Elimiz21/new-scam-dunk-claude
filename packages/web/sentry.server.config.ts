@@ -26,12 +26,14 @@ if (SENTRY_DSN) {
       // Filter sensitive data
       if (event.request) {
         if (event.request.cookies) {
-          event.request.cookies = '[Filtered]';
+          event.request.cookies = {};
         }
         if (event.request.headers) {
-          delete event.request.headers['authorization'];
-          delete event.request.headers['cookie'];
-          delete event.request.headers['x-api-key'];
+          const headers = { ...event.request.headers };
+          delete headers['authorization'];
+          delete headers['cookie'];
+          delete headers['x-api-key'];
+          event.request.headers = headers;
         }
       }
       

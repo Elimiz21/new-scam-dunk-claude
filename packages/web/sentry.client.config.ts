@@ -35,11 +35,13 @@ if (SENTRY_DSN) {
       // Filter out sensitive data
       if (event.request) {
         if (event.request.cookies) {
-          event.request.cookies = '[Filtered]';
+          event.request.cookies = {};
         }
         if (event.request.headers) {
-          delete event.request.headers['Authorization'];
-          delete event.request.headers['Cookie'];
+          const headers = { ...event.request.headers };
+          delete headers['Authorization'];
+          delete headers['Cookie'];
+          event.request.headers = headers;
         }
       }
       
@@ -56,18 +58,6 @@ if (SENTRY_DSN) {
     },
     
     // Integrations
-    integrations: [
-      new Sentry.BrowserTracing({
-        tracePropagationTargets: [
-          'localhost',
-          'scam-dunk-production.vercel.app',
-          /^\//,
-        ],
-      }),
-      new Sentry.Replay({
-        maskAllText: false,
-        blockAllMedia: false,
-      }),
-    ],
+    integrations: [],
   });
 }
