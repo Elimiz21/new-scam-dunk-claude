@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Shield, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { useAuthStore } from '@/lib/stores/auth-store'
 
 // Consistent inline styles matching register page
 const styles = {
@@ -204,14 +205,34 @@ export default function LoginPage() {
     setLoading(true)
     
     try {
-      // Simulate successful login (no backend needed)
+      // For demo purposes, simulate successful login without backend
       await new Promise(resolve => setTimeout(resolve, 800)) // Simulate network delay
       
-      // For demo purposes, accept any email/password combination
-      console.log('Login successful for:', formData.email)
+      // Create mock user data
+      const mockUser = {
+        id: '1',
+        email: formData.email,
+        name: formData.email.split('@')[0], // Use email prefix as name
+        role: 'user',
+        preferences: {
+          theme: 'dark' as const,
+          notifications: true,
+          twoFactorEnabled: false
+        },
+        subscription: {
+          plan: 'pro' as const,
+          status: 'active' as const,
+        },
+        profile: {}
+      }
       
-      // Redirect to dashboard  
-      router.push('/dashboard')
+      // Import the auth store and set user
+      const { setUser, setToken } = useAuthStore.getState()
+      setUser(mockUser)
+      setToken('mock-jwt-token-' + Date.now())
+      
+      // Redirect to homepage  
+      router.push('/')
     } catch (err) {
       setError('Login failed. Please try again.')
     } finally {

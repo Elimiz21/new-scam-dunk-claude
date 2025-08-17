@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Shield, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { useAuthStore } from '@/lib/stores/auth-store'
 
 // Inline styles for consistent design
 const styles = {
@@ -285,18 +286,36 @@ export default function RegisterPage() {
       // Simulate successful registration (no backend needed)
       await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate network delay
       
-      // For demo purposes, accept any valid form data
-      console.log('Registration successful for:', {
-        name: formData.name,
+      // Create mock user data
+      const mockUser = {
+        id: Date.now().toString(),
         email: formData.email,
-        phone: formData.phone
-      })
+        name: formData.name,
+        role: 'user',
+        preferences: {
+          theme: 'dark' as const,
+          notifications: true,
+          twoFactorEnabled: false
+        },
+        subscription: {
+          plan: 'free' as const,
+          status: 'active' as const,
+        },
+        profile: {
+          phone: formData.phone
+        }
+      }
+      
+      // Set auth state
+      const { setUser, setToken } = useAuthStore.getState()
+      setUser(mockUser)
+      setToken('mock-jwt-token-' + Date.now())
       
       // Show success briefly before redirect
       setError('')
       
-      // Redirect to dashboard
-      router.push('/dashboard')
+      // Redirect to homepage
+      router.push('/')
     } catch (err) {
       setError('Registration failed. Please try again.')
     } finally {

@@ -1,10 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { formatRelativeTime } from '@/lib/utils'
 import { 
   Bell, 
@@ -16,7 +12,10 @@ import {
   Shield,
   Settings,
   Eye,
-  X
+  X,
+  Zap,
+  AlertCircle,
+  ChevronRight
 } from 'lucide-react'
 
 // Mock alert data
@@ -82,49 +81,66 @@ export default function AlertsPage() {
   const getAlertIcon = (type: string) => {
     switch (type) {
       case 'critical':
-        return <AlertTriangle className="h-5 w-5 text-destructive" />
+        return <AlertTriangle className="h-5 w-5" />
       case 'high':
-        return <AlertTriangle className="h-5 w-5 text-destructive" />
+        return <AlertTriangle className="h-5 w-5" />
       case 'medium':
-        return <Shield className="h-5 w-5 text-warning" />
+        return <Shield className="h-5 w-5" />
       case 'info':
-        return <Info className="h-5 w-5 text-info" />
+        return <Info className="h-5 w-5" />
       case 'low':
-        return <CheckCircle className="h-5 w-5 text-success" />
+        return <CheckCircle className="h-5 w-5" />
       default:
-        return <Bell className="h-5 w-5 text-muted-foreground" />
+        return <Bell className="h-5 w-5" />
+    }
+  }
+
+  const getAlertGradient = (type: string) => {
+    switch (type) {
+      case 'critical':
+        return 'from-holo-red via-red-600 to-holo-red'
+      case 'high':
+        return 'from-holo-amber via-amber-500 to-holo-amber-light'
+      case 'medium':
+        return 'from-holo-gray via-gray-600 to-holo-gray-light'
+      case 'info':
+        return 'from-holo-cyan via-cyan-500 to-holo-cyan-light'
+      case 'low':
+        return 'from-holo-green via-green-600 to-holo-green-light'
+      default:
+        return 'from-gray-600 via-gray-500 to-gray-400'
     }
   }
 
   const getAlertColor = (type: string) => {
     switch (type) {
       case 'critical':
-        return 'border-destructive/20 bg-destructive/5'
+        return 'border-holo-red/30 bg-holo-red/5'
       case 'high':
-        return 'border-destructive/20 bg-destructive/5'
+        return 'border-holo-amber/30 bg-holo-amber/5'
       case 'medium':
-        return 'border-warning/20 bg-warning/5'
+        return 'border-holo-gray/30 bg-holo-gray/5'
       case 'info':
-        return 'border-info/20 bg-info/5'
+        return 'border-holo-cyan/30 bg-holo-cyan/5'
       case 'low':
-        return 'border-success/20 bg-success/5'
+        return 'border-holo-green/30 bg-holo-green/5'
       default:
-        return 'border-muted/20 bg-muted/5'
+        return 'border-gray-700 bg-gray-800/30'
     }
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="destructive">Active</Badge>
+        return 'text-holo-red bg-holo-red/20 border-holo-red/50'
       case 'acknowledged':
-        return <Badge variant="warning">Acknowledged</Badge>
+        return 'text-holo-amber bg-holo-amber/20 border-holo-amber/50'
       case 'resolved':
-        return <Badge variant="success">Resolved</Badge>
+        return 'text-holo-green bg-holo-green/20 border-holo-green/50'
       case 'viewed':
-        return <Badge variant="secondary">Viewed</Badge>
+        return 'text-gray-400 bg-gray-800/50 border-gray-700'
       default:
-        return <Badge variant="secondary">Unknown</Badge>
+        return 'text-gray-400 bg-gray-800/50 border-gray-700'
     }
   }
 
@@ -132,194 +148,191 @@ export default function AlertsPage() {
   const totalAlerts = mockAlerts.length
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
-      >
-        <div>
-          <h1 className="text-2xl font-bold flex items-center">
-            <Bell className="mr-3 h-6 w-6" />
-            Security Alerts
-          </h1>
-          <p className="text-muted-foreground">
-            Real-time security notifications and threat alerts
-          </p>
-        </div>
-        <Button variant="outline">
-          <Settings className="mr-2 h-4 w-4" />
-          Alert Settings
-        </Button>
-      </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-holo-dark via-gray-900 to-black">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-holo-red/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/3 right-1/3 w-96 h-96 bg-holo-cyan/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
 
-      {/* Alert Summary */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="flex items-center p-4">
-              <div className="flex items-center justify-center w-10 h-10 bg-destructive/10 rounded-lg mr-3">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-              </div>
-              <div>
-                <div className="font-medium text-lg">{activeAlerts}</div>
-                <div className="text-sm text-muted-foreground">Active Alerts</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="flex items-center p-4">
-              <div className="flex items-center justify-center w-10 h-10 bg-info/10 rounded-lg mr-3">
-                <Bell className="h-5 w-5 text-info" />
-              </div>
-              <div>
-                <div className="font-medium text-lg">{totalAlerts}</div>
-                <div className="text-sm text-muted-foreground">Total Alerts</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="flex items-center p-4">
-              <div className="flex items-center justify-center w-10 h-10 bg-success/10 rounded-lg mr-3">
-                <Shield className="h-5 w-5 text-success" />
-              </div>
-              <div>
-                <div className="font-medium text-lg">4</div>
-                <div className="text-sm text-muted-foreground">Protected Users</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="flex items-center p-4">
-              <div className="flex items-center justify-center w-10 h-10 bg-warning/10 rounded-lg mr-3">
-                <Clock className="h-5 w-5 text-warning" />
-              </div>
-              <div>
-                <div className="font-medium text-lg">24/7</div>
-                <div className="text-sm text-muted-foreground">Monitoring</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </motion.div>
-
-      {/* Active Alerts */}
-      {activeAlerts > 0 && (
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          className="flex items-center justify-between mb-8"
         >
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              You have {activeAlerts} active security alert{activeAlerts !== 1 ? 's' : ''} requiring immediate attention.
-            </AlertDescription>
-          </Alert>
+          <div>
+            <h1 className="text-3xl font-bold flex items-center">
+              <Bell className="mr-3 h-8 w-8 text-holo-cyan" />
+              <span className="holo-text">Security Alerts</span>
+            </h1>
+            <p className="text-gray-400 mt-2">
+              Real-time security notifications and threat alerts
+            </p>
+          </div>
+          <button className="glass-card px-6 py-2 text-gray-300 border border-gray-700 hover:border-holo-cyan/50 hover:text-white transition-all flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Alert Settings
+          </button>
         </motion.div>
-      )}
 
-      {/* Alerts List */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="space-y-4"
-      >
-        {mockAlerts.map((alert, index) => (
+        {/* Alert Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {[
+            { icon: AlertTriangle, value: activeAlerts, label: 'Active Alerts', color: 'red', pulse: true },
+            { icon: Bell, value: totalAlerts, label: 'Total Alerts', color: 'cyan', pulse: false },
+            { icon: Shield, value: 4, label: 'Protected Users', color: 'green', pulse: false },
+            { icon: Clock, value: '24/7', label: 'Monitoring', color: 'amber', pulse: false }
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 + index * 0.05 }}
+              className="glass-card p-6 relative overflow-hidden group"
+            >
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl bg-holo-${stat.color}/20 relative`}>
+                  {stat.pulse && (
+                    <div className="absolute inset-0 bg-holo-red/40 rounded-xl animate-ping" />
+                  )}
+                  <stat.icon className={`h-6 w-6 text-holo-${stat.color} relative z-10`} />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-white">{stat.value}</div>
+                  <div className="text-sm text-gray-400">{stat.label}</div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Active Alerts Warning */}
+        {activeAlerts > 0 && (
           <motion.div
-            key={alert.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="glass-card p-4 border-2 border-holo-red/50 bg-holo-red/10 mb-6"
           >
-            <Card className={`${getAlertColor(alert.type)} hover:shadow-md transition-shadow`}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  {/* Alert Content */}
-                  <div className="flex items-start space-x-4 flex-1">
-                    {/* Alert Icon */}
-                    <div className="flex-shrink-0 mt-1">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <AlertTriangle className="h-5 w-5 text-holo-red" />
+                <div className="absolute inset-0 bg-holo-red/40 blur-sm animate-pulse" />
+              </div>
+              <p className="text-white">
+                You have <span className="font-bold text-holo-red">{activeAlerts}</span> active security alert{activeAlerts !== 1 ? 's' : ''} requiring immediate attention.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Alerts List */}
+        <div className="space-y-4">
+          {mockAlerts.map((alert, index) => (
+            <motion.div
+              key={alert.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 + index * 0.1 }}
+              className={`glass-card p-6 ${getAlertColor(alert.type)} hover:shadow-xl transition-all group`}
+            >
+              <div className="flex items-start justify-between">
+                {/* Alert Content */}
+                <div className="flex items-start gap-4 flex-1">
+                  {/* Alert Icon with Gradient Background */}
+                  <div className="relative">
+                    <div className={`p-3 rounded-xl bg-gradient-to-br ${getAlertGradient(alert.type)} opacity-20`} />
+                    <div className="absolute inset-0 p-3">
                       {getAlertIcon(alert.type)}
                     </div>
+                  </div>
 
-                    {/* Alert Details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-lg">{alert.title}</h3>
-                        {getStatusBadge(alert.status)}
-                      </div>
-                      
-                      <p className="text-muted-foreground mb-3">
-                        {alert.message}
-                      </p>
-                      
-                      {/* Metadata */}
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
+                  {/* Alert Details */}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-lg text-white">{alert.title}</h3>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(alert.status)}`}>
+                        {alert.status.charAt(0).toUpperCase() + alert.status.slice(1)}
+                      </span>
+                    </div>
+                    
+                    <p className="text-gray-400 mb-4">
+                      {alert.message}
+                    </p>
+                    
+                    {/* Metadata */}
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+                      <span className="flex items-center">
+                        <Users className="h-3 w-3 mr-1" />
+                        {alert.user}
+                      </span>
+                      <span className="flex items-center">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {formatRelativeTime(alert.timestamp)}
+                      </span>
+                      {alert.scanId && (
                         <span className="flex items-center">
-                          <Users className="h-3 w-3 mr-1" />
-                          {alert.user}
+                          <Eye className="h-3 w-3 mr-1" />
+                          Scan #{alert.scanId}
                         </span>
-                        <span className="flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {formatRelativeTime(alert.timestamp)}
-                        </span>
-                        {alert.scanId && (
-                          <span className="flex items-center">
-                            <Eye className="h-3 w-3 mr-1" />
-                            Scan #{alert.scanId}
-                          </span>
-                        )}
-                      </div>
+                      )}
+                    </div>
 
-                      {/* Quick Actions */}
-                      <div className="flex flex-wrap gap-2">
-                        {alert.actions.map((action, actionIndex) => (
-                          <Button
-                            key={actionIndex}
-                            variant={actionIndex === 0 ? 'default' : 'outline'}
-                            size="sm"
-                          >
-                            {action}
-                          </Button>
-                        ))}
-                      </div>
+                    {/* Quick Actions */}
+                    <div className="flex flex-wrap gap-2">
+                      {alert.actions.map((action, actionIndex) => (
+                        <button
+                          key={actionIndex}
+                          className={`
+                            px-4 py-2 rounded-lg text-sm font-medium transition-all
+                            ${actionIndex === 0 
+                              ? 'holo-button' 
+                              : 'glass-card border border-gray-700 hover:border-holo-cyan/50 text-gray-300 hover:text-white'
+                            }
+                          `}
+                        >
+                          {action}
+                        </button>
+                      ))}
                     </div>
                   </div>
-
-                  {/* Dismiss Button */}
-                  <div className="flex-shrink-0 ml-4">
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </motion.div>
 
-      {/* Empty State */}
-      {mockAlerts.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No alerts yet</h3>
-            <p className="text-muted-foreground">
+                {/* Dismiss Button */}
+                <button className="ml-4 p-2 rounded-lg hover:bg-gray-800/50 transition-colors text-gray-500 hover:text-white">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Holographic Line Effect on Hover */}
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-holo-cyan to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {mockAlerts.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-card p-12 text-center"
+          >
+            <div className="relative inline-block mb-4">
+              <Bell className="h-16 w-16 text-gray-600" />
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-holo-green rounded-full animate-pulse" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-white">No alerts yet</h3>
+            <p className="text-gray-400">
               You'll see security alerts and notifications here when they occur.
             </p>
-          </CardContent>
-        </Card>
-      )}
+          </motion.div>
+        )}
+      </div>
     </div>
   )
 }

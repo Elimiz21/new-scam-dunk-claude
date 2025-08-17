@@ -19,6 +19,19 @@ module.exports = {
     },
     extend: {
       colors: {
+        // Holographic theme colors
+        holo: {
+          cyan: "#1FB8CD",
+          "cyan-light": "#00D4FF",
+          green: "#2E8B57",
+          "green-light": "#3FE0A0",
+          gray: "#5D878F",
+          "gray-light": "#7FA8B0",
+          amber: "#D2BA4C",
+          "amber-light": "#FFD700",
+          red: "#DB4545",
+          dark: "#13343B",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -99,6 +112,23 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "shimmer": "shimmer 2s linear infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "holo-shift": "holo-shift 10s ease infinite",
+      },
+      keyframes: {
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(200%)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.05)" },
+        },
+        "holo-shift": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
       },
     },
   },

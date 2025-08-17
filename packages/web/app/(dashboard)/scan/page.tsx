@@ -1,7 +1,7 @@
 'use client'
 
-import { ComprehensiveScan } from '@/components/scan/ComprehensiveScan'
+import { HolographicScan } from '@/components/scan/HolographicScan'
 
 export default function ScanPage() {
-  return <ComprehensiveScan />
+  return <HolographicScan />
 }

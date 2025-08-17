@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-labelledby="trading-activity-title">
+  <title id="trading-activity-title">Trading Activity Analysis</title>
+  <defs>
+    <linearGradient id="trading-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5D878F;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7FA8B0;stop-opacity:1" />
+    </linearGradient>
+    <filter id="trading-glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background hexagon -->
+  <polygon points="32,8 52,20 52,44 32,56 12,44 12,20" fill="url(#trading-gradient)" opacity="0.1" />
+  <polygon points="32,8 52,20 52,44 32,56 12,44 12,20" fill="none" stroke="url(#trading-gradient)" stroke-width="2" filter="url(#trading-glow)" />
+  
+  <!-- Trading chart -->
+  <g transform="translate(32, 32)">
+    <!-- Grid lines -->
+    <line x1="-16" y1="0" x2="16" y2="0" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+    <line x1="0" y1="-16" x2="0" y2="16" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+    
+    <!-- Candlestick bars -->
+    <rect x="-14" y="-8" width="4" height="12" fill="#DB4545" filter="url(#trading-glow)" />
+    <rect x="-8" y="-12" width="4" height="16" fill="#2E8B57" filter="url(#trading-glow)" />
+    <rect x="-2" y="-6" width="4" height="14" fill="#DB4545" filter="url(#trading-glow)" />
+    <rect x="4" y="-10" width="4" height="8" fill="#2E8B57" filter="url(#trading-glow)" />
+    <rect x="10" y="-4" width="4" height="12" fill="#D2BA4C" filter="url(#trading-glow)">
+      <animate attributeName="fill" values="#D2BA4C;#DB4545;#D2BA4C" dur="2s" repeatCount="indefinite" />
+    </rect>
+    
+    <!-- Trend line -->
+    <path d="M -14 4 L -8 -4 L -2 1 L 4 -6 L 10 2 L 14 -2" stroke="url(#trading-gradient)" stroke-width="2" fill="none" filter="url(#trading-glow)">
+      <animate attributeName="stroke-dasharray" values="0 100;100 0" dur="2s" repeatCount="indefinite" />
+    </path>
+  </g>
+</svg>

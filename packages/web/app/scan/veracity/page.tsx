@@ -13,13 +13,7 @@ import {
   Building2,
   Globe
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { detectionService } from '@/services/detection.service';
 import Link from 'next/link';
@@ -99,113 +93,160 @@ export default function VeracityCheckPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Link href="/scan">
-        <Button variant="ghost" className="mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-holo-dark via-gray-900 to-black">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-holo-amber/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-holo-amber/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+      <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+      <Link href="/scan" className="inline-flex items-center text-gray-400 hover:text-holo-cyan transition-colors mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to All Scans
-        </Button>
+          Back to All Tests
       </Link>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Stock/Crypto Veracity Check</h1>
-        <p className="text-muted-foreground">
-          Verify existence and legitimacy of stocks and cryptocurrencies against regulatory and law enforcement databases
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center gap-4 mb-6">
+          <div className="relative">
+            <Image
+              src="/icons/veracity-check.svg"
+              alt="Veracity Check"
+              width={64}
+              height={64}
+              className="drop-shadow-lg"
+            />
+            <div className="absolute inset-0 rounded-full bg-holo-amber/20 blur-xl animate-pulse" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">
+              <span className="holo-text">Stock/Crypto Veracity Check</span>
+            </h1>
+            <p className="text-gray-400 mt-2">
+              Verify existence and legitimacy of stocks and cryptocurrencies against regulatory and law enforcement databases
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Enter Asset Details</CardTitle>
-          <CardDescription>
-            Provide the ticker symbol and asset type to verify its legitimacy
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="glass-card p-8 mb-6"
+      >
+        <h2 className="text-xl font-bold text-white mb-6">Enter Asset Details</h2>
+        <p className="text-gray-400 mb-6">
+          Provide the ticker symbol and asset type to verify its legitimacy
+        </p>
+        
+        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="ticker">Ticker Symbol</Label>
-              <Input
+              <label htmlFor="ticker" className="block text-sm font-medium text-gray-300 mb-2">
+                <Shield className="w-4 h-4 inline mr-2 text-holo-amber" />
+                Ticker Symbol
+              </label>
+              <input
                 id="ticker"
+                type="text"
                 placeholder="e.g., AAPL, BTC, TSLA"
                 value={inputData.ticker}
                 onChange={(e) => setInputData(prev => ({ ...prev, ticker: e.target.value.toUpperCase() }))}
                 disabled={isScanning}
+                className="w-full glass-input"
               />
             </div>
             <div>
-              <Label htmlFor="assetType">Asset Type</Label>
-              <Select
+              <label htmlFor="assetType" className="block text-sm font-medium text-gray-300 mb-2">
+                <Building2 className="w-4 h-4 inline mr-2 text-holo-amber" />
+                Asset Type
+              </label>
+              <select
+                id="assetType"
                 value={inputData.assetType}
-                onValueChange={(value: 'stock' | 'crypto') => setInputData(prev => ({ ...prev, assetType: value }))}
+                onChange={(e) => setInputData(prev => ({ ...prev, assetType: e.target.value as 'stock' | 'crypto' }))}
                 disabled={isScanning}
+                className="w-full glass-input"
               >
-                <SelectTrigger id="assetType">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="stock">Stock</SelectItem>
-                  <SelectItem value="crypto">Cryptocurrency</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="stock">Stock</option>
+                <option value="crypto">Cryptocurrency</option>
+              </select>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="exchange">Exchange Name (Optional)</Label>
-            <Input
+            <label htmlFor="exchange" className="block text-sm font-medium text-gray-300 mb-2">
+              <Globe className="w-4 h-4 inline mr-2 text-holo-amber" />
+              Exchange Name (Optional)
+            </label>
+            <input
               id="exchange"
+              type="text"
               placeholder="e.g., NYSE, NASDAQ, Binance"
               value={inputData.exchangeName}
               onChange={(e) => setInputData(prev => ({ ...prev, exchangeName: e.target.value }))}
               disabled={isScanning}
+              className="w-full glass-input"
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               Specify the exchange if you want to verify listing on a specific platform
             </p>
           </div>
 
-          <Alert>
-            <Shield className="h-4 w-4" />
-            <AlertTitle>Verification Scope</AlertTitle>
-            <AlertDescription>
-              We check SEC EDGAR, FINRA, CoinGecko, law enforcement databases, and regulatory compliance records.
-            </AlertDescription>
-          </Alert>
+          <div className="p-4 rounded-xl bg-holo-cyan/10 border border-holo-cyan/30">
+            <div className="flex items-start gap-3">
+              <Shield className="h-5 w-5 text-holo-cyan flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="font-medium text-holo-cyan mb-1">Verification Scope</div>
+                <div className="text-sm text-gray-400">
+                  We check SEC EDGAR, FINRA, CoinGecko, law enforcement databases, and regulatory compliance records.
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <Button 
+          <button 
             onClick={handleScan} 
-            disabled={isScanning}
-            className="w-full"
-            size="lg"
+            disabled={isScanning || !inputData.ticker.trim()}
+            className="w-full holo-button text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isScanning ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <div className="holo-spinner w-5 h-5 mr-2 inline-block" />
                 Verifying Asset...
               </>
             ) : (
               <>
-                <Search className="mr-2 h-4 w-4" />
+                <Search className="mr-2 h-5 w-5" />
                 Verify Asset Legitimacy
               </>
             )}
-          </Button>
-        </CardContent>
-      </Card>
+          </button>
+        </div>
+      </motion.div>
 
       {isScanning && (
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Verification Progress</span>
-                <span>{progress}%</span>
-              </div>
-              <Progress value={progress} />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass-card p-6 mb-6"
+        >
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-300">Verification Progress</span>
+              <span className="text-holo-amber">{progress}%</span>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-full bg-gray-700 rounded-full h-3">
+              <div 
+                className="h-3 rounded-full bg-gradient-to-r from-holo-amber to-holo-amber-light transition-all animate-pulse"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </motion.div>
       )}
 
       {scanComplete && scanResult && (
@@ -214,16 +255,14 @@ export default function VeracityCheckPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Verification Results
-                <span className={`px-3 py-1 rounded-full text-white text-sm ${getRiskBadge(scanResult.riskScore || 0).color}`}>
-                  {getRiskBadge(scanResult.riskScore || 0).text}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <div className="glass-card p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Verification Results</h2>
+              <span className={`px-4 py-2 rounded-full text-white text-sm font-medium ${getRiskBadge(scanResult.riskScore || 0).color}`}>
+                {getRiskBadge(scanResult.riskScore || 0).text}
+              </span>
+            </div>
+            <div className="space-y-6">
               {/* Asset Existence */}
               <div>
                 <h3 className="font-semibold mb-3">Asset Verification</h3>
@@ -283,10 +322,10 @@ export default function VeracityCheckPage() {
                   <h3 className="font-semibold mb-3">Regulatory Compliance</h3>
                   <div className="space-y-3">
                     {scanResult.regulatoryCompliance.sec && (
-                      <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">SEC Registration</span>
-                          <span className={`text-sm ${scanResult.regulatoryCompliance.sec.registered ? 'text-green-600' : 'text-gray-400'}`}>
+                          <span className="text-sm font-medium text-white">SEC Registration</span>
+                          <span className={`text-sm ${scanResult.regulatoryCompliance.sec.registered ? 'text-holo-green' : 'text-gray-500'}`}>
                             {scanResult.regulatoryCompliance.sec.registered ? 'Registered' : 'Not Registered'}
                           </span>
                         </div>
@@ -298,10 +337,10 @@ export default function VeracityCheckPage() {
                       </div>
                     )}
                     {scanResult.regulatoryCompliance.finra && (
-                      <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">FINRA Status</span>
-                          <span className={`text-sm ${scanResult.regulatoryCompliance.finra.valid ? 'text-green-600' : 'text-gray-400'}`}>
+                          <span className="text-sm font-medium text-white">FINRA Status</span>
+                          <span className={`text-sm ${scanResult.regulatoryCompliance.finra.valid ? 'text-holo-green' : 'text-gray-500'}`}>
                             {scanResult.regulatoryCompliance.finra.valid ? 'Valid' : 'Not Found'}
                           </span>
                         </div>
@@ -320,7 +359,7 @@ export default function VeracityCheckPage() {
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {scanResult.exchanges.map((exchange: string, index: number) => (
-                      <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                      <span key={index} className="px-3 py-1 bg-holo-cyan/20 text-holo-cyan rounded-full text-sm font-medium">
                         {exchange}
                       </span>
                     ))}
@@ -330,39 +369,41 @@ export default function VeracityCheckPage() {
 
               {/* Law Enforcement Alerts */}
               {scanResult.lawEnforcementAlerts && scanResult.lawEnforcementAlerts.length > 0 && (
-                <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Law Enforcement Alerts</AlertTitle>
-                  <AlertDescription>
-                    <ul className="list-disc list-inside mt-2">
-                      {scanResult.lawEnforcementAlerts.map((alert: any, index: number) => (
-                        <li key={index} className="text-sm">
-                          {alert.source}: {alert.description}
-                        </li>
-                      ))}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
+                <div className="p-4 rounded-xl bg-holo-red/10 border border-holo-red/30">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-holo-red flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="font-medium text-holo-red mb-2">Law Enforcement Alerts</div>
+                      <ul className="space-y-1">
+                        {scanResult.lawEnforcementAlerts.map((alert: any, index: number) => (
+                          <li key={index} className="text-sm text-gray-400">
+                            <span className="text-holo-amber">{alert.source}:</span> {alert.description}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Smart Contract Audit (for crypto) */}
               {scanResult.smartContractAudit && (
                 <div>
                   <h3 className="font-semibold mb-3">Smart Contract Audit</h3>
-                  <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="p-4 rounded-xl bg-gray-800/30 border border-gray-700">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm">Audit Status</span>
-                      <span className={`text-sm font-medium ${scanResult.smartContractAudit.audited ? 'text-green-600' : 'text-yellow-600'}`}>
+                      <span className="text-sm text-white">Audit Status</span>
+                      <span className={`text-sm font-medium ${scanResult.smartContractAudit.audited ? 'text-holo-green' : 'text-holo-amber'}`}>
                         {scanResult.smartContractAudit.audited ? 'Audited' : 'Not Audited'}
                       </span>
                     </div>
                     {scanResult.smartContractAudit.auditor && (
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs text-gray-400">
                         Auditor: {scanResult.smartContractAudit.auditor}
                       </div>
                     )}
                     {scanResult.smartContractAudit.issues && (
-                      <div className="text-xs text-red-600 mt-1">
+                      <div className="text-xs text-holo-red mt-1">
                         Issues Found: {scanResult.smartContractAudit.issues}
                       </div>
                     )}
@@ -371,17 +412,17 @@ export default function VeracityCheckPage() {
               )}
 
               {/* Summary */}
-              <div className="mt-6 p-4 bg-muted rounded-lg">
-                <h4 className="font-semibold mb-2">Summary</h4>
-                <p className="text-sm">
-                  Risk Score: {scanResult.riskScore || 0}/100
+              <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700">
+                <h4 className="font-semibold text-white mb-3">Summary</h4>
+                <p className="text-sm text-gray-300">
+                  Risk Score: <span className="text-holo-amber font-bold">{scanResult.riskScore || 0}/100</span>
                 </p>
                 {scanResult.recommendation && (
-                  <p className="text-sm mt-2">{scanResult.recommendation}</p>
+                  <p className="text-sm text-gray-400 mt-3">{scanResult.recommendation}</p>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </motion.div>
       )}
     </div>

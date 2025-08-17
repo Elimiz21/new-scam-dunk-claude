@@ -1,0 +1,319 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Holographic Color Palette */
+:root {
+  --holo-cyan: #1FB8CD;
+  --holo-cyan-light: #00D4FF;
+  --holo-green: #2E8B57;
+  --holo-green-light: #3FE0A0;
+  --holo-gray: #5D878F;
+  --holo-gray-light: #7FA8B0;
+  --holo-amber: #D2BA4C;
+  --holo-amber-light: #FFD700;
+  --holo-red: #DB4545;
+  --holo-dark: #13343B;
+  
+  /* Glass effect colors */
+  --glass-white: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: rgba(0, 0, 0, 0.1);
+  
+  /* Glow effects */
+  --glow-cyan: 0 0 20px rgba(31, 184, 205, 0.5);
+  --glow-green: 0 0 20px rgba(46, 139, 87, 0.5);
+  --glow-amber: 0 0 20px rgba(210, 186, 76, 0.5);
+  --glow-white: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 19, 52, 59;
+    --background-end-rgb: 13, 34, 43;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    135deg,
+    rgb(var(--background-start-rgb)),
+    rgb(var(--background-end-rgb))
+  );
+  min-height: 100vh;
+}
+
+/* Holographic gradient animation */
+@keyframes holo-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.holo-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--holo-cyan),
+    var(--holo-green),
+    var(--holo-gray),
+    var(--holo-amber)
+  );
+  background-size: 400% 400%;
+  animation: holo-shift 10s ease infinite;
+}
+
+/* Glassmorphism card effect */
+.glass-card {
+  background: var(--glass-white);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: 
+    0 8px 32px 0 var(--glass-shadow),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-card:hover {
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 184, 205, 0.2),
+    var(--glow-cyan),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Holographic button styles */
+.holo-button {
+  position: relative;
+  background: linear-gradient(135deg, var(--holo-cyan), var(--holo-green));
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.holo-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.holo-button:hover::before {
+  left: 100%;
+}
+
+.holo-button:hover {
+  box-shadow: var(--glow-cyan);
+  transform: scale(1.05);
+}
+
+/* Alert styles with amber accent */
+.alert-amber {
+  background: linear-gradient(135deg, var(--holo-amber), var(--holo-amber-light));
+  border: 1px solid var(--holo-amber-light);
+  box-shadow: var(--glow-amber);
+}
+
+.alert-red {
+  background: linear-gradient(135deg, var(--holo-red), #FF6B6B);
+  border: 1px solid #FF6B6B;
+  box-shadow: 0 0 20px rgba(219, 69, 69, 0.5);
+}
+
+/* Focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--holo-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Holographic text effect */
+.holo-text {
+  background: linear-gradient(
+    135deg,
+    var(--holo-cyan),
+    var(--holo-green),
+    var(--holo-cyan)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 200%;
+  animation: holo-shift 3s ease infinite;
+}
+
+/* Loading spinner with holographic effect */
+.holo-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--glass-border);
+  border-top: 3px solid var(--holo-cyan);
+  border-right: 3px solid var(--holo-green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow: var(--glow-cyan);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Badge styles */
+.badge-verified {
+  background: linear-gradient(135deg, var(--holo-green), var(--holo-green-light));
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: var(--glow-green);
+}
+
+/* Progress bar with holographic effect */
+.holo-progress {
+  background: var(--glass-white);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.holo-progress-bar {
+  background: linear-gradient(
+    90deg,
+    var(--holo-cyan),
+    var(--holo-green),
+    var(--holo-cyan)
+  );
+  background-size: 200% 100%;
+  animation: holo-shift 2s ease infinite;
+  height: 100%;
+  border-radius: 12px;
+  box-shadow: var(--glow-cyan);
+}
+
+/* Input fields with glass effect */
+.glass-input {
+  background: var(--glass-white);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+  border-color: var(--holo-cyan);
+  box-shadow: 0 0 0 3px rgba(31, 184, 205, 0.1), var(--glow-cyan);
+  outline: none;
+}
+
+/* Navigation with glass effect */
+.glass-nav {
+  background: rgba(19, 52, 59, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 6px -1px var(--glass-shadow);
+}
+
+/* Card hover effects */
+.scan-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(31, 184, 205, 0.1) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.scan-card:hover::after {
+  opacity: 1;
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease infinite;
+}
+
+/* Accessibility improvements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--glass-white);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--holo-cyan), var(--holo-green));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--holo-cyan-light), var(--holo-green-light));
+}

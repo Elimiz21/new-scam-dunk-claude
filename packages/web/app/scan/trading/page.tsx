@@ -13,13 +13,7 @@ import {
   Activity,
   DollarSign
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { detectionService } from '@/services/detection.service';
 import Link from 'next/link';
@@ -92,118 +86,160 @@ export default function TradingAnalysisPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Link href="/scan">
-        <Button variant="ghost" className="mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-holo-dark via-gray-900 to-black">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 right-1/3 w-96 h-96 bg-holo-gray/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-holo-gray/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+      <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+      <Link href="/scan" className="inline-flex items-center text-gray-400 hover:text-holo-cyan transition-colors mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to All Scans
-        </Button>
+          Back to All Tests
       </Link>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Trading Activity Analysis</h1>
-        <p className="text-muted-foreground">
-          Identify irregular trading patterns, pump-and-dump schemes, and market manipulation
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center gap-4 mb-6">
+          <div className="relative">
+            <Image
+              src="/icons/trading-activity.svg"
+              alt="Trading Analysis"
+              width={64}
+              height={64}
+              className="drop-shadow-lg"
+            />
+            <div className="absolute inset-0 rounded-full bg-holo-gray/20 blur-xl animate-pulse" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">
+              <span className="holo-text">Trading Activity Analysis</span>
+            </h1>
+            <p className="text-gray-400 mt-2">
+              Identify irregular trading patterns, pump-and-dump schemes, and market manipulation
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Enter Asset Information</CardTitle>
-          <CardDescription>
-            Provide the ticker symbol and select the asset type for analysis
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="glass-card p-8 mb-6"
+      >
+        <h2 className="text-xl font-bold text-white mb-6">Enter Asset Information</h2>
+        <p className="text-gray-400 mb-6">
+          Provide the ticker symbol and select the asset type for analysis
+        </p>
+        
+        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="ticker">Ticker Symbol</Label>
-              <Input
+              <label htmlFor="ticker" className="block text-sm font-medium text-gray-300 mb-2">
+                <DollarSign className="w-4 h-4 inline mr-2 text-holo-gray" />
+                Ticker Symbol
+              </label>
+              <input
                 id="ticker"
+                type="text"
                 placeholder="e.g., AAPL, BTC, ETH"
                 value={inputData.ticker}
                 onChange={(e) => setInputData(prev => ({ ...prev, ticker: e.target.value.toUpperCase() }))}
                 disabled={isScanning}
+                className="w-full glass-input"
               />
             </div>
             <div>
-              <Label htmlFor="assetType">Asset Type</Label>
-              <Select
+              <label htmlFor="assetType" className="block text-sm font-medium text-gray-300 mb-2">
+                <Activity className="w-4 h-4 inline mr-2 text-holo-gray" />
+                Asset Type
+              </label>
+              <select
+                id="assetType"
                 value={inputData.assetType}
-                onValueChange={(value: 'stock' | 'crypto') => setInputData(prev => ({ ...prev, assetType: value }))}
+                onChange={(e) => setInputData(prev => ({ ...prev, assetType: e.target.value as 'stock' | 'crypto' }))}
                 disabled={isScanning}
+                className="w-full glass-input"
               >
-                <SelectTrigger id="assetType">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="stock">Stock</SelectItem>
-                  <SelectItem value="crypto">Cryptocurrency</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="stock">Stock</option>
+                <option value="crypto">Cryptocurrency</option>
+              </select>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="timeframe">Analysis Timeframe</Label>
-            <Select
+            <label htmlFor="timeframe" className="block text-sm font-medium text-gray-300 mb-2">
+              <LineChart className="w-4 h-4 inline mr-2 text-holo-gray" />
+              Analysis Timeframe
+            </label>
+            <select
+              id="timeframe"
               value={inputData.timeframe}
-              onValueChange={(value: '1W' | '2W' | '1M' | '3M') => setInputData(prev => ({ ...prev, timeframe: value }))}
+              onChange={(e) => setInputData(prev => ({ ...prev, timeframe: e.target.value as '1W' | '2W' | '1M' | '3M' }))}
               disabled={isScanning}
+              className="w-full glass-input"
             >
-              <SelectTrigger id="timeframe">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1W">1 Week</SelectItem>
-                <SelectItem value="2W">2 Weeks</SelectItem>
-                <SelectItem value="1M">1 Month</SelectItem>
-                <SelectItem value="3M">3 Months</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="1W">1 Week</option>
+              <option value="2W">2 Weeks</option>
+              <option value="1M">1 Month</option>
+              <option value="3M">3 Months</option>
+            </select>
           </div>
 
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Note</AlertTitle>
-            <AlertDescription>
-              This analysis looks for unusual trading patterns, sudden volume spikes, and potential manipulation indicators.
-            </AlertDescription>
-          </Alert>
+          <div className="p-4 rounded-xl bg-holo-amber/10 border border-holo-amber/30">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-holo-amber flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="font-medium text-holo-amber mb-1">Note</div>
+                <div className="text-sm text-gray-400">
+                  This analysis looks for unusual trading patterns, sudden volume spikes, and potential manipulation indicators.
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <Button 
+          <button 
             onClick={handleScan} 
-            disabled={isScanning}
-            className="w-full"
-            size="lg"
+            disabled={isScanning || !inputData.ticker.trim()}
+            className="w-full holo-button text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isScanning ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <div className="holo-spinner w-5 h-5 mr-2 inline-block" />
                 Analyzing Trading Activity...
               </>
             ) : (
               <>
-                <LineChart className="mr-2 h-4 w-4" />
+                <LineChart className="mr-2 h-5 w-5" />
                 Analyze Trading Patterns
               </>
             )}
-          </Button>
-        </CardContent>
-      </Card>
+          </button>
+        </div>
+      </motion.div>
 
       {isScanning && (
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Analysis Progress</span>
-                <span>{progress}%</span>
-              </div>
-              <Progress value={progress} />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass-card p-6 mb-6"
+        >
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-300">Analysis Progress</span>
+              <span className="text-holo-gray">{progress}%</span>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-full bg-gray-700 rounded-full h-3">
+              <div 
+                className="h-3 rounded-full bg-gradient-to-r from-holo-gray to-gray-400 transition-all animate-pulse"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </motion.div>
       )}
 
       {scanComplete && scanResult && (
@@ -212,46 +248,44 @@ export default function TradingAnalysisPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Trading Analysis Results
-                <span className={`px-3 py-1 rounded-full text-white text-sm ${getRiskBadge(scanResult.riskScore || 0).color}`}>
-                  {getRiskBadge(scanResult.riskScore || 0).text}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+          <div className="glass-card p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Trading Analysis Results</h2>
+              <span className={`px-4 py-2 rounded-full text-white text-sm font-medium ${getRiskBadge(scanResult.riskScore || 0).color}`}>
+                {getRiskBadge(scanResult.riskScore || 0).text}
+              </span>
+            </div>
+            <div className="space-y-6">
               {/* Market Data */}
               {scanResult.marketData && (
                 <div>
                   <h3 className="font-semibold mb-3">Market Data</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-600">Current Price</div>
-                      <div className="font-semibold">${scanResult.marketData.currentPrice}</div>
+                    <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
+                      <div className="text-xs text-gray-400">Current Price</div>
+                      <div className="font-semibold text-white">${scanResult.marketData.currentPrice}</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-600">24h Change</div>
-                      <div className={`font-semibold ${scanResult.marketData.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
+                      <div className="text-xs text-gray-400">24h Change</div>
+                      <div className={`font-semibold ${scanResult.marketData.change24h >= 0 ? 'text-holo-green' : 'text-holo-red'}`}>
                         {scanResult.marketData.change24h >= 0 ? '+' : ''}{scanResult.marketData.change24h}%
                       </div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-600">Volume</div>
-                      <div className="font-semibold">${(scanResult.marketData.volume / 1000000).toFixed(2)}M</div>
+                    <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
+                      <div className="text-xs text-gray-400">Volume</div>
+                      <div className="font-semibold text-white">${(scanResult.marketData.volume / 1000000).toFixed(2)}M</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-600">Market Cap</div>
-                      <div className="font-semibold">${(scanResult.marketData.marketCap / 1000000000).toFixed(2)}B</div>
+                    <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
+                      <div className="text-xs text-gray-400">Market Cap</div>
+                      <div className="font-semibold text-white">${(scanResult.marketData.marketCap / 1000000000).toFixed(2)}B</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-600">Volatility</div>
-                      <div className="font-semibold">{scanResult.marketData.volatility}%</div>
+                    <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
+                      <div className="text-xs text-gray-400">Volatility</div>
+                      <div className="font-semibold text-white">{scanResult.marketData.volatility}%</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-600">RSI</div>
-                      <div className="font-semibold">{scanResult.marketData.rsi}</div>
+                    <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
+                      <div className="text-xs text-gray-400">RSI</div>
+                      <div className="font-semibold text-white">{scanResult.marketData.rsi}</div>
                     </div>
                   </div>
                 </div>
@@ -266,13 +300,13 @@ export default function TradingAnalysisPage() {
                   </h3>
                   <div className="space-y-3">
                     {scanResult.manipulationIndicators.map((indicator: any, index: number) => (
-                      <div key={index} className="p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
+                      <div key={index} className="p-4 rounded-xl bg-gray-800/30 border border-holo-amber/30">
                         <div className="flex justify-between items-start">
                           <div>
-                            <div className="font-medium text-sm">{indicator.type}</div>
-                            <div className="text-sm text-gray-600 mt-1">{indicator.description}</div>
+                            <div className="font-medium text-holo-amber">{indicator.type}</div>
+                            <div className="text-sm text-gray-400 mt-1">{indicator.description}</div>
                           </div>
-                          <div className="text-xs bg-yellow-100 px-2 py-1 rounded">
+                          <div className="text-xs bg-holo-amber/20 text-holo-amber px-3 py-1 rounded-full">
                             {indicator.severity}
                           </div>
                         </div>
@@ -296,13 +330,17 @@ export default function TradingAnalysisPage() {
                       <span className="font-medium">{scanResult.volumeAnalysis.spikeDetected ? 'Yes' : 'No'}</span>
                     </div>
                     {scanResult.volumeAnalysis.unusualActivity && (
-                      <Alert variant="destructive" className="mt-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Unusual Activity</AlertTitle>
-                        <AlertDescription>
-                          {scanResult.volumeAnalysis.unusualActivity}
-                        </AlertDescription>
-                      </Alert>
+                      <div className="mt-2 p-3 rounded-xl bg-holo-red/10 border border-holo-red/30">
+                        <div className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-holo-red flex-shrink-0 mt-0.5" />
+                          <div>
+                            <div className="font-medium text-holo-red mb-1">Unusual Activity</div>
+                            <div className="text-sm text-gray-400">
+                              {scanResult.volumeAnalysis.unusualActivity}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -328,10 +366,10 @@ export default function TradingAnalysisPage() {
               {scanResult.newsCorrelation && (
                 <div>
                   <h3 className="font-semibold mb-3">News Correlation</h3>
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="text-sm">{scanResult.newsCorrelation.summary}</div>
+                  <div className="p-4 rounded-xl bg-gray-800/30 border border-holo-cyan/30">
+                    <div className="text-sm text-gray-300">{scanResult.newsCorrelation.summary}</div>
                     {scanResult.newsCorrelation.suspiciousActivity && (
-                      <div className="mt-2 text-xs text-red-600">
+                      <div className="mt-2 text-sm text-holo-red">
                         ⚠️ {scanResult.newsCorrelation.suspiciousActivity}
                       </div>
                     )}
@@ -340,19 +378,20 @@ export default function TradingAnalysisPage() {
               )}
 
               {/* Summary */}
-              <div className="mt-6 p-4 bg-muted rounded-lg">
-                <h4 className="font-semibold mb-2">Summary</h4>
-                <p className="text-sm">
-                  Risk Score: {scanResult.riskScore || 0}/100
+              <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700">
+                <h4 className="font-semibold text-white mb-3">Summary</h4>
+                <p className="text-sm text-gray-300">
+                  Risk Score: <span className="text-holo-gray font-bold">{scanResult.riskScore || 0}/100</span>
                 </p>
                 {scanResult.recommendation && (
-                  <p className="text-sm mt-2">{scanResult.recommendation}</p>
+                  <p className="text-sm text-gray-400 mt-3">{scanResult.recommendation}</p>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </motion.div>
       )}
+      </div>
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import './globals.css'
+import './globals-holographic.css'
 import { ThemeProvider } from '@/components/layout/theme-provider'
 import { ToastProvider } from '@/components/ui/toast'
 import { QueryProvider } from '@/lib/providers/query-provider'
 import { WebSocketProvider } from '@/lib/providers/websocket-provider'
 import { AuthProvider } from '@/lib/providers/auth-provider'
+import { HolographicHeader } from '@/components/layout/holographic-header'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -84,7 +85,10 @@ export default function RootLayout({
             <QueryProvider>
               <WebSocketProvider>
                 <div className="relative flex min-h-screen flex-col">
-                  {children}
+                  <HolographicHeader />
+                  <main className="flex-1">
+                    {children}
+                  </main>
                 </div>
                 <ToastProvider />
               </WebSocketProvider>

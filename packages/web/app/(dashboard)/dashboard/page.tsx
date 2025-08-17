@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { 
   Shield, 
   AlertTriangle, 
@@ -11,212 +12,13 @@ import {
   Bell,
   Activity,
   Plus,
-  ArrowRight
+  ArrowRight,
+  Zap,
+  Lock,
+  Eye,
+  UserCheck
 } from 'lucide-react'
-
-// Consistent inline styles
-const styles = {
-  page: {
-    minHeight: '100vh',
-    backgroundColor: '#f8fafc',
-    fontFamily: 'Inter, system-ui, sans-serif'
-  },
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '24px'
-  },
-  header: {
-    marginBottom: '32px'
-  },
-  greeting: {
-    fontSize: '1.875rem',
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: '8px'
-  },
-  subtitle: {
-    color: '#6b7280',
-    fontSize: '1rem'
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '24px',
-    marginBottom: '32px'
-  },
-  statCard: {
-    backgroundColor: 'white',
-    padding: '24px',
-    borderRadius: '12px',
-    border: '1px solid #e5e7eb',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-  },
-  statHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '12px'
-  },
-  statTitle: {
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#6b7280'
-  },
-  statIcon: {
-    width: '20px',
-    height: '20px',
-    color: '#3b82f6'
-  },
-  statValue: {
-    fontSize: '2rem',
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: '4px'
-  },
-  statChange: {
-    fontSize: '0.875rem',
-    color: '#059669'
-  },
-  mainContent: {
-    display: 'grid',
-    gridTemplateColumns: '2fr 1fr',
-    gap: '24px',
-    marginBottom: '32px'
-  },
-  card: {
-    backgroundColor: 'white',
-    padding: '24px',
-    borderRadius: '12px',
-    border: '1px solid #e5e7eb',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-  },
-  cardHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '20px'
-  },
-  cardTitle: {
-    fontSize: '1.25rem',
-    fontWeight: '600',
-    color: '#1f2937'
-  },
-  riskMeter: {
-    textAlign: 'center' as const,
-    padding: '32px'
-  },
-  riskScore: {
-    fontSize: '4rem',
-    fontWeight: 'bold',
-    color: '#059669',
-    marginBottom: '8px'
-  },
-  riskLabel: {
-    fontSize: '1.125rem',
-    color: '#6b7280',
-    marginBottom: '16px'
-  },
-  riskDescription: {
-    fontSize: '0.875rem',
-    color: '#374151',
-    lineHeight: '1.5'
-  },
-  quickActions: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '16px',
-    marginBottom: '32px'
-  },
-  actionButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '16px 20px',
-    backgroundColor: '#3b82f6',
-    color: 'white',
-    textDecoration: 'none',
-    borderRadius: '8px',
-    fontWeight: '500',
-    transition: 'background-color 0.2s',
-    border: 'none',
-    cursor: 'pointer'
-  },
-  actionButtonSecondary: {
-    backgroundColor: 'white',
-    color: '#374151',
-    border: '1px solid #d1d5db'
-  },
-  activityFeed: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '12px'
-  },
-  activityItem: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '12px',
-    padding: '12px',
-    backgroundColor: '#f9fafb',
-    borderRadius: '8px'
-  },
-  activityIcon: {
-    width: '20px',
-    height: '20px',
-    marginTop: '2px'
-  },
-  activityContent: {
-    flex: 1
-  },
-  activityTitle: {
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#1f2937',
-    marginBottom: '4px'
-  },
-  activityTime: {
-    fontSize: '0.75rem',
-    color: '#6b7280'
-  },
-  familyGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '16px'
-  },
-  familyMember: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '16px',
-    backgroundColor: '#f9fafb',
-    borderRadius: '8px',
-    border: '1px solid #e5e7eb'
-  },
-  avatar: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    backgroundColor: '#3b82f6',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: '600'
-  },
-  memberInfo: {
-    flex: 1
-  },
-  memberName: {
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#1f2937',
-    marginBottom: '2px'
-  },
-  memberStatus: {
-    fontSize: '0.75rem',
-    color: '#059669'
-  }
-}
+import Image from 'next/image'
 
 export default function DashboardPage() {
   // Mock data
@@ -232,174 +34,265 @@ export default function DashboardPage() {
       type: 'scan',
       title: 'Suspicious WhatsApp message blocked',
       time: '2 minutes ago',
-      icon: Shield
+      icon: Shield,
+      severity: 'high'
     },
     {
       type: 'alert',
       title: 'New scam pattern detected',
       time: '1 hour ago',
-      icon: AlertTriangle
+      icon: AlertTriangle,
+      severity: 'medium'
     },
     {
       type: 'family',
       title: 'Mom completed security training',
       time: '3 hours ago',
-      icon: CheckCircle
+      icon: CheckCircle,
+      severity: 'low'
     }
   ]
 
   const familyMembers = [
-    { name: 'John Doe', status: 'Protected', initial: 'J' },
-    { name: 'Jane Doe', status: 'Protected', initial: 'J' },
-    { name: 'Mom', status: 'Protected', initial: 'M' },
-    { name: 'Dad', status: 'At Risk', initial: 'D' }
+    { name: 'John Doe', status: 'Protected', initial: 'J', riskLevel: 'low' },
+    { name: 'Jane Doe', status: 'Protected', initial: 'J', riskLevel: 'low' },
+    { name: 'Mom', status: 'Protected', initial: 'M', riskLevel: 'medium' },
+    { name: 'Dad', status: 'At Risk', initial: 'D', riskLevel: 'high' }
   ]
 
+  const getSeverityColor = (severity: string) => {
+    switch(severity) {
+      case 'high': return '#DB4545'
+      case 'medium': return '#D2BA4C'
+      case 'low': return '#2E8B57'
+      default: return '#5D878F'
+    }
+  }
+
+  const getRiskGradient = (level: string) => {
+    switch(level) {
+      case 'high': return 'linear-gradient(135deg, #DB4545, #ff6b6b)'
+      case 'medium': return 'linear-gradient(135deg, #D2BA4C, #FFD700)'
+      case 'low': return 'linear-gradient(135deg, #2E8B57, #3FE0A0)'
+      default: return 'linear-gradient(135deg, #5D878F, #7FA8B0)'
+    }
+  }
+
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
+    <div className="min-h-screen bg-gradient-to-br from-holo-dark via-gray-900 to-black">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-holo-cyan/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-holo-green/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <div style={styles.header}>
-          <h1 style={styles.greeting}>Good morning, John!</h1>
-          <p style={styles.subtitle}>Here's your family's scam protection overview</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="holo-text">Good morning, John!</span>
+          </h1>
+          <p className="text-gray-400 text-lg">Your family's scam protection overview</p>
+        </motion.div>
 
         {/* Stats Grid */}
-        <div style={styles.statsGrid}>
-          <div style={styles.statCard}>
-            <div style={styles.statHeader}>
-              <span style={styles.statTitle}>Total Scans</span>
-              <ScanLine style={styles.statIcon} />
-            </div>
-            <div style={styles.statValue}>{stats.totalScans}</div>
-            <div style={styles.statChange}>+12% from last week</div>
-          </div>
-
-          <div style={styles.statCard}>
-            <div style={styles.statHeader}>
-              <span style={styles.statTitle}>Threats Blocked</span>
-              <Shield style={styles.statIcon} />
-            </div>
-            <div style={styles.statValue}>{stats.threatsBlocked}</div>
-            <div style={styles.statChange}>+3 this week</div>
-          </div>
-
-          <div style={styles.statCard}>
-            <div style={styles.statHeader}>
-              <span style={styles.statTitle}>Risk Score</span>
-              <TrendingUp style={styles.statIcon} />
-            </div>
-            <div style={styles.statValue}>{stats.riskScore}%</div>
-            <div style={styles.statChange}>Low Risk</div>
-          </div>
-
-          <div style={styles.statCard}>
-            <div style={styles.statHeader}>
-              <span style={styles.statTitle}>Family Members</span>
-              <Users style={styles.statIcon} />
-            </div>
-            <div style={styles.statValue}>{stats.familyMembers}</div>
-            <div style={styles.statChange}>All protected</div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[
+            { title: 'Total Scans', value: stats.totalScans, change: '+12%', icon: ScanLine, color: 'cyan' },
+            { title: 'Threats Blocked', value: stats.threatsBlocked, change: '+3', icon: Shield, color: 'green' },
+            { title: 'Risk Score', value: `${stats.riskScore}%`, change: 'Low Risk', icon: TrendingUp, color: 'amber' },
+            { title: 'Family Members', value: stats.familyMembers, change: 'All protected', icon: Users, color: 'gray' }
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1 }}
+              className="glass-card p-6 relative overflow-hidden group"
+            >
+              {/* Holographic shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              
+              <div className="flex items-start justify-between mb-4">
+                <span className="text-sm font-medium text-gray-400">{stat.title}</span>
+                <div className={`p-2 rounded-lg bg-holo-${stat.color}/20`}>
+                  <stat.icon className={`w-5 h-5 text-holo-${stat.color}`} />
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
+              <div className={`text-sm text-holo-${stat.color}`}>{stat.change}</div>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Main Content */}
-        <div style={styles.mainContent}>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Recent Activity */}
-          <div style={styles.card}>
-            <div style={styles.cardHeader}>
-              <h2 style={styles.cardTitle}>Recent Activity</h2>
-              <Bell style={{ width: '20px', height: '20px', color: '#6b7280' }} />
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+            className="lg:col-span-2 glass-card p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white">Recent Activity</h2>
+              <Bell className="w-5 h-5 text-holo-cyan" />
             </div>
-            <div style={styles.activityFeed}>
+            <div className="space-y-4">
               {recentActivity.map((activity, index) => (
-                <div key={index} style={styles.activityItem}>
-                  <activity.icon style={styles.activityIcon} />
-                  <div style={styles.activityContent}>
-                    <div style={styles.activityTitle}>{activity.title}</div>
-                    <div style={styles.activityTime}>{activity.time}</div>
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  className="flex items-start gap-4 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50 hover:border-holo-cyan/30 transition-all"
+                >
+                  <div 
+                    className="p-2 rounded-lg"
+                    style={{ background: `${getSeverityColor(activity.severity)}20` }}
+                  >
+                    <activity.icon 
+                      className="w-5 h-5"
+                      style={{ color: getSeverityColor(activity.severity) }}
+                    />
                   </div>
-                </div>
+                  <div className="flex-1">
+                    <p className="text-white font-medium text-sm">{activity.title}</p>
+                    <p className="text-gray-500 text-xs mt-1">{activity.time}</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-gray-600" />
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Risk Meter */}
-          <div style={styles.card}>
-            <div style={styles.cardHeader}>
-              <h2 style={styles.cardTitle}>Risk Level</h2>
-              <Activity style={{ width: '20px', height: '20px', color: '#6b7280' }} />
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.6 }}
+            className="glass-card p-6 text-center"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white">Risk Level</h2>
+              <Activity className="w-5 h-5 text-holo-cyan" />
             </div>
-            <div style={styles.riskMeter}>
-              <div style={styles.riskScore}>{stats.riskScore}%</div>
-              <div style={styles.riskLabel}>Low Risk</div>
-              <p style={styles.riskDescription}>
-                Your family is well protected. Keep up the great work with regular scans!
-              </p>
+            
+            {/* Holographic Risk Gauge */}
+            <div className="relative w-48 h-48 mx-auto mb-4">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle
+                  cx="96"
+                  cy="96"
+                  r="88"
+                  stroke="url(#gauge-gradient)"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={`${stats.riskScore * 5.5} 550`}
+                  className="filter drop-shadow-lg"
+                />
+                <defs>
+                  <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#2E8B57" />
+                    <stop offset="50%" stopColor="#1FB8CD" />
+                    <stop offset="100%" stopColor="#3FE0A0" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div>
+                  <div className="text-5xl font-bold holo-text">{stats.riskScore}%</div>
+                  <div className="text-holo-green text-sm mt-2">Low Risk</div>
+                </div>
+              </div>
             </div>
-          </div>
+            
+            <p className="text-gray-400 text-sm">
+              Your family is well protected. Keep up the great work!
+            </p>
+          </motion.div>
         </div>
 
         {/* Quick Actions */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <h2 style={styles.cardTitle}>Quick Actions</h2>
-          </div>
-          <div style={styles.quickActions}>
-            <Link href="/scan" style={styles.actionButton}>
-              <ScanLine style={{ width: '20px', height: '20px' }} />
-              New Scan
-            </Link>
-            <Link 
-              href="/chat-import" 
-              style={{...styles.actionButton, ...styles.actionButtonSecondary}}
-            >
-              <Plus style={{ width: '20px', height: '20px' }} />
-              Import Chat
-            </Link>
-            <Link 
-              href="/alerts" 
-              style={{...styles.actionButton, ...styles.actionButtonSecondary}}
-            >
-              <Bell style={{ width: '20px', height: '20px' }} />
-              View Alerts
-            </Link>
-            <Link 
-              href="/history" 
-              style={{...styles.actionButton, ...styles.actionButtonSecondary}}
-            >
-              <Activity style={{ width: '20px', height: '20px' }} />
-              View History
-            </Link>
-          </div>
-        </div>
-
-        {/* Family Overview */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <h2 style={styles.cardTitle}>Family Overview</h2>
-            <Users style={{ width: '20px', height: '20px', color: '#6b7280' }} />
-          </div>
-          <div style={styles.familyGrid}>
-            {familyMembers.map((member, index) => (
-              <div key={index} style={styles.familyMember}>
-                <div style={styles.avatar}>
-                  {member.initial}
-                </div>
-                <div style={styles.memberInfo}>
-                  <div style={styles.memberName}>{member.name}</div>
-                  <div style={{
-                    ...styles.memberStatus,
-                    color: member.status === 'Protected' ? '#059669' : '#dc2626'
-                  }}>
-                    {member.status}
-                  </div>
-                </div>
-                <ArrowRight style={{ width: '16px', height: '16px', color: '#9ca3af' }} />
-              </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="glass-card p-6 mb-8"
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { href: '/scan', icon: ScanLine, label: 'New Scan', primary: true },
+              { href: '/chat-import', icon: Plus, label: 'Import Chat', primary: false },
+              { href: '/alerts', icon: Bell, label: 'View Alerts', primary: false },
+              { href: '/history', icon: Activity, label: 'View History', primary: false }
+            ].map((action, index) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className={`
+                  flex items-center justify-center gap-3 px-6 py-3 rounded-xl font-medium transition-all
+                  ${action.primary 
+                    ? 'holo-button' 
+                    : 'glass-card border border-gray-700 hover:border-holo-cyan/50 text-gray-300 hover:text-white'
+                  }
+                `}
+              >
+                <action.icon className="w-5 h-5" />
+                {action.label}
+              </Link>
             ))}
           </div>
-        </div>
+        </motion.div>
+
+        {/* Family Overview */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="glass-card p-6"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white">Family Overview</h2>
+            <Users className="w-5 h-5 text-holo-cyan" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {familyMembers.map((member, index) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.9 + index * 0.05 }}
+                className="flex items-center gap-3 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50 hover:border-holo-cyan/30 transition-all group"
+              >
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold relative overflow-hidden"
+                  style={{ background: getRiskGradient(member.riskLevel) }}
+                >
+                  {/* Animated pulse for at-risk members */}
+                  {member.riskLevel === 'high' && (
+                    <div className="absolute inset-0 bg-white/20 animate-ping" />
+                  )}
+                  <span className="relative z-10">{member.initial}</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-medium text-sm">{member.name}</p>
+                  <p className={`text-xs mt-1 ${
+                    member.status === 'Protected' ? 'text-holo-green' : 'text-holo-red'
+                  }`}>
+                    {member.status}
+                  </p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-holo-cyan transition-colors" />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </div>
   )

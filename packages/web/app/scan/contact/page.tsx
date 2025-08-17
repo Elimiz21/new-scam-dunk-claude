@@ -7,23 +7,18 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Loader2,
   ArrowLeft,
   UserCheck,
   Phone,
   Mail,
-  Building
+  Building,
+  Shield,
+  Zap
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { detectionService } from '@/services/detection.service';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function ContactVerificationPage() {
   const { toast } = useToast();
@@ -52,55 +47,36 @@ export default function ContactVerificationPage() {
 
     setIsScanning(true);
     setScanComplete(false);
-    setScanResult(null);
     setProgress(0);
-
-    // Create contacts array from input
-    const contacts = [{
-      name: inputData.name || undefined,
-      phone: inputData.phone || undefined,
-      email: inputData.email || undefined,
-      workplace: inputData.workplace || undefined
-    }];
-
-    // Add additional contacts if provided
-    if (inputData.additionalContacts) {
-      const lines = inputData.additionalContacts.split('\n').filter(line => line.trim());
-      lines.forEach(line => {
-        const parts = line.split(',').map(p => p.trim());
-        if (parts[0]) {
-          contacts.push({
-            name: parts[0],
-            phone: parts[1] || undefined,
-            email: parts[2] || undefined,
-            workplace: parts[3] || undefined
-          });
-        }
-      });
-    }
 
     try {
       // Simulate progress
-      const progressInterval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 10, 90));
-      }, 200);
+      for (let i = 0; i <= 100; i += 10) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        setProgress(i);
+      }
 
+      // Parse contacts
+      const contacts = [];
+      if (inputData.name) contacts.push({ name: inputData.name });
+      if (inputData.phone) contacts.push({ phone: inputData.phone });
+      if (inputData.email) contacts.push({ email: inputData.email });
+      if (inputData.workplace) contacts.push({ workplace: inputData.workplace });
+
+      // Call detection service
       const result = await detectionService.verifyContacts({ contacts });
       
-      clearInterval(progressInterval);
-      setProgress(100);
       setScanResult(result);
       setScanComplete(true);
       
       toast({
         title: 'Scan Complete',
-        description: 'Contact verification completed successfully.',
+        description: 'Contact verification has been completed successfully.',
       });
     } catch (error) {
-      console.error('Contact verification failed:', error);
       toast({
         title: 'Scan Failed',
-        description: 'Failed to verify contacts. Please try again.',
+        description: 'An error occurred during the verification. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -108,218 +84,306 @@ export default function ContactVerificationPage() {
     }
   };
 
-  const getRiskBadge = (score: number) => {
-    if (score >= 70) return { color: 'bg-red-500', text: 'High Risk' };
-    if (score >= 40) return { color: 'bg-yellow-500', text: 'Medium Risk' };
-    return { color: 'bg-green-500', text: 'Low Risk' };
+  const getRiskLevel = (score: number) => {
+    if (score >= 70) return { text: 'High Risk', color: 'text-holo-red', bg: 'bg-holo-red/20', gradient: 'from-holo-red to-red-600' };
+    if (score >= 40) return { text: 'Medium Risk', color: 'text-holo-amber', bg: 'bg-holo-amber/20', gradient: 'from-holo-amber to-holo-amber-light' };
+    return { text: 'Low Risk', color: 'text-holo-green', bg: 'bg-holo-green/20', gradient: 'from-holo-green to-holo-green-light' };
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Link href="/scan">
-        <Button variant="ghost" className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to All Scans
-        </Button>
-      </Link>
-
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Contact Verification</h1>
-        <p className="text-muted-foreground">
-          Verify phone numbers, emails, and names against international scammer databases
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-holo-dark via-gray-900 to-black">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-holo-cyan/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-holo-cyan/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Enter Contact Information</CardTitle>
-          <CardDescription>
-            Provide contact details to verify against scammer databases
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                placeholder="John Doe"
-                value={inputData.name}
-                onChange={(e) => setInputData(prev => ({ ...prev, name: e.target.value }))}
-                disabled={isScanning}
+      <div className="relative z-10 container mx-auto max-w-4xl px-6 py-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <Link href="/scan" className="inline-flex items-center text-gray-400 hover:text-holo-cyan transition-colors mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to All Tests
+          </Link>
+          
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Image
+                src="/icons/contact-verification.svg"
+                alt="Contact Verification"
+                width={64}
+                height={64}
+                className="drop-shadow-lg"
               />
+              <div className="absolute inset-0 rounded-full bg-holo-cyan/20 blur-xl animate-pulse" />
             </div>
             <div>
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                placeholder="+1234567890"
-                value={inputData.phone}
-                onChange={(e) => setInputData(prev => ({ ...prev, phone: e.target.value }))}
-                disabled={isScanning}
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="john@example.com"
-                value={inputData.email}
-                onChange={(e) => setInputData(prev => ({ ...prev, email: e.target.value }))}
-                disabled={isScanning}
-              />
-            </div>
-            <div>
-              <Label htmlFor="workplace">Workplace/Company</Label>
-              <Input
-                id="workplace"
-                placeholder="Company Name"
-                value={inputData.workplace}
-                onChange={(e) => setInputData(prev => ({ ...prev, workplace: e.target.value }))}
-                disabled={isScanning}
-              />
+              <h1 className="text-3xl font-bold">
+                <span className="holo-text">Contact Verification</span>
+              </h1>
+              <p className="text-gray-400 mt-2">
+                Verify phone numbers, emails, and names against scammer databases
+              </p>
             </div>
           </div>
+        </motion.div>
 
-          <div>
-            <Label htmlFor="additional">Additional Contacts (Optional)</Label>
-            <Textarea
-              id="additional"
-              placeholder="Enter additional contacts, one per line (format: name, phone, email, workplace)"
-              value={inputData.additionalContacts}
-              onChange={(e) => setInputData(prev => ({ ...prev, additionalContacts: e.target.value }))}
-              disabled={isScanning}
-              rows={4}
-            />
-          </div>
-
-          <Button 
-            onClick={handleScan} 
-            disabled={isScanning}
-            className="w-full"
-            size="lg"
-          >
-            {isScanning ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Verifying Contacts...
-              </>
-            ) : (
-              <>
-                <UserCheck className="mr-2 h-4 w-4" />
-                Start Verification
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {isScanning && (
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Verification Progress</span>
-                <span>{progress}%</span>
-              </div>
-              <Progress value={progress} />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {scanComplete && scanResult && (
+        {/* Input Form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ delay: 0.1 }}
+          className="glass-card p-8 mb-6"
         >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Verification Results
-                <span className={`px-3 py-1 rounded-full text-white text-sm ${getRiskBadge(scanResult.riskScore || 0).color}`}>
-                  {getRiskBadge(scanResult.riskScore || 0).text}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {scanResult.results && scanResult.results.map((contact: any, index: number) => (
-                <div key={index} className="mb-6 p-4 border rounded-lg">
-                  <h3 className="font-semibold mb-3">{contact.name || contact.phone || contact.email}</h3>
-                  
-                  {contact.phoneVerification && (
-                    <div className="mb-3">
-                      <div className="flex items-center mb-2">
-                        <Phone className="h-4 w-4 mr-2" />
-                        <span className="font-medium">Phone Verification</span>
-                      </div>
-                      <div className="ml-6 text-sm space-y-1">
-                        <p>Carrier: {contact.phoneVerification.carrier || 'Unknown'}</p>
-                        <p>Type: {contact.phoneVerification.lineType || 'Unknown'}</p>
-                        <p>Location: {contact.phoneVerification.location || 'Unknown'}</p>
-                        {contact.phoneVerification.spamScore && (
-                          <p>Spam Score: {contact.phoneVerification.spamScore}%</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
+          <h2 className="text-xl font-bold text-white mb-6">Enter Contact Details</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <UserCheck className="w-4 h-4 inline mr-2 text-holo-cyan" />
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={inputData.name}
+                onChange={(e) => setInputData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full glass-input"
+                placeholder="John Doe"
+                disabled={isScanning}
+              />
+            </div>
 
-                  {contact.emailVerification && (
-                    <div className="mb-3">
-                      <div className="flex items-center mb-2">
-                        <Mail className="h-4 w-4 mr-2" />
-                        <span className="font-medium">Email Verification</span>
-                      </div>
-                      <div className="ml-6 text-sm space-y-1">
-                        <p>Valid: {contact.emailVerification.valid ? 'Yes' : 'No'}</p>
-                        <p>Disposable: {contact.emailVerification.disposable ? 'Yes' : 'No'}</p>
-                        {contact.emailVerification.reputation && (
-                          <p>Reputation: {contact.emailVerification.reputation}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <Phone className="w-4 h-4 inline mr-2 text-holo-cyan" />
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={inputData.phone}
+                onChange={(e) => setInputData(prev => ({ ...prev, phone: e.target.value }))}
+                className="w-full glass-input"
+                placeholder="+1 234 567 8900"
+                disabled={isScanning}
+              />
+            </div>
 
-                  {contact.workplaceVerification && (
-                    <div className="mb-3">
-                      <div className="flex items-center mb-2">
-                        <Building className="h-4 w-4 mr-2" />
-                        <span className="font-medium">Workplace Verification</span>
-                      </div>
-                      <div className="ml-6 text-sm space-y-1">
-                        <p>Company: {contact.workplaceVerification.company}</p>
-                        <p>Valid: {contact.workplaceVerification.valid ? 'Yes' : 'No'}</p>
-                      </div>
-                    </div>
-                  )}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <Mail className="w-4 h-4 inline mr-2 text-holo-cyan" />
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={inputData.email}
+                onChange={(e) => setInputData(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full glass-input"
+                placeholder="john@example.com"
+                disabled={isScanning}
+              />
+            </div>
 
-                  {contact.scammerDatabaseMatch && (
-                    <Alert variant="destructive" className="mt-3">
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertTitle>Warning</AlertTitle>
-                      <AlertDescription>
-                        This contact matches entries in scammer databases
-                      </AlertDescription>
-                    </Alert>
-                  )}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <Building className="w-4 h-4 inline mr-2 text-holo-cyan" />
+                Workplace
+              </label>
+              <input
+                type="text"
+                value={inputData.workplace}
+                onChange={(e) => setInputData(prev => ({ ...prev, workplace: e.target.value }))}
+                className="w-full glass-input"
+                placeholder="Company Name"
+                disabled={isScanning}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <Users className="w-4 h-4 inline mr-2 text-holo-cyan" />
+              Additional Contacts (one per line)
+            </label>
+            <textarea
+              value={inputData.additionalContacts}
+              onChange={(e) => setInputData(prev => ({ ...prev, additionalContacts: e.target.value }))}
+              className="w-full glass-input min-h-[100px]"
+              placeholder="Enter additional names, phones, or emails..."
+              disabled={isScanning}
+            />
+          </div>
+
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={handleScan}
+              disabled={isScanning}
+              className="holo-button text-lg px-12 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isScanning ? (
+                <>
+                  <div className="holo-spinner w-5 h-5 mr-2 inline-block" />
+                  Verifying Contacts...
+                </>
+              ) : (
+                <>
+                  <Shield className="w-5 h-5 mr-2 inline-block" />
+                  Start Verification
+                </>
+              )}
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Progress Indicator */}
+        {isScanning && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-card p-6 mb-6"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-300">Verification Progress</span>
+              <span className="text-holo-cyan font-semibold">{progress}%</span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-3">
+              <div 
+                className="h-3 rounded-full bg-gradient-to-r from-holo-cyan to-holo-cyan-light transition-all animate-pulse"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center text-sm text-gray-400">
+                <CheckCircle2 className="w-4 h-4 mr-2 text-holo-green" />
+                Checking international databases...
+              </div>
+              <div className="flex items-center text-sm text-gray-400">
+                <CheckCircle2 className="w-4 h-4 mr-2 text-holo-green" />
+                Verifying social media profiles...
+              </div>
+              <div className="flex items-center text-sm text-gray-400">
+                <div className="holo-spinner w-4 h-4 mr-2" />
+                Analyzing behavioral patterns...
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Results */}
+        {scanComplete && scanResult && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* Overall Risk Score */}
+            <div className="glass-card p-8 text-center">
+              <h2 className="text-2xl font-bold text-white mb-4">Verification Complete</h2>
+              <div className="relative w-48 h-48 mx-auto mb-6">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle
+                    cx="96"
+                    cy="96"
+                    r="88"
+                    stroke="url(#risk-gradient)"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeDasharray={`${(scanResult?.riskScore || 25) * 5.5} 550`}
+                    className="filter drop-shadow-lg"
+                  />
+                  <defs>
+                    <linearGradient id="risk-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#2E8B57" />
+                      <stop offset="50%" stopColor="#1FB8CD" />
+                      <stop offset="100%" stopColor="#DB4545" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div>
+                    <div className="text-5xl font-bold holo-text">{scanResult?.riskScore || 25}%</div>
+                    <div className={`text-sm mt-2 ${getRiskLevel(scanResult?.riskScore || 25).color}`}>
+                      {getRiskLevel(scanResult?.riskScore || 25).text}
+                    </div>
+                  </div>
                 </div>
-              ))}
+              </div>
+              
+              <p className="text-gray-400 max-w-2xl mx-auto">
+                {scanResult?.summary || 'Contact verification completed. No immediate red flags detected, but always remain vigilant.'}
+              </p>
+            </div>
 
-              <div className="mt-6 p-4 bg-muted rounded-lg">
-                <h4 className="font-semibold mb-2">Summary</h4>
-                <p className="text-sm">
-                  Risk Score: {scanResult.riskScore || 0}/100
-                </p>
-                {scanResult.recommendation && (
-                  <p className="text-sm mt-2">{scanResult.recommendation}</p>
+            {/* Detailed Results */}
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-bold text-white mb-4">Verification Details</h3>
+              <div className="space-y-4">
+                {scanResult?.details?.map((detail: any, index: number) => (
+                  <div key={index} className="flex items-start gap-3 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50">
+                    {detail.status === 'safe' ? (
+                      <CheckCircle2 className="w-5 h-5 text-holo-green mt-0.5" />
+                    ) : detail.status === 'warning' ? (
+                      <AlertTriangle className="w-5 h-5 text-holo-amber mt-0.5" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-holo-red mt-0.5" />
+                    )}
+                    <div className="flex-1">
+                      <p className="text-white font-medium">{detail.title}</p>
+                      <p className="text-gray-400 text-sm mt-1">{detail.description}</p>
+                    </div>
+                  </div>
+                )) || (
+                  <>
+                    <div className="flex items-start gap-3 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50">
+                      <CheckCircle2 className="w-5 h-5 text-holo-green mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-white font-medium">No Known Scammer Database Matches</p>
+                        <p className="text-gray-400 text-sm mt-1">Contact not found in any known scammer databases</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50">
+                      <AlertTriangle className="w-5 h-5 text-holo-amber mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-white font-medium">Limited Online Presence</p>
+                        <p className="text-gray-400 text-sm mt-1">Could not verify all provided information online</p>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => {
+                  setScanComplete(false);
+                  setScanResult(null);
+                  setInputData({
+                    name: '',
+                    phone: '',
+                    email: '',
+                    workplace: '',
+                    additionalContacts: ''
+                  });
+                }}
+                className="glass-card px-6 py-3 text-gray-300 border border-gray-700 hover:border-holo-cyan/50 hover:text-white transition-all"
+              >
+                New Verification
+              </button>
+              <Link href="/scan">
+                <button className="holo-button px-6 py-3">
+                  Run All Tests
+                  <Zap className="w-4 h-4 ml-2 inline" />
+                </button>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-labelledby="guardian-shield-title">
+  <title id="guardian-shield-title">Scam Dunk Holographic Guardian Shield</title>
+  <defs>
+    <!-- Holographic gradient -->
+    <linearGradient id="holo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1FB8CD;stop-opacity:1">
+        <animate attributeName="stop-color" values="#1FB8CD;#00D4FF;#1FB8CD" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="50%" style="stop-color:#2E8B57;stop-opacity:1">
+        <animate attributeName="stop-color" values="#2E8B57;#3FE0A0;#2E8B57" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" style="stop-color:#5D878F;stop-opacity:1">
+        <animate attributeName="stop-color" values="#5D878F;#7FA8B0;#5D878F" dur="3s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+    
+    <!-- Glass effect gradient -->
+    <linearGradient id="glass-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:1" />
+      <stop offset="50%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.05);stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Inner shadow for depth -->
+    <filter id="inner-shadow">
+      <feOffset dx="0" dy="2"/>
+      <feGaussianBlur stdDeviation="3"/>
+      <feComposite operator="out" in2="SourceGraphic"/>
+      <feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer glow ring -->
+  <circle cx="256" cy="256" r="240" fill="none" stroke="url(#holo-gradient)" stroke-width="2" opacity="0.3" filter="url(#glow)">
+    <animate attributeName="r" values="240;245;240" dur="2s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite" />
+  </circle>
+  
+  <!-- Shield base with rounded corners -->
+  <path d="M256 32 C256 32, 384 64, 384 64 L384 240 C384 352, 256 480, 256 480 C256 480, 128 352, 128 240 L128 64 C128 64, 256 32, 256 32 Z" 
+        fill="url(#holo-gradient)" 
+        stroke="url(#holo-gradient)" 
+        stroke-width="3"
+        filter="url(#glow)"
+        rx="24"
+        ry="24"/>
+  
+  <!-- Glass overlay -->
+  <path d="M256 48 C256 48, 368 76, 368 76 L368 230 C368 330, 256 450, 256 450 C256 450, 144 330, 144 230 L144 76 C144 76, 256 48, 256 48 Z" 
+        fill="url(#glass-gradient)" 
+        opacity="0.4"/>
+  
+  <!-- Center verification checkmark -->
+  <g transform="translate(256, 220)">
+    <!-- Circle background -->
+    <circle cx="0" cy="0" r="60" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    
+    <!-- Checkmark -->
+    <path d="M-25 5 L-10 20 L25 -15" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="6" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          filter="url(#glow)">
+      <animate attributeName="stroke-dasharray" values="0 100;100 0" dur="1s" begin="0.5s" fill="freeze" />
+    </path>
+  </g>
+  
+  <!-- 4 corner indicators for 4-test system -->
+  <g id="test-indicators">
+    <!-- Top left - Contact Verification -->
+    <circle cx="180" cy="120" r="8" fill="#1FB8CD" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite" />
+    </circle>
+    
+    <!-- Top right - Chat Analysis -->
+    <circle cx="332" cy="120" r="8" fill="#2E8B57" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" begin="0.5s" repeatCount="indefinite" />
+    </circle>
+    
+    <!-- Bottom left - Trading Activity -->
+    <circle cx="200" cy="360" r="8" fill="#5D878F" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" begin="1s" repeatCount="indefinite" />
+    </circle>
+    
+    <!-- Bottom right - Asset Veracity -->
+    <circle cx="312" cy="360" r="8" fill="#D2BA4C" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" begin="1.5s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- Holographic scan line effect -->
+  <rect x="128" y="64" width="256" height="2" fill="white" opacity="0.5">
+    <animate attributeName="y" values="64;400;64" dur="4s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;0.5;0" dur="4s" repeatCount="indefinite" />
+  </rect>
+</svg>
