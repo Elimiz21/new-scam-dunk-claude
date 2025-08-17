@@ -16,6 +16,12 @@ For all coding-related issues, utilize the entire team's expertise.
 
 ## Development Guidelines
 
+### IMPORTANT: Start of Each Conversation
+- **ALWAYS read plan.md first** to understand the latest progress and current status
+- Review recent completed tasks and pending items before starting any work
+- Check the deployment status and any ongoing issues
+- Ensure continuity from previous sessions
+
 ### Code Quality Standards
 - **Full Context**: Always ensure you have complete understanding of the entire codebase and intended functionality before making changes
 - **High Standards**: Adhere to high-spec coding standards with smart architectural integrity
