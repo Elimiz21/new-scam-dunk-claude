@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       { 
         success: false, 
         message: 'Test failed',
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );

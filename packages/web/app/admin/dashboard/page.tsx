@@ -277,7 +277,15 @@ export default function AdminDashboard() {
   );
 }
 
-function StatCard({ icon, title, value, change, color }: any) {
+interface StatCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: number;
+  change: string;
+  color: 'purple' | 'cyan' | 'green' | 'red';
+}
+
+function StatCard({ icon, title, value, change, color }: StatCardProps) {
   const colorClasses = {
     purple: 'from-purple-500 to-purple-600',
     cyan: 'from-cyan-500 to-cyan-600',

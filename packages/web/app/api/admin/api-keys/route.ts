@@ -210,7 +210,7 @@ export async function GET(request: NextRequest) {
   
   try {
     const supabase = getSupabaseClient();
-    let savedKeys = {};
+    let savedKeys: Record<string, { value: string; isActive: boolean }> = {};
     
     if (supabase) {
       // Get saved API keys from database
@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
         .eq('is_active', true);
       
       if (data) {
-        data.forEach(item => {
+        data.forEach((item: any) => {
           // Mask the key value for security
           savedKeys[item.key_name] = {
             value: item.key_value ? '••••••' + item.key_value.slice(-4) : '',

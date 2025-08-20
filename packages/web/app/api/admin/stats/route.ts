@@ -44,7 +44,29 @@ export async function GET(request: NextRequest) {
     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
     
-    let stats = {
+    let stats: {
+      totalScans: number;
+      scansToday: number;
+      scansThisWeek: number;
+      scansThisMonth: number;
+      totalUsers: number;
+      activeUsers: number;
+      apiUsage: {
+        contactVerification: number;
+        chatAnalysis: number;
+        tradingAnalysis: number;
+        veracityChecking: number;
+      };
+      riskDistribution: {
+        low: number;
+        medium: number;
+        high: number;
+        critical: number;
+      };
+      recentScans: any[];
+      scansByDay: any[];
+      topScamTypes: any[];
+    } = {
       totalScans: 0,
       scansToday: 0,
       scansThisWeek: 0,
