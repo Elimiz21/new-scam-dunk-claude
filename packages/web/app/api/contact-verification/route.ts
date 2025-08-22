@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { corsHeaders, corsResponse, corsOptionsResponse } from '@/lib/cors';
 
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,6 +11,10 @@ function getSupabaseClient() {
   }
   
   return createClient(supabaseUrl, supabaseKey);
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return corsOptionsResponse();
 }
 
 export async function POST(request: NextRequest) {
@@ -49,15 +54,15 @@ export async function POST(request: NextRequest) {
         .single();
     }
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: result
     });
   } catch (error) {
     console.error('Contact verification error:', error);
-    return NextResponse.json(
+    return corsResponse(
       { error: 'Contact verification failed' },
-      { status: 500 }
+      500
     );
   }
 }

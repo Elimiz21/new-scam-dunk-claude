@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { corsHeaders, corsResponse, corsOptionsResponse } from '@/lib/cors';
+
+export async function OPTIONS(request: NextRequest) {
+  return corsOptionsResponse();
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,15 +29,15 @@ export async function POST(request: NextRequest) {
       alertLevel: 'HIGH'
     };
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: result
     });
   } catch (error) {
     console.error('Trading analysis error:', error);
-    return NextResponse.json(
+    return corsResponse(
       { error: 'Trading analysis failed' },
-      { status: 500 }
+      500
     );
   }
 }

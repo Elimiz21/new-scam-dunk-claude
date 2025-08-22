@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { corsHeaders, corsResponse, corsOptionsResponse } from '@/lib/cors';
+
+export async function OPTIONS(request: NextRequest) {
+  return corsOptionsResponse();
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,15 +28,15 @@ export async function POST(request: NextRequest) {
       ]
     };
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: result
     });
   } catch (error) {
     console.error('Chat analysis error:', error);
-    return NextResponse.json(
+    return corsResponse(
       { error: 'Chat analysis failed' },
-      { status: 500 }
+      500
     );
   }
 }
