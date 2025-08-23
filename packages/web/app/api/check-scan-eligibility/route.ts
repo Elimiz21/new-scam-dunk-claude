@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
             .eq('user_id', user.id)
             .gte('used_at', startOfMonth.toISOString());
           
-          if (count >= plan.max_scans_per_month) {
+          if (count && count >= plan.max_scans_per_month) {
             return NextResponse.json({
               success: true,
               canScan: false,
