@@ -6,50 +6,72 @@ import Link from 'next/link';
 
 const plans = [
   {
-    name: 'Free',
+    name: 'Free Trial',
     price: '$0',
-    period: 'forever',
-    description: 'Basic protection for individuals',
+    period: '1 free test',
+    description: 'Try our protection once for free',
     features: [
-      '5 scans per month',
-      'Basic AI detection',
-      'Email support',
-      'Browser extension',
+      '1 comprehensive scan',
+      'All 4 detection tests',
+      'Full AI analysis',
+      'Detailed report',
+      'No credit card required',
     ],
     color: 'from-gray-600 to-gray-400',
-    buttonText: 'Get Started',
+    buttonText: 'Start Free Test',
     popular: false,
+    isFreeTrial: true,
   },
   {
-    name: 'Pro',
-    price: '$19',
+    name: 'Pay Per Scan',
+    price: '$4.99',
+    period: 'per scan',
+    description: 'Perfect for occasional checks',
+    features: [
+      'Single comprehensive scan',
+      'All 4 detection tests',
+      'Advanced AI detection',
+      'Downloadable report',
+      'Email results',
+      '30-day result storage',
+    ],
+    color: 'from-green-600 to-green-400',
+    buttonText: 'Buy Single Scan',
+    popular: false,
+    isOneTime: true,
+  },
+  {
+    name: 'Personal',
+    price: '$9.99',
     period: '/month',
-    description: 'Advanced protection for active users',
+    description: 'Unlimited protection for one user',
     features: [
       'Unlimited scans',
-      'Advanced AI detection',
-      'Priority support',
+      'All 4 detection tests',
       'Real-time monitoring',
-      'Family sharing (3 users)',
-      'API access',
+      'Priority support',
+      'Scan history',
+      'Mobile app access',
+      'Email & SMS alerts',
     ],
     color: 'from-holo-cyan to-holo-cyan-light',
-    buttonText: 'Start Free Trial',
+    buttonText: 'Start Monthly Plan',
     popular: true,
   },
   {
     name: 'Family',
-    price: '$39',
+    price: '$19.99',
     period: '/month',
-    description: 'Complete protection for your whole family',
+    description: 'Protection for up to 3 family members',
     features: [
-      'Everything in Pro',
-      'Up to 10 family members',
+      'Everything in Personal',
+      'Up to 3 users',
+      'Family dashboard',
       'Elder-specific features',
-      'Activity dashboard',
+      'Activity monitoring',
       'Emergency alerts',
       'Phone support',
-      'Custom training',
+      'Parental controls',
     ],
     color: 'from-holo-purple to-purple-400',
     buttonText: 'Protect Your Family',
@@ -82,7 +104,7 @@ export default function PricingPage() {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -138,28 +160,100 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* Enterprise Section */}
+        {/* Teams & Enterprise Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="mt-16 text-center"
         >
-          <div className="glass-card p-8 max-w-3xl mx-auto">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <Shield className="w-8 h-8 text-holo-cyan" />
-              <h3 className="text-2xl font-bold text-white">Enterprise Solutions</h3>
-              <Users className="w-8 h-8 text-holo-cyan" />
+          <div className="glass-card p-8 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Teams Plan */}
+              <div className="text-left">
+                <div className="flex items-center gap-3 mb-4">
+                  <Users className="w-6 h-6 text-holo-cyan" />
+                  <h3 className="text-xl font-bold text-white">Teams Plan</h3>
+                </div>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-holo-cyan">$49.99</span>
+                  <span className="text-gray-400">/month</span>
+                </div>
+                <p className="text-gray-400 mb-4">
+                  Perfect for investment managers, advisors, family offices, and consultants
+                </p>
+                <ul className="space-y-2 mb-6 text-sm">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-holo-cyan flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">Unlimited users & scans</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-holo-cyan flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">Team management dashboard</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-holo-cyan flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">API access & integrations</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-holo-cyan flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">Compliance reporting</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-holo-cyan flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">Dedicated account manager</span>
+                  </li>
+                </ul>
+                <Link href="/register">
+                  <button className="holo-button px-6 py-2 text-sm">
+                    Start Team Trial
+                  </button>
+                </Link>
+              </div>
+
+              {/* Enterprise */}
+              <div className="text-left">
+                <div className="flex items-center gap-3 mb-4">
+                  <Shield className="w-6 h-6 text-purple-400" />
+                  <h3 className="text-xl font-bold text-white">Enterprise</h3>
+                </div>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-purple-400">Custom</span>
+                  <span className="text-gray-400"> pricing</span>
+                </div>
+                <p className="text-gray-400 mb-4">
+                  For large organizations with specific security and compliance needs
+                </p>
+                <ul className="space-y-2 mb-6 text-sm">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">Custom AI model training</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">On-premise deployment option</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">SLA & 24/7 support</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">SOC 2 compliance</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">White-label options</span>
+                  </li>
+                </ul>
+                <Link href="/contact">
+                  <button className="glass-button px-6 py-2 text-sm hover:border-purple-400">
+                    Contact Sales
+                    <Zap className="w-4 h-4 ml-2 inline" />
+                  </button>
+                </Link>
+              </div>
             </div>
-            <p className="text-gray-400 mb-6">
-              Protect your entire organization with custom AI models, dedicated support, and enterprise-grade security
-            </p>
-            <Link href="/contact">
-              <button className="holo-button px-8 py-3">
-                Contact Sales
-                <Zap className="w-4 h-4 ml-2 inline" />
-              </button>
-            </Link>
           </div>
         </motion.div>
 
@@ -176,23 +270,33 @@ export default function PricingPage() {
           
           <div className="space-y-4">
             <div className="glass-card p-6">
-              <h4 className="font-semibold text-white mb-2">Can I change plans anytime?</h4>
-              <p className="text-gray-400">Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the next billing cycle.</p>
+              <h4 className="font-semibold text-white mb-2">How does the free test work?</h4>
+              <p className="text-gray-400">Every new user gets one free comprehensive scan that includes all 4 detection tests. No credit card required. After your free test, you can choose to buy individual scans or subscribe to a monthly plan.</p>
             </div>
             
             <div className="glass-card p-6">
-              <h4 className="font-semibold text-white mb-2">Is there a free trial?</h4>
-              <p className="text-gray-400">Yes! All paid plans come with a 14-day free trial. No credit card required to start.</p>
+              <h4 className="font-semibold text-white mb-2">What's the difference between pay-per-scan and monthly plans?</h4>
+              <p className="text-gray-400">Pay-per-scan ($4.99) is perfect for occasional checks. Monthly plans offer unlimited scans, real-time monitoring, and additional features like alerts and scan history. If you scan more than twice a month, a subscription saves you money.</p>
             </div>
             
             <div className="glass-card p-6">
-              <h4 className="font-semibold text-white mb-2">How does family sharing work?</h4>
-              <p className="text-gray-400">You can invite family members to your account. Each member gets their own login and personalized protection settings.</p>
+              <h4 className="font-semibold text-white mb-2">Can I share my Family plan with friends?</h4>
+              <p className="text-gray-400">The Family plan ($19.99/month) is designed for up to 3 family members living in the same household. Each member gets their own login and personalized protection settings.</p>
+            </div>
+            
+            <div className="glass-card p-6">
+              <h4 className="font-semibold text-white mb-2">What's included in the Teams plan?</h4>
+              <p className="text-gray-400">The Teams plan ($49.99/month) includes unlimited users and scans, making it perfect for investment managers, financial advisors, family offices, and consulting firms. It includes team management tools, compliance reporting, and API access.</p>
+            </div>
+            
+            <div className="glass-card p-6">
+              <h4 className="font-semibold text-white mb-2">Can I cancel my subscription anytime?</h4>
+              <p className="text-gray-400">Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your current billing period. No cancellation fees or long-term contracts.</p>
             </div>
             
             <div className="glass-card p-6">
               <h4 className="font-semibold text-white mb-2">What payment methods do you accept?</h4>
-              <p className="text-gray-400">We accept all major credit cards, PayPal, and for enterprise customers, we offer invoicing options.</p>
+              <p className="text-gray-400">We accept all major credit cards, debit cards, PayPal, and for Teams/Enterprise customers, we offer ACH transfers and invoicing options.</p>
             </div>
           </div>
         </motion.div>

@@ -118,19 +118,19 @@ const API_KEY_CONFIGS = [
         required: false
       },
       {
-        key: 'COINGECKO_API_KEY',
-        name: 'CoinGecko',
-        description: 'Cryptocurrency market data',
-        instructions: 'Get API key at https://www.coingecko.com/en/api/pricing (Pro plan required for key)',
-        testEndpoint: 'https://api.coingecko.com/api/v3/ping',
+        key: 'COINMARKETCAP_API_KEY',
+        name: 'CoinMarketCap',
+        description: 'Primary cryptocurrency market data and rankings',
+        instructions: 'Sign up for FREE at https://pro.coinmarketcap.com/signup and get API key from dashboard. Free tier includes 10,000 calls/month.',
+        testEndpoint: 'https://pro-api.coinmarketcap.com/v1/key/info',
         required: true
       },
       {
-        key: 'COINMARKETCAP_API_KEY',
-        name: 'CoinMarketCap',
-        description: 'Crypto rankings and data',
-        instructions: 'Sign up at https://pro.coinmarketcap.com/signup and get API key from dashboard.',
-        testEndpoint: 'https://pro-api.coinmarketcap.com/v1/key/info',
+        key: 'COINGECKO_API_KEY',
+        name: 'CoinGecko',
+        description: 'Alternative cryptocurrency data source',
+        instructions: 'Get API key at https://www.coingecko.com/en/api/pricing (Pro plan required for key)',
+        testEndpoint: 'https://api.coingecko.com/api/v3/ping',
         required: false
       },
       {
@@ -176,6 +176,107 @@ const API_KEY_CONFIGS = [
         description: 'Broker and firm verification',
         instructions: 'FINRA data is publicly available. No API key needed for basic queries.',
         testEndpoint: null,
+        required: false
+      }
+    ]
+  },
+  {
+    category: 'Scammer Detection Databases',
+    keys: [
+      {
+        key: 'SCAMALERT_API_KEY',
+        name: 'ScamAlert (Singapore Police)',
+        description: 'Singapore Police Force scam database',
+        instructions: 'Free public API. Visit https://www.scamalert.sg/api for documentation. No key required for basic access.',
+        testEndpoint: 'https://www.scamalert.sg/api/v1/check',
+        required: false
+      },
+      {
+        key: 'CYBERCRIME_COMPLAINTS_KEY',
+        name: 'IC3 FBI Database',
+        description: 'FBI Internet Crime Complaint Center',
+        instructions: 'Public data available. Visit https://www.ic3.gov/Home/API for access information.',
+        testEndpoint: null,
+        required: false
+      },
+      {
+        key: 'APWG_API_KEY',
+        name: 'APWG eCrime Exchange',
+        description: 'Anti-Phishing Working Group database',
+        instructions: 'Academic/research access available. Apply at https://apwg.org/ecx/ for free researcher access.',
+        testEndpoint: 'https://api.ecrimex.net/v1/check',
+        required: false
+      },
+      {
+        key: 'SCAMWATCH_API_KEY',
+        name: 'Scamwatch Australia',
+        description: 'Australian Competition & Consumer Commission',
+        instructions: 'Free public data. Visit https://www.scamwatch.gov.au/api for documentation.',
+        testEndpoint: 'https://api.scamwatch.gov.au/v1/reports',
+        required: false
+      },
+      {
+        key: 'ACTION_FRAUD_KEY',
+        name: 'Action Fraud UK',
+        description: 'UK National Fraud & Cyber Crime Reporting',
+        instructions: 'Public data available. See https://www.actionfraud.police.uk/api for access.',
+        testEndpoint: null,
+        required: false
+      },
+      {
+        key: 'INTERPOL_NOTICES_KEY',
+        name: 'INTERPOL Notices API',
+        description: 'INTERPOL Red Notices and wanted persons',
+        instructions: 'Free public API. No key required. Documentation at https://interpol.api.bund.dev/',
+        testEndpoint: 'https://ws-public.interpol.int/notices/v1/red',
+        required: false
+      },
+      {
+        key: 'BETTER_BUSINESS_BUREAU',
+        name: 'BBB Scam Tracker',
+        description: 'Better Business Bureau scam reports',
+        instructions: 'Free public data. Visit https://www.bbb.org/scamtracker/api for access.',
+        testEndpoint: 'https://api.bbb.org/api/v1/scamtracker',
+        required: false
+      },
+      {
+        key: 'PHISHTANK_API_KEY',
+        name: 'PhishTank',
+        description: 'Community-based phishing verification',
+        instructions: 'Free API key at https://www.phishtank.com/api_register.php',
+        testEndpoint: 'https://checkurl.phishtank.com/checkurl/',
+        required: false
+      },
+      {
+        key: 'URLVOID_API_KEY',
+        name: 'URLVoid',
+        description: 'Website reputation checker',
+        instructions: 'Free tier available. Sign up at https://www.urlvoid.com/api/',
+        testEndpoint: 'https://api.urlvoid.com/v1/info',
+        required: false
+      },
+      {
+        key: 'ABUSEIPDB_API_KEY',
+        name: 'AbuseIPDB',
+        description: 'IP address abuse detection',
+        instructions: 'Free API key with 1000 checks/day at https://www.abuseipdb.com/api',
+        testEndpoint: 'https://api.abuseipdb.com/api/v2/check',
+        required: false
+      },
+      {
+        key: 'VIRUSTOTAL_API_KEY',
+        name: 'VirusTotal',
+        description: 'URL and file reputation analysis',
+        instructions: 'Free API key with 500 requests/day at https://www.virustotal.com/gui/join-us',
+        testEndpoint: 'https://www.virustotal.com/api/v3/urls',
+        required: false
+      },
+      {
+        key: 'SAFEBROWSING_API_KEY',
+        name: 'Google Safe Browsing',
+        description: 'Google\'s malicious URL database',
+        instructions: 'Free API key at https://developers.google.com/safe-browsing/v4/get-started',
+        testEndpoint: 'https://safebrowsing.googleapis.com/v4/threatMatches:find',
         required: false
       }
     ]
