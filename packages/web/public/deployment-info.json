@@ -1,0 +1,31 @@
+{
+  "version": "2.1.0",
+  "deploymentDate": "2025-08-23T10:45:00Z",
+  "changes": {
+    "apiIntegrations": {
+      "coinMarketCap": "PRIMARY - Required",
+      "coinGecko": "Secondary - Optional",
+      "newScammerDatabases": [
+        "FBI IC3 Database",
+        "INTERPOL Notices API",
+        "ScamAlert Singapore Police",
+        "Scamwatch Australia",
+        "Action Fraud UK",
+        "PhishTank",
+        "VirusTotal",
+        "Google Safe Browsing",
+        "URLVoid",
+        "AbuseIPDB",
+        "BBB Scam Tracker",
+        "APWG eCrime Exchange"
+      ]
+    },
+    "pricing": {
+      "freeTrial": "1 test per user",
+      "payPerScan": "$4.99",
+      "personal": "$9.99/month",
+      "family": "$19.99/month (3 users)",
+      "teams": "$49.99/month (unlimited)"
+    }
+  }
+}
