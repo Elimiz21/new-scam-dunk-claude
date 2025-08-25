@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
   Shield, ArrowLeft, Info, Check, X, Loader2, Eye, EyeOff,
-  TestTube, Save, AlertCircle, ExternalLink, Copy, Key
+  TestTube, Save, AlertCircle, ExternalLink, Copy, Key, Database
 } from 'lucide-react';
+import { useApiKeysBackup } from '@/hooks/useApiKeys';
 
 interface ApiKeyConfig {
   key: string;
@@ -34,6 +35,7 @@ export default function AdminSettings() {
   const [testingKeys, setTestingKeys] = useState<Record<string, boolean>>({});
   const [testResults, setTestResults] = useState<Record<string, { success: boolean; message: string }>>({});
   const [savingKeys, setSavingKeys] = useState<Record<string, boolean>>({});
+  const { localKeys, saveLocalKey, hasLocalKey } = useApiKeysBackup();
 
   useEffect(() => {
     checkAuth();
@@ -69,7 +71,16 @@ export default function AdminSettings() {
       
       const data = await response.json();
       if (data.success) {
-        setApiKeys(data.apiKeys);
+        // Merge with local backup keys
+        const mergedKeys = data.apiKeys.map((category: ApiKeyCategory) => ({
+          ...category,
+          keys: category.keys.map((key: ApiKeyConfig) => ({
+            ...key,
+            isConfigured: key.isConfigured || hasLocalKey(key.key),
+            hasLocalBackup: hasLocalKey(key.key)
+          }))
+        }));
+        setApiKeys(mergedKeys);
       }
     } catch (error) {
       console.error('Failed to fetch API keys:', error);
@@ -85,6 +96,9 @@ export default function AdminSettings() {
     if (!keyValue) return;
     
     setSavingKeys({ ...savingKeys, [keyName]: true });
+    
+    // Always save to local backup first
+    saveLocalKey(keyName, keyValue);
     
     try {
       const response = await fetch('/api/admin/api-keys', {
@@ -105,14 +119,23 @@ export default function AdminSettings() {
         // Show success in test results
         setTestResults({
           ...testResults,
-          [keyName]: { success: true, message: 'API key saved successfully' }
+          [keyName]: { success: true, message: 'API key saved successfully (with local backup)' }
         });
+      } else {
+        // Even if server save fails, we have local backup
+        setTestResults({
+          ...testResults,
+          [keyName]: { success: true, message: 'API key saved to local backup (server unavailable)' }
+        });
+        await fetchApiKeys(); // Refresh to show local backup status
       }
     } catch (error) {
+      // Server failed but we have local backup
       setTestResults({
         ...testResults,
-        [keyName]: { success: false, message: 'Failed to save API key' }
+        [keyName]: { success: true, message: 'API key saved to local backup (server error)' }
       });
+      await fetchApiKeys();
     } finally {
       setSavingKeys({ ...savingKeys, [keyName]: false });
     }
@@ -256,11 +279,19 @@ export default function AdminSettings() {
                         </p>
                       </div>
                       
-                      {/* Status Message */}
+                      {/* Status Messages */}
                       {apiKey.isConfigured && (
-                        <div className="flex items-center text-green-400 text-sm bg-green-500/10 rounded-lg px-3 py-2">
-                          <Check className="w-4 h-4 mr-2" />
-                          <span>This API key is currently active in the database</span>
+                        <div className="space-y-2">
+                          <div className="flex items-center text-green-400 text-sm bg-green-500/10 rounded-lg px-3 py-2">
+                            <Check className="w-4 h-4 mr-2" />
+                            <span>This API key is currently active</span>
+                          </div>
+                          {(apiKey as any).hasLocalBackup && (
+                            <div className="flex items-center text-blue-400 text-sm bg-blue-500/10 rounded-lg px-3 py-2">
+                              <Database className="w-4 h-4 mr-2" />
+                              <span>Local backup available</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

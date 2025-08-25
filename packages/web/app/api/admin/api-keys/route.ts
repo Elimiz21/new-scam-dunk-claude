@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '@/lib/supabase-admin';
+import { getApiKeysStorage } from '@/lib/api-keys-storage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'admin-secret-key-2025';
 
@@ -300,38 +301,21 @@ export async function GET(request: NextRequest) {
   
   try {
     const supabase = getSupabaseClient();
+    const storage = getApiKeysStorage(supabase);
     let savedKeys: Record<string, { value: string; isActive: boolean }> = {};
     
-    if (supabase) {
-      // Get saved API keys from database
-      const { data, error } = await supabase
-        .from('api_keys')
-        .select('key_name, key_value, is_active')
-        .eq('is_active', true);
-      
-      console.log('Database query result:', { data, error });
-      
-      if (error) {
-        console.error('Error fetching API keys:', error);
-      }
-      
-      if (data && data.length > 0) {
-        console.log(`Found ${data.length} saved API keys`);
-        data.forEach((item: any) => {
-          // Mask the key value for security
-          const maskedValue = item.key_value ? '••••••' + item.key_value.slice(-4) : '';
-          savedKeys[item.key_name] = {
-            value: maskedValue,
-            isActive: item.is_active
-          };
-          console.log(`Loaded key: ${item.key_name} (${maskedValue})`);
-        });
-      } else {
-        console.log('No saved API keys found in database');
-      }
-    } else {
-      console.log('Supabase client not initialized');
-    }
+    // Use the storage class which has fallback mechanisms
+    const allKeys = await storage.getAllKeys();
+    console.log(`Retrieved ${allKeys.length} API keys from storage`);
+    
+    allKeys.forEach((item: any) => {
+      // Mask the key value for security
+      const maskedValue = item.key_value ? '••••••' + item.key_value.slice(-4) : '';
+      savedKeys[item.key_name] = {
+        value: maskedValue,
+        isActive: item.is_active
+      };
+    });
     
     // Merge with configuration
     const keysWithStatus = API_KEY_CONFIGS.map(category => ({
@@ -372,45 +356,16 @@ export async function POST(request: NextRequest) {
     }
     
     const supabase = getSupabaseClient();
-    if (supabase) {
-      // Check if key exists
-      const { data: existing } = await supabase
-        .from('api_keys')
-        .select('id')
-        .eq('key_name', keyName)
-        .single();
-      
-      if (existing) {
-        // Update existing key
-        await supabase
-          .from('api_keys')
-          .update({
-            key_value: keyValue,
-            is_active: true,
-            updated_at: new Date().toISOString()
-          })
-          .eq('key_name', keyName);
-      } else {
-        // Insert new key
-        await supabase
-          .from('api_keys')
-          .insert([{
-            key_name: keyName,
-            key_value: keyValue,
-            is_active: true,
-            created_at: new Date().toISOString()
-          }]);
-      }
-      
-      // Log the action
-      await supabase
-        .from('admin_logs')
-        .insert([{
-          action: 'api_key_update',
-          details: { key_name: keyName },
-          email: 'elimizroch@gmail.com',
-          timestamp: new Date().toISOString()
-        }]);
+    const storage = getApiKeysStorage(supabase);
+    
+    // Use storage class which handles fallbacks
+    const success = await storage.saveKey(keyName, keyValue);
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Failed to save API key' },
+        { status: 500 }
+      );
     }
     
     return NextResponse.json({
