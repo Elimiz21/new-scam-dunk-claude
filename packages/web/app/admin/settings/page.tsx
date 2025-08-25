@@ -255,6 +255,14 @@ export default function AdminSettings() {
                           {apiKey.instructions}
                         </p>
                       </div>
+                      
+                      {/* Status Message */}
+                      {apiKey.isConfigured && (
+                        <div className="flex items-center text-green-400 text-sm bg-green-500/10 rounded-lg px-3 py-2">
+                          <Check className="w-4 h-4 mr-2" />
+                          <span>This API key is currently active in the database</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -269,7 +277,11 @@ export default function AdminSettings() {
                             ...editingKeys,
                             [apiKey.key]: e.target.value
                           })}
-                          placeholder={apiKey.currentValue?.value || 'Enter API key'}
+                          placeholder={
+                            apiKey.isConfigured 
+                              ? `Key saved: ${apiKey.currentValue?.value || '••••••••'}` 
+                              : 'Enter API key'
+                          }
                           className="w-full px-4 py-2 bg-black/50 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
                         />
                         <button
@@ -308,7 +320,7 @@ export default function AdminSettings() {
                         ) : (
                           <Save className="w-4 h-4" />
                         )}
-                        <span className="ml-2">Save</span>
+                        <span className="ml-2">{apiKey.isConfigured ? 'Update' : 'Save'}</span>
                       </button>
                     </div>
                     
