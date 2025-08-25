@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
+import { getSupabaseClient } from '@/lib/supabase-admin';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'admin-secret-key-2025';
 
@@ -32,15 +32,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabase = getSupabaseClient();
   
-  if (!supabaseUrl || !supabaseKey) {
+  if (!supabase) {
     return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
   }
   
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey);
     const { action, keys } = await request.json();
     
     if (action === 'check') {

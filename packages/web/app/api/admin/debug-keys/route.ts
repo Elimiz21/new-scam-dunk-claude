@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
+import { getSupabaseClient } from '@/lib/supabase-admin';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'admin-secret-key-2025';
 
@@ -24,13 +24,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
   const debugInfo: any = {
     env: {
-      supabaseUrl: supabaseUrl ? 'Set' : 'Missing',
-      supabaseKey: supabaseKey ? 'Set' : 'Missing',
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing',
+      supabaseKey: (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ? 'Set' : 'Missing',
     },
     database: {
       connected: false,
@@ -39,13 +36,14 @@ export async function GET(request: NextRequest) {
     }
   };
   
-  if (!supabaseUrl || !supabaseKey) {
-    debugInfo.error = 'Supabase configuration missing';
+  const supabase = getSupabaseClient();
+  
+  if (!supabase) {
+    debugInfo.error = 'Supabase client initialization failed';
     return NextResponse.json(debugInfo);
   }
   
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Check if api_keys table exists and has data
     const { data: apiKeys, error: apiKeysError } = await supabase
