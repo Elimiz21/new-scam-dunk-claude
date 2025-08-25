@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { getSupabaseClient } from '@/lib/supabase-admin';
 import { getApiKeysStorage } from '@/lib/api-keys-storage';
+import { JsonApiKeyStorage } from '@/lib/json-storage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'admin-secret-key-2025';
 
@@ -300,13 +301,13 @@ export async function GET(request: NextRequest) {
   }
   
   try {
-    const supabase = getSupabaseClient();
-    const storage = getApiKeysStorage(supabase);
+    // Use JSON storage as primary
+    const jsonStorage = JsonApiKeyStorage.getInstance();
+    const allKeys = await jsonStorage.getAllKeys();
     let savedKeys: Record<string, { value: string; isActive: boolean }> = {};
     
-    // Use the storage class which has fallback mechanisms
-    const allKeys = await storage.getAllKeys();
-    console.log(`Retrieved ${allKeys.length} API keys from storage`);
+    console.log(`Retrieved ${allKeys.length} API keys from JSON storage`);
+    console.log('Storage stats:', jsonStorage.getStats());
     
     allKeys.forEach((item: any) => {
       // Mask the key value for security
@@ -355,17 +356,26 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const supabase = getSupabaseClient();
-    const storage = getApiKeysStorage(supabase);
-    
-    // Use storage class which handles fallbacks
-    const success = await storage.saveKey(keyName, keyValue);
+    // Use JSON storage as primary
+    const jsonStorage = JsonApiKeyStorage.getInstance();
+    const success = await jsonStorage.saveKey(keyName, keyValue);
     
     if (!success) {
       return NextResponse.json(
         { error: 'Failed to save API key' },
         { status: 500 }
       );
+    }
+    
+    // Try to also save to Supabase as backup (but don't fail if it doesn't work)
+    try {
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        const storage = getApiKeysStorage(supabase);
+        await storage.saveKey(keyName, keyValue);
+      }
+    } catch (e) {
+      console.log('Supabase save failed, but JSON storage succeeded');
     }
     
     return NextResponse.json({
