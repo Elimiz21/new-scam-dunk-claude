@@ -8,7 +8,13 @@ function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
+  console.log('Supabase config:', {
+    url: supabaseUrl ? 'Set' : 'Missing',
+    key: supabaseKey ? 'Set' : 'Missing'
+  });
+  
   if (!supabaseUrl || !supabaseKey) {
+    console.error('Supabase configuration missing');
     return null;
   }
   
@@ -315,20 +321,33 @@ export async function GET(request: NextRequest) {
     
     if (supabase) {
       // Get saved API keys from database
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('api_keys')
         .select('key_name, key_value, is_active')
         .eq('is_active', true);
       
-      if (data) {
+      console.log('Database query result:', { data, error });
+      
+      if (error) {
+        console.error('Error fetching API keys:', error);
+      }
+      
+      if (data && data.length > 0) {
+        console.log(`Found ${data.length} saved API keys`);
         data.forEach((item: any) => {
           // Mask the key value for security
+          const maskedValue = item.key_value ? '••••••' + item.key_value.slice(-4) : '';
           savedKeys[item.key_name] = {
-            value: item.key_value ? '••••••' + item.key_value.slice(-4) : '',
+            value: maskedValue,
             isActive: item.is_active
           };
+          console.log(`Loaded key: ${item.key_name} (${maskedValue})`);
         });
+      } else {
+        console.log('No saved API keys found in database');
       }
+    } else {
+      console.log('Supabase client not initialized');
     }
     
     // Merge with configuration
