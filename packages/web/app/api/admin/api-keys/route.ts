@@ -301,14 +301,20 @@ export async function GET(request: NextRequest) {
   }
   
   try {
-    // Use JSON storage as primary
-    const jsonStorage = JsonApiKeyStorage.getInstance();
-    const allKeys = await jsonStorage.getAllKeys();
+    // Use Supabase as primary storage
+    const supabase = getSupabaseClient();
+    const storage = getApiKeysStorage(supabase);
+    const allKeys = await storage.getAllKeys();
     let savedKeys: Record<string, { value: string; isActive: boolean }> = {};
     
-    console.log(`Retrieved ${allKeys.length} API keys from JSON storage`);
-    console.log('Storage stats:', jsonStorage.getStats());
+    console.log(`Retrieved ${allKeys.length} API keys from database`);
     
+    // Also check JSON storage as fallback
+    const jsonStorage = JsonApiKeyStorage.getInstance();
+    const jsonKeys = await jsonStorage.getAllKeys();
+    console.log(`Found ${jsonKeys.length} additional keys in memory`);
+    
+    // Merge keys (database takes priority)
     allKeys.forEach((item: any) => {
       // Mask the key value for security
       const maskedValue = item.key_value ? '••••••' + item.key_value.slice(-4) : '';
@@ -316,6 +322,17 @@ export async function GET(request: NextRequest) {
         value: maskedValue,
         isActive: item.is_active
       };
+    });
+    
+    // Add any memory-only keys
+    jsonKeys.forEach((item: any) => {
+      if (!savedKeys[item.key_name]) {
+        const maskedValue = item.key_value ? '••••••' + item.key_value.slice(-4) : '';
+        savedKeys[item.key_name] = {
+          value: maskedValue,
+          isActive: item.is_active
+        };
+      }
     });
     
     // Merge with configuration
@@ -356,26 +373,36 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Use JSON storage as primary
-    const jsonStorage = JsonApiKeyStorage.getInstance();
-    const success = await jsonStorage.saveKey(keyName, keyValue);
+    // Use Supabase as primary storage
+    const supabase = getSupabaseClient();
+    const storage = getApiKeysStorage(supabase);
+    const success = await storage.saveKey(keyName, keyValue);
     
     if (!success) {
-      return NextResponse.json(
-        { error: 'Failed to save API key' },
-        { status: 500 }
-      );
+      // If database fails, try JSON storage as fallback
+      console.log('Database save failed, trying memory storage');
+      const jsonStorage = JsonApiKeyStorage.getInstance();
+      const jsonSuccess = await jsonStorage.saveKey(keyName, keyValue);
+      
+      if (!jsonSuccess) {
+        return NextResponse.json(
+          { error: 'Failed to save API key to both database and memory' },
+          { status: 500 }
+        );
+      }
+      
+      return NextResponse.json({
+        success: true,
+        message: `API key ${keyName} saved to memory (database unavailable)`
+      });
     }
     
-    // Try to also save to Supabase as backup (but don't fail if it doesn't work)
+    // Also save to JSON storage as a cache
     try {
-      const supabase = getSupabaseClient();
-      if (supabase) {
-        const storage = getApiKeysStorage(supabase);
-        await storage.saveKey(keyName, keyValue);
-      }
+      const jsonStorage = JsonApiKeyStorage.getInstance();
+      await jsonStorage.saveKey(keyName, keyValue);
     } catch (e) {
-      console.log('Supabase save failed, but JSON storage succeeded');
+      console.log('Memory cache update failed, but database save succeeded');
     }
     
     return NextResponse.json({
