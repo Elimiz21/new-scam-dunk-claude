@@ -1,11 +1,7 @@
 {
-  "buildCommand": "cd packages/web && rm -rf .next node_modules .vercel && npm cache clean --force && npm install --legacy-peer-deps && npm run build",
+  "buildCommand": "cd packages/web && npm install --legacy-peer-deps && npm run build",
   "outputDirectory": "packages/web/.next",
   "installCommand": "echo 'Skip root install'",
-  "framework": null,
-  "regions": ["iad1"],
-  "env": {
-    "FORCE_REBUILD": "true",
-    "BUILD_TIMESTAMP": "2025-08-23-1045"
-  }
+  "framework": "nextjs",
+  "regions": ["iad1"]
 }
