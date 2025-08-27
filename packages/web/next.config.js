@@ -130,7 +130,7 @@ const nextConfig = {
     if (!isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        '@': './src',
+        // Remove incorrect alias that was causing build issues
       }
     }
     
