@@ -3,11 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 // Hardcoded fallback configuration
 const FALLBACK_SUPABASE_URL = 'https://gcrkijhkecsfafjbojey.supabase.co';
 const FALLBACK_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpamhrZWNzZmFmamJvamV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMzOTE5MTUsImV4cCI6MjA0ODk2NzkxNX0.VsHcZtqR01JVsYMKZ5dvn2yB2zxUJFCvPqQQ7i5FQPA';
+const FALLBACK_SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpamhrZWNzZmFmamJvamV5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMzM5MTkxNSwiZXhwIjoyMDQ4OTY3OTE1fQ.7iQ4mPdAiCDO0SJX4hO-1G_xwi_Ge_xGqC1DJzDcPzc';
 
 export function getSupabaseClient() {
   // Try environment variables first
   let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_SUPABASE_URL;
+  // IMPORTANT: Use service role key for admin operations (database writes)
   let supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 
+                    FALLBACK_SUPABASE_SERVICE_KEY || // Use service key fallback
                     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
                     FALLBACK_SUPABASE_ANON_KEY;
   
