@@ -34,6 +34,8 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabaseClient();
     const storage = getApiKeysStorage(supabase);
     
+    let riskScore = 0; // Track risk score separately
+    
     let result = {
       symbol: symbol.toUpperCase(),
       assetType,
@@ -99,21 +101,21 @@ export async function POST(request: NextRequest) {
           // Check for pump and dump indicators
           if (priceChange24h > 50) {
             result.manipulationIndicators.push('Extreme price volatility (24h)');
-            result.riskScore += 30;
+            riskScore += 30;
           }
           
           if (priceChange7d > 100) {
             result.manipulationIndicators.push('Suspicious price surge (7d)');
-            result.riskScore += 25;
+            riskScore += 25;
           }
           
           // Low market cap = higher risk
           if (marketCap < 1000000) {
             result.manipulationIndicators.push('Very low market cap (high manipulation risk)');
-            result.riskScore += 35;
+            riskScore += 35;
           } else if (marketCap < 10000000) {
             result.manipulationIndicators.push('Low market cap');
-            result.riskScore += 20;
+            riskScore += 20;
           }
           
           // Check volume to market cap ratio
@@ -121,10 +123,10 @@ export async function POST(request: NextRequest) {
             const volumeRatio = volume / marketCap;
             if (volumeRatio > 2) {
               result.manipulationIndicators.push('Abnormally high trading volume');
-              result.riskScore += 25;
+              riskScore += 25;
             } else if (volumeRatio < 0.01) {
               result.manipulationIndicators.push('Very low liquidity');
-              result.riskScore += 20;
+              riskScore += 20;
             }
           }
           
@@ -133,12 +135,12 @@ export async function POST(request: NextRequest) {
           const daysSinceATH = (Date.now() - athDate.getTime()) / (1000 * 60 * 60 * 24);
           if (daysSinceATH < 30) {
             result.manipulationIndicators.push('Very new or recently pumped');
-            result.riskScore += 20;
+            riskScore += 20;
           }
           
         } else {
           result.keyFindings.push('Cryptocurrency not found in major exchanges');
-          result.riskScore += 50;
+          riskScore += 50;
         }
       } catch (error) {
         console.error('CoinGecko API error:', error);
@@ -223,28 +225,28 @@ export async function POST(request: NextRequest) {
               // Penny stock check
               if (result.marketData.alphavantage.price < 5) {
                 result.manipulationIndicators.push('Penny stock (high manipulation risk)');
-                result.riskScore += 30;
+                riskScore += 30;
               }
               
               // Small cap check
               if (marketCap < 300000000) {
                 result.manipulationIndicators.push('Small cap stock (higher volatility)');
-                result.riskScore += 20;
+                riskScore += 20;
               }
               
               // Unusual P/E ratio
               if (peRatio < 0) {
                 result.manipulationIndicators.push('Negative P/E ratio (unprofitable)');
-                result.riskScore += 25;
+                riskScore += 25;
               } else if (peRatio > 100) {
                 result.manipulationIndicators.push('Extremely high P/E ratio');
-                result.riskScore += 20;
+                riskScore += 20;
               }
               
               // OTC or non-major exchange
               if (!['NYSE', 'NASDAQ', 'AMEX'].includes(overview.Exchange)) {
                 result.manipulationIndicators.push('Not listed on major exchange');
-                result.riskScore += 25;
+                riskScore += 25;
               }
             }
             
@@ -252,14 +254,14 @@ export async function POST(request: NextRequest) {
             const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
             if (Math.abs(changePercent) > 20) {
               result.manipulationIndicators.push('Extreme daily price movement');
-              result.riskScore += 30;
+              riskScore += 30;
             }
             
           } else if (quoteResponse.data['Note']) {
             result.keyFindings.push('API rate limit reached - limited analysis available');
           } else {
             result.keyFindings.push('Stock symbol not found');
-            result.riskScore += 40;
+            riskScore += 40;
           }
         } catch (error) {
           console.error('Alpha Vantage API error:', error);
@@ -297,7 +299,7 @@ export async function POST(request: NextRequest) {
             
             if (negativeCount > positiveCount * 2) {
               result.manipulationIndicators.push('Negative news sentiment');
-              result.riskScore += 20;
+              riskScore += 20;
             }
             
             result.marketData.newsSentiment = {
@@ -324,30 +326,31 @@ export async function POST(request: NextRequest) {
     scamPatterns.forEach(({ pattern, indicator }) => {
       if (pattern.test(symbol)) {
         result.manipulationIndicators.push(indicator);
-        result.riskScore += 25;
+        riskScore += 25;
       }
     });
     
     // If no data sources were available, provide basic analysis
     if (dataSources.length === 0) {
       result.keyFindings.push('Unable to verify through major data sources');
-      result.riskScore += 30;
+      riskScore += 30;
       result.confidence = 30;
     } else {
       result.confidence = Math.min(95, 50 + (dataSources.length * 15));
     }
     
     // Cap risk score at 100
-    result.riskScore = Math.min(100, result.riskScore);
+    riskScore = Math.min(100, riskScore);
+    result.overallRiskScore = riskScore;
     
     // Determine risk level based on score
-    if (result.riskScore >= 75) {
+    if (riskScore >= 75) {
       result.riskLevel = 'CRITICAL';
       result.alertLevel = 'CRITICAL';
-    } else if (result.riskScore >= 50) {
+    } else if (riskScore >= 50) {
       result.riskLevel = 'HIGH';
       result.alertLevel = 'HIGH';
-    } else if (result.riskScore >= 25) {
+    } else if (riskScore >= 25) {
       result.riskLevel = 'MEDIUM';
       result.alertLevel = 'MEDIUM';
     } else {
