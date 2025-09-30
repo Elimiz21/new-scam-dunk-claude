@@ -182,12 +182,15 @@ export async function POST(request: NextRequest) {
       const alphaVantageKey = await storage.getKey('ALPHA_VANTAGE_API_KEY');
       if (alphaVantageKey) {
         try {
+          console.log(`Fetching stock data for ${symbol} from Alpha Vantage`);
           // Get quote data
           const quoteResponse = await axios.get(
             `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${alphaVantageKey}`
           );
           
-          if (quoteResponse.data['Global Quote']) {
+          console.log('Alpha Vantage response:', JSON.stringify(quoteResponse.data).substring(0, 200));
+          
+          if (quoteResponse.data['Global Quote'] && Object.keys(quoteResponse.data['Global Quote']).length > 0) {
             dataSources.push('alphavantage');
             const quote = quoteResponse.data['Global Quote'];
             
@@ -258,14 +261,26 @@ export async function POST(request: NextRequest) {
             }
             
           } else if (quoteResponse.data['Note']) {
-            result.keyFindings.push('API rate limit reached - limited analysis available');
-          } else {
-            result.keyFindings.push('Stock symbol not found');
+            result.keyFindings.push('API rate limit reached - please try again later');
+            console.log('Alpha Vantage rate limit:', quoteResponse.data['Note']);
+          } else if (quoteResponse.data['Information']) {
+            result.keyFindings.push('API call frequency limit - please wait and retry');
+            console.log('Alpha Vantage info:', quoteResponse.data['Information']);
+          } else if (quoteResponse.data['Error Message']) {
+            result.keyFindings.push(`Invalid stock symbol: ${symbol}`);
             riskScore += 40;
+            console.log('Alpha Vantage error:', quoteResponse.data['Error Message']);
+          } else {
+            result.keyFindings.push('Unable to retrieve stock data - API may be unavailable');
+            console.log('Unexpected Alpha Vantage response:', quoteResponse.data);
           }
-        } catch (error) {
-          console.error('Alpha Vantage API error:', error);
+        } catch (error: any) {
+          console.error('Alpha Vantage API error:', error.message);
+          result.keyFindings.push('Stock data service temporarily unavailable');
         }
+      } else {
+        result.keyFindings.push('Stock analysis unavailable - API key not configured');
+        console.log('Alpha Vantage API key not found');
       }
       
       // Try NewsAPI for sentiment analysis
@@ -332,8 +347,21 @@ export async function POST(request: NextRequest) {
     
     // If no data sources were available, provide basic analysis
     if (dataSources.length === 0) {
-      result.keyFindings.push('Unable to verify through major data sources');
-      riskScore += 30;
+      // Provide more detailed explanation when no data is available
+      if (assetType === 'crypto' || assetType === 'cryptocurrency') {
+        if (!result.keyFindings.some(f => f.includes('not found'))) {
+          result.keyFindings.push(`Unable to find cryptocurrency "${symbol}" in market databases`);
+        }
+        result.keyFindings.push('Verify the correct symbol on CoinGecko or CoinMarketCap');
+        result.keyFindings.push('Many scam tokens use similar names to legitimate projects');
+        riskScore += 30;
+      } else {
+        if (!result.keyFindings.some(f => f.includes('API'))) {
+          result.keyFindings.push(`Unable to retrieve data for stock symbol "${symbol.toUpperCase()}"`);
+        }
+        result.keyFindings.push('Please verify this is a valid ticker symbol');
+        result.keyFindings.push('Check if the stock is listed on major exchanges (NYSE, NASDAQ)');
+      }
       result.confidence = 30;
     } else {
       result.confidence = Math.min(95, 50 + (dataSources.length * 15));
@@ -359,10 +387,12 @@ export async function POST(request: NextRequest) {
     }
     
     // Generate summary
-    if (result.manipulationIndicators.length > 0) {
-      result.summary = `Trading analysis for ${symbol} detected ${result.manipulationIndicators.length} risk indicators. ${result.riskLevel} risk level assigned.`;
+    if (dataSources.length === 0) {
+      result.summary = `Unable to complete trading analysis for ${symbol.toUpperCase()}. ${result.keyFindings[0]}`;
+    } else if (result.manipulationIndicators.length > 0) {
+      result.summary = `Trading analysis for ${symbol.toUpperCase()} detected ${result.manipulationIndicators.length} risk indicators. ${result.riskLevel} risk level assigned.`;
     } else {
-      result.summary = `Trading analysis for ${symbol} completed. No significant manipulation indicators detected.`;
+      result.summary = `Trading analysis for ${symbol.toUpperCase()} completed using ${dataSources.join(', ')}. No significant manipulation indicators detected.`;
     }
     
     // Add key findings
