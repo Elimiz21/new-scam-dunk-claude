@@ -1,19 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { corsHeaders, corsResponse, corsOptionsResponse } from '@/lib/cors';
-import { createClient } from '@supabase/supabase-js';
-import { getApiKeysStorage } from '@/lib/api-keys-storage';
+import { NextRequest } from 'next/server';
 import axios from 'axios';
-
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseKey) {
-    return null;
-  }
-  
-  return createClient(supabaseUrl, supabaseKey);
-}
+import { corsResponse, corsOptionsResponse } from '@/lib/cors';
+import { getApiKeysStorage } from '@/lib/api-keys-storage';
+import { getSupabaseClient } from '@/lib/supabase-admin';
+import { requireAuth } from '@/lib/auth/server-auth';
 
 export async function OPTIONS(request: NextRequest) {
   return corsOptionsResponse();
@@ -21,6 +11,11 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = requireAuth(request);
+    if ('error' in authResult) {
+      return authResult.error;
+    }
+
     const { targetType, targetIdentifier } = await request.json();
     
     if (!targetType || !targetIdentifier) {
@@ -33,6 +28,16 @@ export async function POST(request: NextRequest) {
     // Initialize Supabase and get API keys
     const supabase = getSupabaseClient();
     const storage = getApiKeysStorage(supabase);
+    
+    if (!supabase) {
+      return corsResponse(
+        {
+          success: false,
+          error: 'Database connection failed',
+        },
+        500
+      );
+    }
     
     let result = {
       targetType,

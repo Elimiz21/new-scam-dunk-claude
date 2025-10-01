@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { corsHeaders, corsResponse, corsOptionsResponse } from '@/lib/cors';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest } from 'next/server';
+import { corsResponse, corsOptionsResponse } from '@/lib/cors';
+import { getSupabaseClient } from '@/lib/supabase-admin';
 import { getApiKeysStorage } from '@/lib/api-keys-storage';
 import OpenAI from 'openai';
+import { requireAuth } from '@/lib/auth/server-auth';
 
 export async function OPTIONS(request: NextRequest) {
   return corsOptionsResponse();
@@ -10,6 +11,11 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = requireAuth(request);
+    if ('error' in authResult) {
+      return authResult.error;
+    }
+
     const { platform, messages } = await request.json();
     
     if (!messages || messages.length === 0) {
@@ -20,9 +26,16 @@ export async function POST(request: NextRequest) {
     }
     
     // Initialize Supabase client
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      return corsResponse(
+        {
+          success: false,
+          error: 'Database connection failed',
+        },
+        500
+      );
+    }
     
     // Get API key from storage
     const storage = getApiKeysStorage(supabase);

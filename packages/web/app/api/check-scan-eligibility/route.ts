@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
-
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseKey) {
-    return null;
-  }
-  
-  return createClient(supabaseUrl, supabaseKey);
-}
+import { corsHeaders } from '@/lib/cors';
+import { getSupabaseClient } from '@/lib/supabase-admin';
+import { requireAuth } from '@/lib/auth/server-auth';
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
@@ -26,14 +10,14 @@ export async function OPTIONS() {
 // POST /api/check-scan-eligibility - Check if user can perform a scan
 export async function POST(request: NextRequest) {
   try {
-    const { userId, email } = await request.json();
-    
-    if (!userId && !email) {
-      return NextResponse.json(
-        { error: 'User ID or email required' },
-        { status: 400, headers: corsHeaders }
-      );
+    const authResult = requireAuth(request);
+    if ('error' in authResult) {
+      return authResult.error;
     }
+
+    const { user: authUser } = authResult;
+
+    const { userId: overrideUserId, email } = await request.json();
     
     const supabase = getSupabaseClient();
     if (!supabase) {
@@ -49,11 +33,12 @@ export async function POST(request: NextRequest) {
     
     // Get or create user
     let user;
-    if (email) {
+    if (overrideUserId || email) {
+      const lookupEmail = email ?? authUser.email;
       const { data: existingUser } = await supabase
         .from('users')
         .select('*')
-        .eq('email', email)
+        .eq('email', lookupEmail)
         .single();
       
       if (!existingUser) {
@@ -61,7 +46,7 @@ export async function POST(request: NextRequest) {
         const { data: newUser } = await supabase
           .from('users')
           .insert({
-            email,
+            email: lookupEmail,
             created_at: new Date().toISOString()
           })
           .select()
@@ -74,7 +59,7 @@ export async function POST(request: NextRequest) {
       const { data: existingUser } = await supabase
         .from('users')
         .select('*')
-        .eq('id', userId)
+        .eq('id', authUser.userId)
         .single();
       user = existingUser;
     }
@@ -214,21 +199,19 @@ export async function POST(request: NextRequest) {
 // GET /api/check-scan-eligibility - Get scan eligibility for current user
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    const email = request.headers.get('x-user-email');
-    
-    if (!userId && !email) {
-      return NextResponse.json(
-        { error: 'User identification required' },
-        { status: 401, headers: corsHeaders }
-      );
+    const authResult = requireAuth(request);
+    if ('error' in authResult) {
+      return authResult.error;
     }
-    
-    // Reuse POST logic
+
     const mockRequest = {
-      json: async () => ({ userId, email })
-    } as NextRequest;
-    
+      headers: request.headers,
+      json: async () => ({
+        userId: authResult.user.userId,
+        email: authResult.user.email,
+      }),
+    } as unknown as NextRequest;
+
     return POST(mockRequest);
     
   } catch (error) {

@@ -33,16 +33,19 @@
 - ✅ **Step 1: API Surface Alignment (client-side)**
   - Updated `packages/web/services/detection.service.ts` to target the live Next.js API routes instead of deprecated `/verify` endpoints.
   - Added consistent response extraction, error handling, and overall risk score calculation.
-- 🚧 **Step 2: Authentication & Authorization Overhaul**
-  - Planned but not yet implemented; backend alignment work to resume next session (reinstating real auth endpoints, updating Zustand store usage, protecting dashboard routes).
+- ✅ **Step 2: Authentication & Authorization Overhaul (phase 1)**
+  - Implemented secure Next.js API routes for login and registration using Supabase + bcrypt hashing (`app/api/auth/login`, `app/api/auth/register`).
+  - Centralised auth handling in `lib/stores/auth-store.ts`, synchronising JWT storage with localStorage and updating all auth pages to use real backend flows.
+  - Added JWT verification middleware (`lib/auth/server-auth.ts`) and enforced auth on scan-related API routes (contact, chat, trading, veracity, eligibility, subscriptions).
+  - Guarded dashboard layouts to require an authenticated session before rendering private pages.
+  - Remaining Step 2 work: secure the legacy Express API build, backfill `/users/profile` handler, and audit service-role key usage per route.
 
 ## Upcoming Priorities
-1. Finish Step 2 by wiring the frontend auth flows to real backend endpoints and protecting all sensitive routes.
-2. Revisit the backend build output to ensure only the supported Express API ships in production and secure the Next.js API handlers.
-3. Begin instrumenting detection endpoints with telemetry and graceful degradation paths (Step 3).
+1. Complete Step 2 by aligning the Express API build with the new JWT contract, adding the `/users/profile` handler, and replacing remaining service-role key fallbacks.
+2. Harden operational tooling in Step 3: add telemetry, rate limiting, and caching around the detection pipelines.
+3. Stand up automated quality gates (unit/integration smoke tests) ahead of the infrastructure/security work in Step 4.
 
 ## Notes for Next Session
 - Backend TypeScript compilation currently blocked by large NestJS code paths; previous attempt rolled back—needs a scoped strategy when resuming Step 2.
 - No automated tests were run in this session; plan to introduce targeted integration tests once auth endpoints are re-enabled.
 - Ensure removal of deprecated mock login logic in `/app/(auth)/login/*` after real auth is live.
-

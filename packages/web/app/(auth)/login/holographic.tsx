@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { useAuthStore } from '@/lib/stores/auth-store'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -12,27 +13,26 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const login = useAuthStore((state) => state.login)
+  const authLoading = useAuthStore((state) => state.loading)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/dashboard')
+    }
+  }, [isAuthenticated, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
     setError('')
 
     try {
-      // Demo login - accept any credentials for now
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Store mock auth token
-      localStorage.setItem('auth_token', 'mock_token_' + Date.now())
-      
-      // Redirect to dashboard
-      router.push('/dashboard')
+      await login(email, password)
+      router.replace('/dashboard')
     } catch (err) {
-      setError('Invalid email or password')
-    } finally {
-      setIsLoading(false)
+      setError(err instanceof Error ? err.message : 'Invalid email or password')
     }
   }
 
@@ -182,10 +182,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={authLoading}
               className="w-full holo-button"
             >
-              {isLoading ? (
+              {authLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="holo-spinner w-5 h-5 mr-2" />
                   Signing in...

@@ -1,6 +1,18 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/$/, '')
+
+function setAuthToken(token: string | null) {
+  if (typeof window === 'undefined') return
+
+  if (token) {
+    localStorage.setItem('auth_token', token)
+  } else {
+    localStorage.removeItem('auth_token')
+  }
+}
+
 export interface User {
   id: string
   email: string
@@ -62,7 +74,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ loading: true })
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -70,19 +82,19 @@ export const useAuthStore = create<AuthState>()(
             body: JSON.stringify({ email, password }),
           })
 
-          if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.message || 'Login failed')
+          const data = await response.json()
+
+          if (!response.ok || data.success === false) {
+            throw new Error(data.error || data.message || 'Login failed')
           }
 
-          const data = await response.json()
-          
           set({
             user: data.user,
             token: data.token,
             isAuthenticated: true,
             loading: false,
           })
+          setAuthToken(data.token)
         } catch (error) {
           set({ loading: false })
           throw error
@@ -92,7 +104,7 @@ export const useAuthStore = create<AuthState>()(
       register: async (data: RegisterData) => {
         set({ loading: true })
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+          const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -100,19 +112,19 @@ export const useAuthStore = create<AuthState>()(
             body: JSON.stringify(data),
           })
 
-          if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.message || 'Registration failed')
+          const result = await response.json()
+
+          if (!response.ok || result.success === false) {
+            throw new Error(result.error || result.message || 'Registration failed')
           }
 
-          const result = await response.json()
-          
           set({
             user: result.user,
             token: result.token,
             isAuthenticated: true,
             loading: false,
           })
+          setAuthToken(result.token)
         } catch (error) {
           set({ loading: false })
           throw error
@@ -127,9 +139,7 @@ export const useAuthStore = create<AuthState>()(
           loading: false,
         })
         
-        // Clear persisted state
-        localStorage.removeItem('auth-store')
-        
+        setAuthToken(null)
         // Redirect to login
         window.location.href = '/login'
       },
@@ -140,7 +150,7 @@ export const useAuthStore = create<AuthState>()(
 
         set({ loading: true })
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile`, {
+          const response = await fetch(`${API_BASE_URL}/users/profile`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -169,8 +179,14 @@ export const useAuthStore = create<AuthState>()(
       initializeAuth: () => {
         // This will be called on app load to restore auth state
         // The persist middleware handles the actual restoration
+        if (typeof window === 'undefined') return
+
+        const storedToken = localStorage.getItem('auth_token')
         const { token } = get()
-        if (token) {
+
+        if (storedToken && !token) {
+          set({ token: storedToken, isAuthenticated: true })
+        } else if (token) {
           set({ isAuthenticated: true })
         }
       },
@@ -181,6 +197,7 @@ export const useAuthStore = create<AuthState>()(
 
       setToken: (token: string) => {
         set({ token, isAuthenticated: true })
+        setAuthToken(token)
       },
     }),
     {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Shield, Eye, EyeOff, AlertCircle } from 'lucide-react'
@@ -186,13 +186,21 @@ export default function LoginPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const login = useAuthStore((state) => state.login)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const authLoading = useAuthStore((state) => state.loading)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setError('') // Clear error when user types
   }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/dashboard')
+    }
+  }, [isAuthenticated, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -202,41 +210,11 @@ export default function LoginPage() {
       return
     }
 
-    setLoading(true)
-    
     try {
-      // For demo purposes, simulate successful login without backend
-      await new Promise(resolve => setTimeout(resolve, 800)) // Simulate network delay
-      
-      // Create mock user data
-      const mockUser = {
-        id: '1',
-        email: formData.email,
-        name: formData.email.split('@')[0], // Use email prefix as name
-        role: 'user',
-        preferences: {
-          theme: 'dark' as const,
-          notifications: true,
-          twoFactorEnabled: false
-        },
-        subscription: {
-          plan: 'pro' as const,
-          status: 'active' as const,
-        },
-        profile: {}
-      }
-      
-      // Import the auth store and set user
-      const { setUser, setToken } = useAuthStore.getState()
-      setUser(mockUser)
-      setToken('mock-jwt-token-' + Date.now())
-      
-      // Redirect to homepage  
-      router.push('/')
+      await login(formData.email, formData.password)
+      router.replace('/dashboard')
     } catch (err) {
-      setError('Login failed. Please try again.')
-    } finally {
-      setLoading(false)
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
     }
   }
 
@@ -302,13 +280,13 @@ export default function LoginPage() {
               type="submit"
               style={{
                 ...styles.button,
-                ...(loading ? styles.buttonDisabled : {})
+                ...(authLoading ? styles.buttonDisabled : {})
               }}
-              disabled={loading}
-              onMouseOver={(e) => !loading && (e.currentTarget.style.backgroundColor = '#1d4ed8')}
-              onMouseOut={(e) => !loading && (e.currentTarget.style.backgroundColor = '#3b82f6')}
+              disabled={authLoading}
+              onMouseOver={(e) => !authLoading && (e.currentTarget.style.backgroundColor = '#1d4ed8')}
+              onMouseOut={(e) => !authLoading && (e.currentTarget.style.backgroundColor = '#3b82f6')}
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {authLoading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Shield, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
@@ -245,8 +245,16 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const registerUser = useAuthStore((state) => state.register)
+  const authLoading = useAuthStore((state) => state.loading)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/dashboard')
+    }
+  }, [isAuthenticated, router])
 
   const handleInputChange = (field: keyof RegisterForm, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -280,46 +288,17 @@ export default function RegisterPage() {
       return
     }
 
-    setLoading(true)
-    
     try {
-      // Simulate successful registration (no backend needed)
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate network delay
-      
-      // Create mock user data
-      const mockUser = {
-        id: Date.now().toString(),
-        email: formData.email,
+      await registerUser({
         name: formData.name,
-        role: 'user',
-        preferences: {
-          theme: 'dark' as const,
-          notifications: true,
-          twoFactorEnabled: false
-        },
-        subscription: {
-          plan: 'free' as const,
-          status: 'active' as const,
-        },
-        profile: {
-          phone: formData.phone
-        }
-      }
-      
-      // Set auth state
-      const { setUser, setToken } = useAuthStore.getState()
-      setUser(mockUser)
-      setToken('mock-jwt-token-' + Date.now())
-      
-      // Show success briefly before redirect
-      setError('')
-      
-      // Redirect to homepage
-      router.push('/')
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+      })
+
+      router.replace('/dashboard')
     } catch (err) {
-      setError('Registration failed. Please try again.')
-    } finally {
-      setLoading(false)
+      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
     }
   }
 
@@ -469,13 +448,13 @@ export default function RegisterPage() {
               type="submit"
               style={{
                 ...styles.button,
-                ...(loading ? styles.buttonDisabled : {})
+                ...(authLoading ? styles.buttonDisabled : {})
               }}
-              disabled={loading}
-              onMouseOver={(e) => !loading && (e.currentTarget.style.backgroundColor = '#1d4ed8')}
-              onMouseOut={(e) => !loading && (e.currentTarget.style.backgroundColor = '#3b82f6')}
+              disabled={authLoading}
+              onMouseOver={(e) => !authLoading && (e.currentTarget.style.backgroundColor = '#1d4ed8')}
+              onMouseOut={(e) => !authLoading && (e.currentTarget.style.backgroundColor = '#3b82f6')}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {authLoading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
