@@ -1,6 +1,18 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+
+interface ApiSuccess<T> {
+  success: true;
+  data: T;
+}
+
+interface ApiFailure {
+  success: false;
+  error: string;
+}
+
+type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
 
 export interface ContactVerificationRequest {
   contacts: Array<{
@@ -44,7 +56,7 @@ export interface ComprehensiveScanRequest {
 
 class DetectionService {
   private api = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: API_BASE_URL.replace(/\/$/, ''),
     headers: {
       'Content-Type': 'application/json',
     },
@@ -61,36 +73,94 @@ class DetectionService {
     });
   }
 
+  private static extractData<T>(response: ApiResponse<T>): T {
+    if (response.success) {
+      return response.data;
+    }
+
+    throw new Error(response.error || 'Request failed');
+  }
+
+  private static normaliseError(error: unknown): Error {
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError<ApiFailure>;
+      const message = axiosError.response?.data?.error || axiosError.message;
+      return new Error(message);
+    }
+
+    if (error instanceof Error) {
+      return error;
+    }
+
+    return new Error('Unexpected error');
+  }
+
+  private static deriveRiskScore(value: any): number | null {
+    if (!value || typeof value !== 'object') {
+      return null;
+    }
+
+    if (typeof value.riskScore === 'number') {
+      return value.riskScore;
+    }
+
+    if (typeof value.overallRiskScore === 'number') {
+      return value.overallRiskScore;
+    }
+
+    return null;
+  }
+
   async verifyContacts(data: ContactVerificationRequest) {
-    const response = await this.api.post('/api/contact-verification/verify', data);
-    return response.data;
+    try {
+      const response = await this.api.post<ApiResponse<any>>('/contact-verification', data);
+      return DetectionService.extractData(response.data);
+    } catch (error) {
+      throw DetectionService.normaliseError(error);
+    }
   }
 
   async analyzeChat(data: ChatAnalysisRequest) {
-    const response = await this.api.post('/api/chat-analysis/analyze', data);
-    return response.data;
+    try {
+      const response = await this.api.post<ApiResponse<any>>('/chat-analysis', data);
+      return DetectionService.extractData(response.data);
+    } catch (error) {
+      throw DetectionService.normaliseError(error);
+    }
   }
 
   async analyzeTradingActivity(data: TradingAnalysisRequest) {
-    const response = await this.api.post('/api/trading-analysis/analyze', data);
-    return response.data;
+    try {
+      const response = await this.api.post<ApiResponse<any>>('/trading-analysis', data);
+      return DetectionService.extractData(response.data);
+    } catch (error) {
+      throw DetectionService.normaliseError(error);
+    }
   }
 
   async checkVeracity(data: VeracityCheckRequest) {
-    const response = await this.api.post('/api/veracity-checking/verify', data);
-    return response.data;
+    try {
+      const response = await this.api.post<ApiResponse<any>>('/veracity-checking', data);
+      return DetectionService.extractData(response.data);
+    } catch (error) {
+      throw DetectionService.normaliseError(error);
+    }
   }
 
   async runComprehensiveScan(data: ComprehensiveScanRequest) {
-    const tasks = [];
-    const results: any = {};
+    const tasks: Promise<void>[] = [];
+    const results: Record<string, any> = {};
 
     // Contact Verification
     if (data.enabledTests.contactVerification && data.contacts && data.contacts.length > 0) {
       tasks.push(
         this.verifyContacts({ contacts: data.contacts })
-          .then(res => { results.contactVerification = res; })
-          .catch(err => { results.contactVerification = { error: err.message }; })
+          .then((res) => {
+            results.contactVerification = res;
+          })
+          .catch((err) => {
+            results.contactVerification = { error: DetectionService.normaliseError(err).message };
+          })
       );
     }
 
@@ -99,8 +169,12 @@ class DetectionService {
       const messages = data.chatContent.split('\n').filter(msg => msg.trim());
       tasks.push(
         this.analyzeChat({ messages })
-          .then(res => { results.chatAnalysis = res; })
-          .catch(err => { results.chatAnalysis = { error: err.message }; })
+          .then((res) => {
+            results.chatAnalysis = res;
+          })
+          .catch((err) => {
+            results.chatAnalysis = { error: DetectionService.normaliseError(err).message };
+          })
       );
     }
 
@@ -112,8 +186,12 @@ class DetectionService {
           timeframe: '1M',
           assetType: data.assetType 
         })
-          .then(res => { results.tradingAnalysis = res; })
-          .catch(err => { results.tradingAnalysis = { error: err.message }; })
+          .then((res) => {
+            results.tradingAnalysis = res;
+          })
+          .catch((err) => {
+            results.tradingAnalysis = { error: DetectionService.normaliseError(err).message };
+          })
       );
     }
 
@@ -124,8 +202,12 @@ class DetectionService {
           ticker: data.ticker,
           assetType: data.assetType 
         })
-          .then(res => { results.veracityCheck = res; })
-          .catch(err => { results.veracityCheck = { error: err.message }; })
+          .then((res) => {
+            results.veracityCheck = res;
+          })
+          .catch((err) => {
+            results.veracityCheck = { error: DetectionService.normaliseError(err).message };
+          })
       );
     }
 
@@ -133,26 +215,19 @@ class DetectionService {
     
     // Calculate overall risk score
     let totalScore = 0;
-    let testCount = 0;
-    
-    if (results.contactVerification?.riskScore) {
-      totalScore += results.contactVerification.riskScore;
-      testCount++;
-    }
-    if (results.chatAnalysis?.overallRiskScore) {
-      totalScore += results.chatAnalysis.overallRiskScore;
-      testCount++;
-    }
-    if (results.tradingAnalysis?.riskScore) {
-      totalScore += results.tradingAnalysis.riskScore;
-      testCount++;
-    }
-    if (results.veracityCheck?.riskScore) {
-      totalScore += results.veracityCheck.riskScore;
-      testCount++;
-    }
-    
-    results.overallRiskScore = testCount > 0 ? totalScore / testCount : 0;
+    let scoredTests = 0;
+
+    ['contactVerification', 'chatAnalysis', 'tradingAnalysis', 'veracityCheck'].forEach((key) => {
+      const value = results[key];
+      const score = DetectionService.deriveRiskScore(value);
+
+      if (score !== null) {
+        totalScore += score;
+        scoredTests += 1;
+      }
+    });
+
+    results.overallRiskScore = scoredTests > 0 ? totalScore / scoredTests : 0;
     results.timestamp = new Date();
     
     return results;
