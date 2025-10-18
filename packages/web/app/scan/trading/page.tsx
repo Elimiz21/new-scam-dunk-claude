@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   LineChart,
   Activity,
-  DollarSign
+  DollarSign,
+  Shield
 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
