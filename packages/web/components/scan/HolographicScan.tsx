@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { 
   CheckCircle2,
@@ -13,7 +13,21 @@ import {
   Download
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { detectionService } from '@/services/detection.service';
+import {
+  detectionService,
+  type ContactVerificationResult,
+  type ChatAnalysisResult,
+  type TradingAnalysisResult,
+  type VeracityCheckResult,
+} from '@/services/detection.service';
+
+interface ScanTestResultView {
+  riskScore: number;
+  riskLevel: string;
+  summary: string;
+  highlights: string[];
+  recommendations: string[];
+}
 
 interface ScanTest {
   id: string;
@@ -23,7 +37,7 @@ interface ScanTest {
   enabled: boolean;
   status: 'idle' | 'running' | 'completed' | 'error';
   progress: number;
-  result?: any;
+  result?: ScanTestResultView;
   color: string;
 }
 
@@ -118,55 +132,124 @@ export function HolographicScan() {
 
     try {
       // Prepare data for comprehensive scan
-      const scanData = {
-        contacts: inputData.contacts ? inputData.contacts.split('\n').map(line => {
-          const parts = line.trim().split(',');
-          return {
-            name: parts[0]?.trim(),
-            phone: parts[1]?.trim(),
-            email: parts[2]?.trim()
-          };
-        }).filter(c => c.name || c.phone || c.email) : [],
-        chatContent: inputData.chatContent,
+      const contacts = inputData.contacts
+        ? inputData.contacts
+            .split('\n')
+            .map((line) => {
+              const parts = line.trim().split(',');
+              return {
+                name: parts[0]?.trim(),
+                phone: parts[1]?.trim(),
+                email: parts[2]?.trim(),
+              };
+            })
+            .filter((c) => c.name || c.phone || c.email)
+        : [];
+
+      const chatMessages = inputData.chatContent
+        ? inputData.chatContent
+            .split('\n')
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0)
+        : [];
+
+      const contactEnabled = enabledTests.some((t) => t.id === 'contact' && t.enabled) && contacts.length > 0;
+      const chatEnabled = enabledTests.some((t) => t.id === 'chat' && t.enabled) && chatMessages.length > 0;
+      const tradingEnabled = enabledTests.some((t) => t.id === 'trading' && t.enabled) && Boolean(inputData.ticker);
+      const veracityEnabled = enabledTests.some((t) => t.id === 'veracity' && t.enabled) && Boolean(inputData.ticker);
+
+      const results = await detectionService.runComprehensiveScan({
+        contacts,
+        chatContent: chatMessages.join('\n'),
         ticker: inputData.ticker,
-        assetType: 'stock' as 'stock' | 'crypto',
+        assetType: inputData.ticker ? 'stock' : undefined,
         enabledTests: {
-          contactVerification: enabledTests.some(t => t.id === 'contact'),
-          chatAnalysis: enabledTests.some(t => t.id === 'chat'),
-          tradingAnalysis: enabledTests.some(t => t.id === 'trading'),
-          veracityCheck: enabledTests.some(t => t.id === 'veracity')
-        }
+          contactVerification: contactEnabled,
+          chatAnalysis: chatEnabled,
+          tradingAnalysis: tradingEnabled,
+          veracityCheck: veracityEnabled,
+        },
+      });
+
+      const mapContactResult = (result?: ContactVerificationResult): ScanTestResultView | undefined => {
+        if (!result) return undefined;
+        const highlights = result.keyFindings?.length ? result.keyFindings : result.flags ?? [];
+        return {
+          riskScore: result.riskScore,
+          riskLevel: result.riskLevel,
+          summary: result.summary ?? 'Contact verification completed.',
+          highlights: highlights.slice(0, 6),
+          recommendations: result.recommendations ?? [],
+        };
       };
 
-      // Run real comprehensive scan using the service
-      const results = await detectionService.runComprehensiveScan(scanData);
-
-      // Update test results
-      setScanTests(prev => prev.map(test => {
-        let result = null;
-        let status: 'idle' | 'running' | 'completed' | 'error' = 'idle';
-        
-        if (test.id === 'contact' && results.contactVerification) {
-          result = results.contactVerification;
-          status = 'completed';
-        } else if (test.id === 'chat' && results.chatAnalysis) {
-          result = results.chatAnalysis;
-          status = 'completed';
-        } else if (test.id === 'trading' && results.tradingAnalysis) {
-          result = results.tradingAnalysis;
-          status = 'completed';
-        } else if (test.id === 'veracity' && results.veracityCheck) {
-          result = results.veracityCheck;
-          status = 'completed';
-        }
-        
+      const mapChatResult = (result?: ChatAnalysisResult): ScanTestResultView | undefined => {
+        if (!result) return undefined;
+        const highlights = result.keyFindings?.length ? result.keyFindings : result.suspiciousMentions ?? [];
         return {
-          ...test,
-          status: test.enabled ? status : 'idle',
-          progress: test.enabled ? 100 : 0,
-          result
+          riskScore: result.riskScore,
+          riskLevel: result.riskLevel,
+          summary: result.summary ?? 'Chat analysis completed.',
+          highlights: highlights.slice(0, 6),
+          recommendations: result.recommendations ?? [],
         };
-      }));
+      };
+
+      const mapTradingResult = (result?: TradingAnalysisResult): ScanTestResultView | undefined => {
+        if (!result) return undefined;
+        return {
+          riskScore: result.riskScore,
+          riskLevel: result.riskLevel,
+          summary: result.summary,
+          highlights: (result.keyFindings ?? []).slice(0, 6),
+          recommendations: result.recommendations ?? [],
+        };
+      };
+
+      const mapVeracityResult = (result?: VeracityCheckResult): ScanTestResultView | undefined => {
+        if (!result) return undefined;
+        const highlights = result.keyFindings?.length ? result.keyFindings : [];
+        return {
+          riskScore: result.riskScore,
+          riskLevel: result.riskLevel,
+          summary: result.summary ?? 'Verification completed.',
+          highlights: highlights.slice(0, 6),
+          recommendations: result.recommendations ?? [],
+        };
+      };
+
+      setScanTests((prev) =>
+        prev.map((test) => {
+          if (!test.enabled) {
+            return { ...test, status: 'idle', progress: 0, result: undefined };
+          }
+
+          let mapped: ScanTestResultView | undefined;
+          switch (test.id) {
+            case 'contact':
+              mapped = mapContactResult(results.contactVerification);
+              break;
+            case 'chat':
+              mapped = mapChatResult(results.chatAnalysis);
+              break;
+            case 'trading':
+              mapped = mapTradingResult(results.tradingAnalysis);
+              break;
+            case 'veracity':
+              mapped = mapVeracityResult(results.veracityCheck);
+              break;
+            default:
+              mapped = undefined;
+          }
+
+          return {
+            ...test,
+            status: mapped ? 'completed' : 'error',
+            progress: mapped ? 100 : 0,
+            result: mapped,
+          };
+        })
+      );
 
       setOverallProgress(100);
       setScanComplete(true);
@@ -436,6 +519,18 @@ export function HolographicScan() {
                     <p className="text-sm text-gray-400">
                       Risk Score: <span className="text-holo-cyan font-semibold">{test.result.riskScore}/100</span>
                     </p>
+                    <p className="text-sm text-gray-300 mt-2">
+                      {test.result.summary}
+                    </p>
+                    <ul className="mt-3 space-y-1 text-xs text-gray-500">
+                      {test.result.highlights.length > 0 ? (
+                        test.result.highlights.map((highlight, idx) => (
+                          <li key={`${test.id}-highlight-${idx}`}>• {highlight}</li>
+                        ))
+                      ) : (
+                        <li>No notable findings reported.</li>
+                      )}
+                    </ul>
                   </div>
                 ))}
             </div>

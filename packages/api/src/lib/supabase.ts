@@ -1,14 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
+import { config } from './config';
+import logger from './logger';
 
-dotenv.config();
-
-// Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize Supabase client with service role permissions
+export const supabase = createClient(config.supabaseUrl, config.supabaseServiceRoleKey.replace(/[\s\n\r]+/g, ''), {
+  auth: { persistSession: false },
+});
 
 // Initialize Prisma client
 export const prisma = new PrismaClient({
@@ -16,12 +14,13 @@ export const prisma = new PrismaClient({
 });
 
 // Handle Prisma connection events
-prisma.$connect()
+prisma
+  .$connect()
   .then(() => {
-    console.log('✅ Connected to Supabase PostgreSQL via Prisma');
+    logger.info('Connected to Supabase PostgreSQL via Prisma');
   })
-  .catch((error) => {
-    console.error('❌ Failed to connect to database:', error);
+  .catch((error: unknown) => {
+    logger.error({ err: error }, 'Failed to connect to database');
     process.exit(1);
   });
 

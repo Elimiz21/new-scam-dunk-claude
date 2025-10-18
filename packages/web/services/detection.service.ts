@@ -1,18 +1,93 @@
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/$/, '');
 
-interface ApiSuccess<T> {
-  success: true;
-  data: T;
+type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+type ApiResponse<T> =
+  | { success: true; data: T; meta?: Record<string, any> }
+  | { success: false; error: string };
+
+const normalizeRiskLevel = (value: unknown, fallbackScore?: number): RiskLevel => {
+  if (typeof value === 'string') {
+    const upper = value.toUpperCase();
+    if (upper === 'LOW' || upper === 'MEDIUM' || upper === 'HIGH' || upper === 'CRITICAL') {
+      return upper;
+    }
+  }
+
+  if (typeof fallbackScore === 'number') {
+    return deriveRiskLevel(fallbackScore);
+  }
+
+  return 'LOW';
+};
+
+const deriveRiskLevel = (score: number): RiskLevel => {
+  if (Number.isNaN(score)) return 'LOW';
+  if (score >= 85) return 'CRITICAL';
+  if (score >= 70) return 'HIGH';
+  if (score >= 40) return 'MEDIUM';
+  return 'LOW';
+};
+
+interface BaseDetectionResult {
+  riskScore: number;
+  riskLevel: RiskLevel;
+  confidence?: number;
+  summary?: string;
+  keyFindings?: string[];
+  flags?: string[];
+  recommendations?: string[];
+  metadata?: Record<string, any>;
+  raw?: any;
 }
 
-interface ApiFailure {
-  success: false;
-  error: string;
+interface ContactApiResponse {
+  contactType: string;
+  contactValue: string;
+  isScammer: boolean;
+  riskScore: number;
+  riskLevel: RiskLevel;
+  confidence: number;
+  verificationSources: string[];
+  flags: string[];
+  recommendations: string[];
+  details?: string[];
 }
 
-type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
+interface ChatApiResponse {
+  platform: string;
+  overallRiskScore: number;
+  riskLevel: RiskLevel;
+  confidence?: number;
+  summary?: string;
+  keyFindings?: string[];
+  recommendations?: string[];
+  suspiciousMentions?: string[];
+}
+
+interface TradingApiResponse {
+  symbol: string;
+  overallRiskScore: number;
+  riskLevel: RiskLevel;
+  confidence?: number;
+  summary?: string;
+  keyFindings?: string[];
+  recommendations?: string[];
+}
+
+interface VeracityApiResponse {
+  targetType: string;
+  targetIdentifier: string;
+  isVerified: boolean;
+  verificationStatus?: string;
+  overallConfidence?: number;
+  riskLevel: RiskLevel;
+  summary?: string;
+  keyFindings?: string[];
+  recommendations?: string[];
+}
 
 export interface ContactVerificationRequest {
   contacts: Array<{
@@ -54,38 +129,86 @@ export interface ComprehensiveScanRequest {
   };
 }
 
+interface ContactCheckResult {
+  type: 'email' | 'phone';
+  value: string;
+  result?: BaseDetectionResult & {
+    isScammer?: boolean;
+    verificationSources?: string[];
+  };
+  error?: string;
+}
+
+export interface ContactVerificationResult extends BaseDetectionResult {
+  checks: ContactCheckResult[];
+}
+
+export interface ChatAnalysisResult extends BaseDetectionResult {
+  platform: string;
+  suspiciousMentions?: string[];
+}
+
+export interface TradingAnalysisResult extends BaseDetectionResult {
+  symbol: string;
+  summary: string;
+  keyFindings: string[];
+}
+
+export interface VeracityCheckResult extends BaseDetectionResult {
+  targetType: string;
+  targetIdentifier: string;
+  verificationStatus?: string;
+  isVerified?: boolean;
+}
+
+export interface ComprehensiveScanResult {
+  overallRiskScore: number;
+  overallRiskLevel: RiskLevel;
+  contactVerification?: ContactVerificationResult;
+  chatAnalysis?: ChatAnalysisResult;
+  tradingAnalysis?: TradingAnalysisResult;
+  veracityCheck?: VeracityCheckResult;
+  metadata: {
+    processedAt: string;
+    completedChecks: string[];
+  };
+}
+
 class DetectionService {
-  private api = axios.create({
-    baseURL: API_BASE_URL.replace(/\/$/, ''),
-    headers: {
-      'Content-Type': 'application/json',
-    },
+  private readonly api = axios.create({
+    baseURL: API_BASE_URL,
+    headers: { 'Content-Type': 'application/json' },
   });
 
   constructor() {
-    // Add auth interceptor
     this.api.interceptors.request.use((config) => {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          config.headers = config.headers || {};
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
       return config;
     });
   }
 
   private static extractData<T>(response: ApiResponse<T>): T {
-    if (response.success) {
+    if ('success' in response && response.success) {
       return response.data;
     }
 
-    throw new Error(response.error || 'Request failed');
+    const message = 'error' in response ? response.error : 'Request failed';
+    throw new Error(message);
   }
 
   private static normaliseError(error: unknown): Error {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError<ApiFailure>;
-      const message = axiosError.response?.data?.error || axiosError.message;
-      return new Error(message);
+    if (axios.isAxiosError<ApiResponse<unknown>>(error)) {
+      const axiosError = error as AxiosError<ApiResponse<unknown>>;
+      const message = axiosError.response?.data && 'error' in axiosError.response.data
+        ? axiosError.response.data.error
+        : axiosError.message;
+      return new Error(message || 'Request failed');
     }
 
     if (error instanceof Error) {
@@ -95,227 +218,310 @@ class DetectionService {
     return new Error('Unexpected error');
   }
 
-  private static deriveRiskScore(value: any): number | null {
-    if (!value || typeof value !== 'object') {
-      return null;
-    }
+  async verifyContacts(request: ContactVerificationRequest): Promise<ContactVerificationResult> {
+    const details = request.contacts || [];
+    const queue: Array<{ type: 'email' | 'phone'; value: string }> = [];
+    const seen = new Set<string>();
 
-    if (typeof value.riskScore === 'number') {
-      return value.riskScore;
-    }
+    details.forEach((entry) => {
+      if (entry.email) {
+        const key = `email:${entry.email.trim().toLowerCase()}`;
+        if (!seen.has(key)) {
+          queue.push({ type: 'email', value: entry.email.trim() });
+          seen.add(key);
+        }
+      }
 
-    if (typeof value.overallRiskScore === 'number') {
-      return value.overallRiskScore;
-    }
-
-    return null;
-  }
-
-  async verifyContacts(data: ContactVerificationRequest) {
-    try {
-      const response = await this.api.post<ApiResponse<any>>('/contact-verification', data);
-      return DetectionService.extractData(response.data);
-    } catch (error) {
-      throw DetectionService.normaliseError(error);
-    }
-  }
-
-  async analyzeChat(data: ChatAnalysisRequest) {
-    try {
-      const response = await this.api.post<ApiResponse<any>>('/chat-analysis', data);
-      return DetectionService.extractData(response.data);
-    } catch (error) {
-      throw DetectionService.normaliseError(error);
-    }
-  }
-
-  async analyzeTradingActivity(data: TradingAnalysisRequest) {
-    try {
-      const response = await this.api.post<ApiResponse<any>>('/trading-analysis', data);
-      return DetectionService.extractData(response.data);
-    } catch (error) {
-      throw DetectionService.normaliseError(error);
-    }
-  }
-
-  async checkVeracity(data: VeracityCheckRequest) {
-    try {
-      const response = await this.api.post<ApiResponse<any>>('/veracity-checking', data);
-      return DetectionService.extractData(response.data);
-    } catch (error) {
-      throw DetectionService.normaliseError(error);
-    }
-  }
-
-  async runComprehensiveScan(data: ComprehensiveScanRequest) {
-    const tasks: Promise<void>[] = [];
-    const results: Record<string, any> = {};
-
-    // Contact Verification
-    if (data.enabledTests.contactVerification && data.contacts && data.contacts.length > 0) {
-      tasks.push(
-        this.verifyContacts({ contacts: data.contacts })
-          .then((res) => {
-            results.contactVerification = res;
-          })
-          .catch((err) => {
-            results.contactVerification = { error: DetectionService.normaliseError(err).message };
-          })
-      );
-    }
-
-    // Chat Analysis
-    if (data.enabledTests.chatAnalysis && data.chatContent) {
-      const messages = data.chatContent.split('\n').filter(msg => msg.trim());
-      tasks.push(
-        this.analyzeChat({ messages })
-          .then((res) => {
-            results.chatAnalysis = res;
-          })
-          .catch((err) => {
-            results.chatAnalysis = { error: DetectionService.normaliseError(err).message };
-          })
-      );
-    }
-
-    // Trading Analysis
-    if (data.enabledTests.tradingAnalysis && data.ticker && data.assetType) {
-      tasks.push(
-        this.analyzeTradingActivity({ 
-          ticker: data.ticker, 
-          timeframe: '1M',
-          assetType: data.assetType 
-        })
-          .then((res) => {
-            results.tradingAnalysis = res;
-          })
-          .catch((err) => {
-            results.tradingAnalysis = { error: DetectionService.normaliseError(err).message };
-          })
-      );
-    }
-
-    // Veracity Check
-    if (data.enabledTests.veracityCheck && data.ticker && data.assetType) {
-      tasks.push(
-        this.checkVeracity({ 
-          ticker: data.ticker,
-          assetType: data.assetType 
-        })
-          .then((res) => {
-            results.veracityCheck = res;
-          })
-          .catch((err) => {
-            results.veracityCheck = { error: DetectionService.normaliseError(err).message };
-          })
-      );
-    }
-
-    await Promise.all(tasks);
-    
-    // Calculate overall risk score
-    let totalScore = 0;
-    let scoredTests = 0;
-
-    ['contactVerification', 'chatAnalysis', 'tradingAnalysis', 'veracityCheck'].forEach((key) => {
-      const value = results[key];
-      const score = DetectionService.deriveRiskScore(value);
-
-      if (score !== null) {
-        totalScore += score;
-        scoredTests += 1;
+      if (entry.phone) {
+        const phone = entry.phone.replace(/\s+/g, '');
+        const key = `phone:${phone}`;
+        if (!seen.has(key)) {
+          queue.push({ type: 'phone', value: phone });
+          seen.add(key);
+        }
       }
     });
 
-    results.overallRiskScore = scoredTests > 0 ? totalScore / scoredTests : 0;
-    results.timestamp = new Date();
-    
-    return results;
+    if (queue.length === 0) {
+      throw new Error('No contact details provided');
+    }
+
+    const checks = await Promise.all(
+      queue.map(async ({ type, value }): Promise<ContactCheckResult> => {
+        try {
+          const response = await this.api.post<ApiResponse<ContactApiResponse>>('/contact-verification', {
+            contactType: type,
+            contactValue: value,
+          });
+          const data = DetectionService.extractData(response.data);
+          return {
+            type,
+            value,
+            result: {
+              riskScore: data.riskScore ?? 0,
+              riskLevel: normalizeRiskLevel(data.riskLevel, data.riskScore),
+              confidence: data.confidence,
+              summary: data.isScammer
+                ? 'High-risk indicators detected for this contact.'
+                : 'No critical scam indicators detected for this contact.',
+              keyFindings: data.details ?? [],
+              flags: data.flags ?? [],
+              recommendations: data.recommendations ?? [],
+              metadata: {
+                contactType: data.contactType,
+                verificationSources: data.verificationSources ?? [],
+                isScammer: data.isScammer,
+              },
+              raw: data,
+              isScammer: data.isScammer,
+              verificationSources: data.verificationSources ?? [],
+            },
+          };
+        } catch (error) {
+          return {
+            type,
+            value,
+            error: DetectionService.normaliseError(error).message,
+          };
+        }
+      })
+    );
+
+    const validResults = checks.filter((check) => check.result) as Array<Required<ContactCheckResult>>;
+
+    if (validResults.length === 0) {
+      return {
+        riskScore: 0,
+        riskLevel: 'LOW',
+        confidence: 0,
+        summary: 'Unable to verify any contact details. Please try again later.',
+        keyFindings: [],
+        flags: [],
+        recommendations: [],
+        checks,
+        metadata: { checkCount: checks.length },
+      };
+    }
+
+    const aggregateScore = validResults.reduce((acc, current) => acc + (current.result.riskScore ?? 0), 0);
+    const riskScore = Math.round(aggregateScore / validResults.length);
+    const riskLevel = deriveRiskLevel(riskScore);
+    const confidence = Math.round(
+      Math.max(...validResults.map((check) => check.result.confidence ?? 0))
+    );
+    const flags = Array.from(new Set(validResults.flatMap((check) => check.result.flags ?? [])));
+    const recommendations = Array.from(
+      new Set(validResults.flatMap((check) => check.result.recommendations ?? []))
+    );
+    const keyFindings = Array.from(
+      new Set(validResults.flatMap((check) => check.result.keyFindings ?? []))
+    ).slice(0, 8);
+
+    const hasHighRisk = validResults.some((check) => {
+      const score = check.result.riskScore ?? 0;
+      return score >= 70 || check.result.isScammer;
+    });
+
+    const summary = hasHighRisk
+      ? 'Contact verification flagged significant risk indicators.'
+      : riskLevel === 'MEDIUM'
+        ? 'Contact verification identified cautionary signals.'
+        : 'No high-risk indicators detected across provided contacts.';
+
+    return {
+      riskScore,
+      riskLevel,
+      confidence,
+      summary,
+      keyFindings,
+      flags,
+      recommendations,
+      checks,
+      metadata: {
+        checkCount: checks.length,
+        highestRiskScore: Math.max(...validResults.map((check) => check.result.riskScore ?? 0)),
+      },
+    };
   }
 
-  // Mock implementation for development
-  async runComprehensiveScanMock(data: ComprehensiveScanRequest) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const results: any = {};
-    
-    if (data.enabledTests.contactVerification) {
-      results.contactVerification = {
-        riskScore: Math.random() * 100,
-        flaggedContacts: Math.floor(Math.random() * 3),
-        verifiedContacts: Math.floor(Math.random() * 5),
-        details: {
-          phones: { verified: 2, flagged: 1 },
-          emails: { verified: 3, flagged: 0 },
-          names: { verified: 4, flagged: 1 }
-        }
-      };
+  async analyzeChat(request: ChatAnalysisRequest): Promise<ChatAnalysisResult> {
+    if (!request.messages || request.messages.length === 0) {
+      throw new Error('At least one message is required for analysis');
     }
-    
-    if (data.enabledTests.chatAnalysis) {
-      results.chatAnalysis = {
-        overallRiskScore: Math.random() * 100,
-        manipulationTechniques: ['urgency', 'fear', 'greed'].slice(0, Math.floor(Math.random() * 3) + 1),
-        suspiciousPhrases: Math.floor(Math.random() * 10),
-        riskIndicators: {
-          psychological: Math.random() * 100,
-          linguistic: Math.random() * 100,
-          behavioral: Math.random() * 100
-        }
-      };
+
+    const payload = {
+      platform: request.platform ?? 'unknown',
+      messages: request.messages.map((text) => ({ text })),
+    };
+
+    const response = await this.api.post<ApiResponse<ChatApiResponse>>('/chat-analysis', payload);
+    const data = DetectionService.extractData(response.data);
+
+    const riskScore = data.overallRiskScore ?? 0;
+    const riskLevel = normalizeRiskLevel(data.riskLevel, riskScore);
+
+    return {
+      platform: data.platform,
+      riskScore,
+      riskLevel,
+      confidence: data.confidence ?? 0,
+      summary:
+        data.summary ||
+        (riskLevel === 'HIGH'
+          ? 'The conversation contains multiple high-risk indicators.'
+          : riskLevel === 'MEDIUM'
+            ? 'Potential scam indicators detected in the conversation.'
+            : 'Conversation appears routine with limited risk factors.'),
+      keyFindings: data.keyFindings ?? [],
+      flags: data.suspiciousMentions ?? [],
+      suspiciousMentions: data.suspiciousMentions ?? [],
+      recommendations: data.recommendations ?? [],
+      metadata: {
+        messageCount: request.messages.length,
+      },
+      raw: data,
+    };
+  }
+
+  async analyzeTradingActivity(request: TradingAnalysisRequest): Promise<TradingAnalysisResult> {
+    if (!request.ticker) {
+      throw new Error('Ticker symbol is required');
     }
-    
-    if (data.enabledTests.tradingAnalysis) {
-      results.tradingAnalysis = {
-        riskScore: Math.random() * 100,
-        anomalies: {
-          volumeSpikes: Math.floor(Math.random() * 5),
-          priceManipulation: Math.random() > 0.5,
-          pumpDumpIndicators: Math.random() > 0.7
-        },
-        tradingPattern: ['normal', 'suspicious', 'highly suspicious'][Math.floor(Math.random() * 3)],
-        newsCorrelation: Math.random() > 0.5
-      };
+
+    const response = await this.api.post<ApiResponse<TradingApiResponse>>('/trading-analysis', {
+      symbol: request.ticker.trim().toUpperCase(),
+    });
+
+    const data = DetectionService.extractData(response.data);
+    const riskScore = data.overallRiskScore ?? 0;
+    const riskLevel = normalizeRiskLevel(data.riskLevel, riskScore);
+
+    return {
+      symbol: data.symbol,
+      riskScore,
+      riskLevel,
+      confidence: data.confidence ?? 0,
+      summary:
+        data.summary ||
+        (riskLevel === 'HIGH'
+          ? 'Trading analysis indicates significant volatility or manipulation risk.'
+          : riskLevel === 'MEDIUM'
+            ? 'Trading analysis highlights moderate volatility patterns.'
+            : 'Trading activity appears within normal parameters.'),
+      keyFindings: data.keyFindings ?? [],
+      flags: [],
+      recommendations: data.recommendations ?? [],
+      raw: data,
+    };
+  }
+
+  async checkVeracity(request: VeracityCheckRequest): Promise<VeracityCheckResult> {
+    if (!request.ticker) {
+      throw new Error('Ticker or identifier is required');
     }
-    
-    if (data.enabledTests.veracityCheck) {
-      results.veracityCheck = {
-        riskScore: Math.random() * 100,
-        exists: Math.random() > 0.2,
-        verified: Math.random() > 0.3,
-        lawEnforcementFlags: Math.floor(Math.random() * 2),
-        regulatoryCompliance: Math.random() > 0.5,
-        exchangesListed: Math.floor(Math.random() * 5) + 1
-      };
+
+    const identifier = request.ticker.trim();
+    const targetType = request.assetType === 'crypto' ? 'token' : 'entity';
+
+    const response = await this.api.post<ApiResponse<VeracityApiResponse>>('/veracity-checking', {
+      targetType,
+      targetIdentifier: identifier,
+    });
+
+    const data = DetectionService.extractData(response.data);
+    const confidence = data.overallConfidence ?? 0;
+    const riskScore = Math.max(0, Math.min(100, Math.round(100 - confidence)));
+    const riskLevel = normalizeRiskLevel(data.riskLevel, riskScore);
+
+    return {
+      targetType: data.targetType,
+      targetIdentifier: data.targetIdentifier,
+      verificationStatus: data.verificationStatus,
+      isVerified: data.isVerified,
+      riskScore,
+      riskLevel,
+      confidence,
+      summary:
+        data.summary ||
+        (data.isVerified
+          ? 'Entity passes verification checks.'
+          : 'Entity failed verification checks or appears in breach records.'),
+      keyFindings: data.keyFindings ?? [],
+      recommendations: data.recommendations ?? [],
+      metadata: {
+        providerConfidence: confidence,
+      },
+      raw: data,
+    };
+  }
+
+  async runComprehensiveScan(request: ComprehensiveScanRequest): Promise<ComprehensiveScanResult> {
+    const completedChecks: string[] = [];
+    const subScores: number[] = [];
+
+    let contactVerification: ContactVerificationResult | undefined;
+    let chatAnalysis: ChatAnalysisResult | undefined;
+    let tradingAnalysis: TradingAnalysisResult | undefined;
+    let veracityCheck: VeracityCheckResult | undefined;
+
+    if (request.enabledTests.contactVerification && request.contacts && request.contacts.length > 0) {
+      contactVerification = await this.verifyContacts({ contacts: request.contacts });
+      completedChecks.push('contactVerification');
+      subScores.push(contactVerification.riskScore);
     }
-    
-    // Calculate overall risk score
-    let totalScore = 0;
-    let testCount = 0;
-    
-    if (results.contactVerification) {
-      totalScore += results.contactVerification.riskScore;
-      testCount++;
+
+    if (request.enabledTests.chatAnalysis && request.chatContent) {
+      const messages = request.chatContent
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+
+      if (messages.length > 0) {
+        chatAnalysis = await this.analyzeChat({
+          messages,
+          platform: 'comprehensive-scan',
+        });
+        completedChecks.push('chatAnalysis');
+        subScores.push(chatAnalysis.riskScore);
+      }
     }
-    if (results.chatAnalysis) {
-      totalScore += results.chatAnalysis.overallRiskScore;
-      testCount++;
+
+    if (request.enabledTests.tradingAnalysis && request.ticker) {
+      tradingAnalysis = await this.analyzeTradingActivity({
+        ticker: request.ticker,
+        timeframe: '1M',
+        assetType: request.assetType || 'stock',
+      });
+      completedChecks.push('tradingAnalysis');
+      subScores.push(tradingAnalysis.riskScore);
     }
-    if (results.tradingAnalysis) {
-      totalScore += results.tradingAnalysis.riskScore;
-      testCount++;
+
+    if (request.enabledTests.veracityCheck && request.ticker) {
+      veracityCheck = await this.checkVeracity({
+        ticker: request.ticker,
+        assetType: request.assetType || 'stock',
+        exchangeName: undefined,
+      });
+      completedChecks.push('veracityCheck');
+      subScores.push(veracityCheck.riskScore);
     }
-    if (results.veracityCheck) {
-      totalScore += results.veracityCheck.riskScore;
-      testCount++;
-    }
-    
-    results.overallRiskScore = testCount > 0 ? totalScore / testCount : 0;
-    results.timestamp = new Date();
-    results.testsCompleted = testCount;
-    
-    return results;
+
+    const overallRiskScore = subScores.length > 0
+      ? Math.round(subScores.reduce((acc, current) => acc + current, 0) / subScores.length)
+      : 0;
+
+    return {
+      overallRiskScore,
+      overallRiskLevel: deriveRiskLevel(overallRiskScore),
+      contactVerification,
+      chatAnalysis,
+      tradingAnalysis,
+      veracityCheck,
+      metadata: {
+        processedAt: new Date().toISOString(),
+        completedChecks,
+      },
+    };
   }
 }
 

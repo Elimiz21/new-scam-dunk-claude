@@ -14,7 +14,7 @@ import {
   FileText
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { detectionService } from '@/services/detection.service';
+import { detectionService, type ChatAnalysisResult } from '@/services/detection.service';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -22,7 +22,7 @@ export default function ChatAnalysisPage() {
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
-  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanResult, setScanResult] = useState<ChatAnalysisResult | null>(null);
   const [progress, setProgress] = useState(0);
   
   const [inputData, setInputData] = useState({
@@ -230,7 +230,6 @@ John: It's a guaranteed return of 200% in just 30 days..."
             transition={{ duration: 0.5 }}
             className="space-y-6"
           >
-            {/* Risk Score */}
             <div className="glass-card p-8 text-center">
               <h2 className="text-2xl font-bold text-white mb-4">Analysis Results</h2>
               <div className="relative w-48 h-48 mx-auto mb-6">
@@ -242,7 +241,7 @@ John: It's a guaranteed return of 200% in just 30 days..."
                     stroke="url(#chat-gradient)"
                     strokeWidth="8"
                     fill="none"
-                    strokeDasharray={`${(scanResult.overallRiskScore || 35) * 5.5} 550`}
+                    strokeDasharray={`${(scanResult.riskScore || 0) * 5.5} 550`}
                     className="filter drop-shadow-lg"
                   />
                   <defs>
@@ -255,85 +254,85 @@ John: It's a guaranteed return of 200% in just 30 days..."
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div>
-                    <div className="text-5xl font-bold holo-text">{scanResult.overallRiskScore || 35}%</div>
-                    <div className={`text-sm mt-2 ${getRiskLevel(scanResult.overallRiskScore || 35).color}`}>
-                      {getRiskLevel(scanResult.overallRiskScore || 35).text}
+                    <div className="text-5xl font-bold holo-text">{scanResult.riskScore}%</div>
+                    <div className={`text-sm mt-2 ${getRiskLevel(scanResult.riskScore).color}`}>
+                      {getRiskLevel(scanResult.riskScore).text}
                     </div>
                   </div>
                 </div>
+              </div>
+              <p className="text-gray-400 max-w-2xl mx-auto">
+                {scanResult.summary}
+              </p>
+              <p className="text-sm text-gray-500 mt-4">
+                Analyzed {scanResult.metadata?.messageCount || 0} messages on {scanResult.platform}.
+              </p>
+            </div>
+
+            <div className="glass-card p-6">
+              <h3 className="font-semibold text-white mb-4 flex items-center">
+                <AlertTriangle className="h-5 w-5 mr-2 text-holo-amber" />
+                Key Findings
+              </h3>
+              <div className="space-y-3">
+                {(scanResult.keyFindings && scanResult.keyFindings.length > 0)
+                  ? scanResult.keyFindings.map((finding, index) => (
+                      <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 border border-gray-700/50">
+                        <div className="h-2 w-2 bg-holo-amber rounded-full mt-1.5 flex-shrink-0" />
+                        <div className="text-sm text-gray-300">{finding}</div>
+                      </div>
+                    ))
+                  : (
+                      <p className="text-sm text-gray-400">No significant risk indicators detected in the conversation.</p>
+                    )}
               </div>
             </div>
 
-            {/* Manipulation Techniques */}
-            {scanResult.manipulationTechniques && scanResult.manipulationTechniques.length > 0 && (
-              <div className="glass-card p-6">
-                <h3 className="font-semibold text-white mb-4 flex items-center">
-                  <AlertTriangle className="h-5 w-5 mr-2 text-holo-amber" />
-                  Manipulation Techniques Detected
-                </h3>
-                <div className="space-y-3">
-                  {scanResult.manipulationTechniques.map((technique: any, index: number) => (
-                    <div key={index} className="p-4 rounded-xl bg-gray-800/30 border border-holo-amber/30">
-                      <div className="font-medium text-holo-amber">{technique.type}</div>
-                      <div className="text-sm text-gray-400 mt-1">{technique.description}</div>
-                      {technique.examples && (
-                        <div className="mt-2 text-xs text-gray-500 italic">
-                          Example: "{technique.examples[0]}"
-                        </div>
-                      )}
-                    </div>
+            <div className="glass-card p-6">
+              <h3 className="font-semibold text-white mb-4 flex items-center">
+                <XCircle className="h-5 w-5 mr-2 text-holo-red" />
+                Suspicious Mentions
+              </h3>
+              {scanResult.suspiciousMentions && scanResult.suspiciousMentions.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {scanResult.suspiciousMentions.map((mention, index) => (
+                    <span
+                      key={`${mention}-${index}`}
+                      className="px-3 py-1 text-xs rounded-full bg-holo-red/15 text-holo-red border border-holo-red/40"
+                    >
+                      {mention}
+                    </span>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <p className="text-sm text-gray-400">No high-risk keywords detected in the analyzed messages.</p>
+              )}
+            </div>
 
-            {/* Scam Indicators */}
-            {scanResult.scamIndicators && scanResult.scamIndicators.length > 0 && (
-              <div className="glass-card p-6">
-                <h3 className="font-semibold text-white mb-4 flex items-center">
-                  <XCircle className="h-5 w-5 mr-2 text-holo-red" />
-                  Scam Indicators
-                </h3>
-                <div className="space-y-2">
-                  {scanResult.scamIndicators.map((indicator: any, index: number) => (
-                    <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 border border-holo-red/30">
-                      <div className="h-2 w-2 bg-holo-red rounded-full mt-1.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <div className="text-sm text-white">{indicator.indicator}</div>
-                        <div className="text-xs text-gray-500">Confidence: {indicator.confidence}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="glass-card p-6">
+              <h3 className="font-semibold text-white mb-4 flex items-center">
+                <Shield className="h-5 w-5 mr-2 text-holo-green" />
+                Recommended Actions
+              </h3>
+              <ul className="space-y-2">
+                {(scanResult.recommendations && scanResult.recommendations.length > 0)
+                  ? scanResult.recommendations.map((recommendation, index) => (
+                      <li
+                        key={`${recommendation}-${index}`}
+                        className="flex items-start gap-3 text-sm text-gray-300"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-holo-green mt-0.5" />
+                        <span>{recommendation}</span>
+                      </li>
+                    ))
+                  : (
+                      <li className="text-sm text-gray-400">
+                        Maintain normal vigilance and continue monitoring the conversation.
+                      </li>
+                    )}
+              </ul>
+            </div>
 
-            {/* Emotional Analysis */}
-            {scanResult.emotionalAnalysis && (
-              <div className="glass-card p-6">
-                <h3 className="font-semibold text-white mb-4">Emotional Analysis</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
-                    <div className="text-gray-400 text-sm">Urgency Level</div>
-                    <div className="font-medium text-white">{scanResult.emotionalAnalysis.urgencyLevel || 'Normal'}</div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
-                    <div className="text-gray-400 text-sm">Fear Tactics</div>
-                    <div className="font-medium text-white">{scanResult.emotionalAnalysis.fearTactics ? 'Detected' : 'Not Detected'}</div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
-                    <div className="text-gray-400 text-sm">Trust Building</div>
-                    <div className="font-medium text-white">{scanResult.emotionalAnalysis.trustBuilding || 'Normal'}</div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
-                    <div className="text-gray-400 text-sm">Pressure Tactics</div>
-                    <div className="font-medium text-white">{scanResult.emotionalAnalysis.pressureTactics ? 'Present' : 'Absent'}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => {

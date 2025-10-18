@@ -1,337 +1,111 @@
 # Scam Dunk Backend API
 
-A comprehensive Express.js backend API for the Scam Dunk application, providing real-time scam detection and analysis services.
+TypeScript Express service powering the Scam Dunk detection workflows. The API connects to Supabase Postgres, enforces JWT authentication, applies per-user rate limiting/caching, and records telemetry for every detection request.
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **Express.js** server with TypeScript
-- **MongoDB** database with Mongoose ODM
-- **JWT-based authentication** with refresh tokens
-- **Real-time updates** via Socket.IO
-- **Rate limiting** and security headers
-- **Comprehensive error handling** and logging
-- **Multi-service architecture** for scam detection
+- **Supabase-backed auth & persistence** with JWT session handling
+- **Deterministic heuristics** for contact, chat, trading, and veracity assessments
+- **Comprehensive scans** aggregate per-test results and recommendations
+- **Per-user rate limiting** with hashed payload caching and telemetry logging
+- **Operational telemetry** stored in `detection_telemetry` for live monitoring
+- **Structured logging** with Pino (pretty-printed locally, JSON in production)
+- **Prometheus metrics** exposed on `/metrics` (default + detection counters)
+- **Automated testing** via Jest + Supertest and live Supabase integration checks
 
-## 🛠️ Services
+## 🪛 Environment Setup
 
-### Contact Verification Service
-- Phone number validation and formatting
-- Truecaller API simulation for spam detection
-- Carrier information lookup
-- Risk analysis based on multiple factors
-- Support for international phone numbers
+Create two env files so both the API and Next.js can share credentials.
 
-### Chat Analysis Service
-- OpenAI GPT integration for real chat analysis
-- Sentiment analysis and emotion detection
-- Scam pattern recognition
-- Entity extraction (phone numbers, emails, URLs, crypto addresses)
-- Multi-language support
-- Configurable analysis depth (basic, standard, comprehensive)
-
-### Trading Analysis Service
-- Yahoo Finance API integration for stock data
-- CoinGecko API for cryptocurrency analysis
-- Platform verification (regulated vs unregulated)
-- Risk assessment for securities and trading platforms
-- Real-time market data integration
-
-### Veracity Checking Service
-- SEC EDGAR database simulation
-- FINRA registration verification simulation
-- Domain analysis and whois lookup simulation
-- Business registration checking
-- Multi-source verification with confidence scoring
-
-## 📡 API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/refresh` - Refresh access token
-- `GET /api/auth/me` - Get current user
-- `PUT /api/auth/profile` - Update user profile
-- `PUT /api/auth/change-password` - Change password
-
-### Scans
-- `POST /api/scans/contact` - Contact verification scan
-- `POST /api/scans/chat` - Chat analysis scan
-- `POST /api/scans/trading` - Trading analysis scan
-- `POST /api/scans/veracity` - Company veracity check
-- `POST /api/scans/comprehensive` - Multi-service comprehensive scan
-- `GET /api/scans/:scanId` - Get scan details
-- `GET /api/scans/:scanId/status` - Get scan status
-- `GET /api/scans/public/:reportId` - Get public scan report
-
-### Users
-- `GET /api/users/profile` - Get detailed user profile
-- `GET /api/users/dashboard` - Get dashboard data
-- `GET /api/users/scans` - Get user scans with pagination
-- `GET /api/users/subscription` - Get subscription info
-- `GET /api/users/settings` - Get user settings
-
-### Health & Monitoring
-- `GET /health` - Basic health check
-- `GET /api/health/detailed` - Detailed system health
-- `GET /api/health/ready` - Kubernetes readiness probe
-- `GET /api/health/live` - Kubernetes liveness probe
-
-## 🗄️ Database Models
-
-### User Model
-- Authentication and profile information
-- Subscription management (free, premium, pro)
-- API usage tracking and limits
-- Preferences and privacy settings
-
-### Scan Model
-- Flexible input structure for different scan types
-- Comprehensive results with risk scoring
-- Real-time processing status tracking
-- Sharing and collaboration features
-
-### Detection Model
-- Individual risk detections within scans
-- Categorized by type and severity
-- Evidence tracking and false positive management
-
-### ContactVerification Model
-- Phone number verification results
-- Truecaller integration data
-- Risk analysis and recommendations
-- Historical verification tracking
-
-### ChatAnalysis Model
-- Comprehensive chat conversation analysis
-- AI-powered insights and risk assessment
-- Pattern recognition and entity extraction
-- Multi-platform support
-
-## 🔧 Configuration
-
-### Environment Variables
-
+`packages/api/.env`
 ```bash
-# Server Configuration
-NODE_ENV=development
+SUPABASE_URL=https://<project>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+JWT_SECRET=<shared-secret>
 PORT=3001
-LOG_LEVEL=info
-
-# Database
-MONGODB_URI=mongodb://localhost:27017/scam-dunk
-
-# JWT Authentication
-JWT_SECRET=your-super-secret-jwt-key
-JWT_EXPIRES_IN=24h
-JWT_REFRESH_SECRET=your-refresh-secret
-JWT_REFRESH_EXPIRES_IN=7d
-
-# External APIs
-OPENAI_API_KEY=your-openai-api-key
-TRUECALLER_API_KEY=your-truecaller-api-key
-NUMVERIFY_API_KEY=your-numverify-api-key
-
-# Features
-ENABLE_REAL_TIME_UPDATES=true
-SIMULATION_MODE=false
 ```
 
-## 🚦 Getting Started
+Root `.env.local`
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+NEXT_PUBLIC_API_URL=http://localhost:3001
+JWT_SECRET=<same-shared-secret>
+```
 
-### Prerequisites
-- Node.js 18+ 
-- MongoDB 5.0+
-- npm or yarn
+> **Security note:** the service-role key is highly privileged—keep it server-side only.
 
-### Installation
-
-1. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-3. **Start MongoDB**
-   ```bash
-   # Using Docker
-   docker run -d -p 27017:27017 mongo:5.0
-   
-   # Or use local MongoDB installation
-   mongod --dbpath /your/db/path
-   ```
-
-4. **Start the server**
-   ```bash
-   # Development mode
-   npm run dev
-   
-   # Production mode
-   npm run build
-   npm start
-   ```
-
-### Development
+Optional feature flags for external providers:
 
 ```bash
-# Start with auto-reload
-npm run dev
+# Enable/disable external detection providers (default: false)
+ENABLE_CONTACT_PROVIDER=false
+ENABLE_TRADING_PROVIDER=false
+ENABLE_CHAT_PROVIDER=false
+ENABLE_VERACITY_PROVIDER=false
 
-# Build TypeScript
-npm run build
+# Provider endpoints (only read when the corresponding flag above is true)
+CONTACT_PROVIDER_URL=https://provider/contact
+TRADING_PROVIDER_URL=https://provider/trading
+CHAT_PROVIDER_URL=https://provider/chat
+VERACITY_PROVIDER_URL=https://provider/veracity
 
-# Run tests
-npm test
+# Optional timeout (ms) for provider calls
+PROVIDER_TIMEOUT_MS=2500
 ```
 
-## 🔐 Security Features
+## 🗄️ Database Bootstrap
 
-- **JWT Authentication** with access and refresh tokens
-- **Rate limiting** (100 requests per 15 minutes in production)
-- **Helmet.js** for security headers
-- **CORS** configuration
-- **Input validation** with express-validator
-- **Password hashing** with bcrypt (12 rounds)
-- **Request logging** and security monitoring
+Run the SQL in `packages/api/prisma/init.sql` once against the Supabase project (SQL editor or `psql`). It provisions:
 
-## 📊 Monitoring & Logging
-
-- **Winston** for structured logging
-- **Request/response logging** with unique request IDs
-- **Performance monitoring** for slow requests
-- **Error tracking** with stack traces
-- **Security event logging** for suspicious activities
-- **Health check endpoints** for monitoring
-
-## 🔄 Real-time Features
-
-### WebSocket Events
-- `scan-status` - Scan progress updates
-- `scan-complete` - Scan completion notification
-- `scan-error` - Scan error notification
-
-### Usage
-```javascript
-// Join a scan room
-socket.emit('join-scan', scanId);
-
-// Listen for status updates
-socket.on('scan-status', (data) => {
-  console.log('Scan progress:', data);
-});
-
-// Listen for completion
-socket.on('scan-complete', (data) => {
-  console.log('Scan completed:', data);
-});
-```
-
-## 📈 API Usage Limits
-
-### Subscription Tiers
-- **Free**: 5 scans/day, 20 scans/month
-- **Premium**: 50 scans/day, 500 scans/month  
-- **Pro**: 200 scans/day, 2000 scans/month
-
-### Rate Limiting
-- 100 requests per 15 minutes per IP (production)
-- 1000 requests per 15 minutes per IP (development)
+- `users` — auth and profile data
+- `scans` — comprehensive workflow storage
+- `contact_verifications` — per-request history
+- `detection_telemetry` — operational metrics for detections
 
 ## 🧪 Testing
 
-The API includes comprehensive testing capabilities:
+```bash
+# From the repo root
+npm test                       # runs Jest via packages/api
+
+# Direct invocation
+npm --prefix packages/api test
+
+# Live integration check against Supabase
+node -r ts-node/register -r dotenv/config packages/api/scripts/live-check.ts
+```
+
+The live script spins up the Express app, registers/logs in a synthetic user, retrieves `/api/users/profile`, and exercises `/api/contact-verification` to validate caching, rate limiting, and telemetry persistence. Inspect the console output (and Supabase tables) for confirmation.
+
+## 🧩 Detection Helpers (Overview)
+
+| Service              | Heuristic Inputs                                           | Outputs                                                  |
+|----------------------|------------------------------------------------------------|----------------------------------------------------------|
+| Contact Verification | Email domain, phone prefix, hashed signal weighting        | `riskScore`, `riskLevel`, recommendations, flags         |
+| Chat Analysis        | Platform + messages (keyword scan, tone heuristics)        | `overallRiskScore`, suspicious phrases, summary          |
+| Trading Analysis     | Symbol patterns, watchlists, hashed weighting              | `overallRiskScore`, key findings, recommendations        |
+| Veracity Checking    | Identifier heuristics (shell/offshore terms, etc.)         | `isVerified`, `overallConfidence`, follow-up suggestions |
+
+Comprehensive scans orchestrate all four helpers and compute an overall risk grade from the individual scores.
+
+## 🔭 Observability
+
+- Metrics: scrape `GET /metrics` (Prometheus format) for counters (`scam_dunk_detection_requests_total`), histograms (`scam_dunk_detection_duration_ms`), and rate-limit totals.
+- Logging: structured JSON via Pino (pretty printed locally). Adjust verbosity with `LOG_LEVEL`.
+- Telemetry: each detection request is also written to the `detection_telemetry` table for historical analysis.
+
+## 🔁 Development Scripts
 
 ```bash
-# Run the implementation test
-node test-api.js
-
-# Test health endpoint
-curl http://localhost:3001/health
-
-# Test with authentication
-curl -H "Authorization: Bearer YOUR_JWT_TOKEN" http://localhost:3001/api/auth/me
+npm --prefix packages/api run dev      # Start Express in watch mode
+npm --prefix packages/api run build    # Compile TypeScript
+npm run test:api                      # Convenience alias (root package.json)
 ```
 
-## 🏗️ Architecture
+## ✅ Verification Checklist (current work)
 
-```
-src/
-├── index.ts              # Main server file
-├── models/               # MongoDB models
-│   ├── User.ts
-│   ├── Scan.ts
-│   ├── Detection.ts
-│   ├── ContactVerification.ts
-│   └── ChatAnalysis.ts
-├── services/             # Business logic services
-│   ├── ContactVerificationService.ts
-│   ├── ChatAnalysisService.ts
-│   ├── TradingAnalysisService.ts
-│   └── VeracityCheckingService.ts
-├── routes/               # API route handlers
-│   ├── auth.ts
-│   ├── users.ts
-│   ├── scans.ts
-│   └── ...
-├── middleware/           # Express middleware
-│   ├── auth.ts
-│   ├── error-handler.ts
-│   └── logger.ts
-└── logs/                 # Application logs
-```
+- `npm --prefix packages/api test`
+- `node -r ts-node/register -r dotenv/config packages/api/scripts/live-check.ts`
 
-## 🤝 Integration
-
-### Frontend Integration
-```javascript
-// Initialize API client
-const apiClient = axios.create({
-  baseURL: 'http://localhost:3001/api',
-  headers: {
-    'Authorization': `Bearer ${token}`
-  }
-});
-
-// Start a contact scan
-const response = await apiClient.post('/scans/contact', {
-  phoneNumber: '+1234567890'
-});
-
-// Connect to WebSocket for real-time updates
-const socket = io('http://localhost:3001');
-socket.emit('join-scan', response.data.scan._id);
-```
-
-### External API Integration
-- **OpenAI GPT-4** for advanced chat analysis
-- **Yahoo Finance** for real-time stock data
-- **CoinGecko** for cryptocurrency information
-- **Truecaller API** simulation for phone verification
-- **SEC EDGAR** database simulation
-- **FINRA BrokerCheck** simulation
-
-## 📝 Notes
-
-- The backend uses **simulation mode** for external APIs when real API keys are not available
-- All services return **realistic data** based on patterns and databases
-- **Comprehensive error handling** ensures graceful degradation
-- **TypeScript** provides type safety throughout the application
-- **Production-ready** with proper logging, monitoring, and security
-
-## 🎯 Next Steps
-
-1. Set up real external API integrations
-2. Implement email verification system
-3. Add comprehensive test suite
-4. Set up CI/CD pipeline
-5. Add API documentation with Swagger
-6. Implement caching with Redis
-7. Add monitoring with Sentry or similar
-
----
-
-**Total Implementation**: 7,431+ lines of production-ready TypeScript code across 23 files, providing a complete backend API for the Scam Dunk application.
+Re-run these commands before continuing with Step 4 of the rebuild plan.

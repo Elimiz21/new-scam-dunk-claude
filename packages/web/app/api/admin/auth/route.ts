@@ -1,21 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
+import { getSupabaseClient } from '@/lib/supabase-admin';
 
 const ADMIN_EMAIL = 'elimizroch@gmail.com';
 const ADMIN_PASSWORD = 'Elim2232';
 const JWT_SECRET = process.env.JWT_SECRET || 'admin-secret-key-2025';
-
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseKey) {
-    return null;
-  }
-  
-  return createClient(supabaseUrl, supabaseKey);
-}
 
 export async function POST(request: NextRequest) {
   try {

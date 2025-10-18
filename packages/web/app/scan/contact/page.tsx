@@ -16,15 +16,79 @@ import {
   Zap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { detectionService } from '@/services/detection.service';
+import { detectionService, type ContactVerificationResult } from '@/services/detection.service';
 import Link from 'next/link';
 import Image from 'next/image';
+
+type ContactInsightStatus = 'safe' | 'warning' | 'danger';
+
+interface ContactInsightCard {
+  title: string;
+  description: string;
+  status: ContactInsightStatus;
+}
+
+const buildContactInsights = (result: ContactVerificationResult): ContactInsightCard[] => {
+  const cards: ContactInsightCard[] = [];
+
+  result.checks.forEach((check) => {
+    if (!check.result) {
+      if (check.error) {
+        cards.push({
+          title: `${check.type === 'email' ? 'Email' : 'Phone'}: ${check.value}`,
+          description: check.error,
+          status: 'warning',
+        });
+      }
+      return;
+    }
+
+    const score = check.result.riskScore ?? 0;
+    const status: ContactInsightStatus = score >= 70 || check.result.metadata?.isScammer
+      ? 'danger'
+      : score >= 40
+        ? 'warning'
+        : 'safe';
+
+    const sources = Array.isArray(check.result.metadata?.verificationSources)
+      ? `Verified via ${check.result.metadata?.verificationSources.join(', ')}`
+      : undefined;
+
+    const flags = (check.result.flags || []).slice(0, 3);
+    const flagText = flags.length ? `Flags: ${flags.join(', ')}` : undefined;
+
+    cards.push({
+      title: `${check.type === 'email' ? 'Email' : 'Phone'}: ${check.value}`,
+      description:
+        check.result.summary ||
+        [
+          sources,
+          flagText,
+        ]
+          .filter(Boolean)
+          .join(' • ') ||
+        'No significant findings reported.',
+      status,
+    });
+  });
+
+  (result.keyFindings || []).forEach((finding) => {
+    cards.push({
+      title: 'Insight',
+      description: finding,
+      status: result.riskLevel === 'HIGH' ? 'danger' : result.riskLevel === 'MEDIUM' ? 'warning' : 'safe',
+    });
+  });
+
+  return cards;
+};
 
 export default function ContactVerificationPage() {
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
-  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanResult, setScanResult] = useState<ContactVerificationResult | null>(null);
+  const [insights, setInsights] = useState<ContactInsightCard[]>([]);
   const [progress, setProgress] = useState(0);
   
   const [inputData, setInputData] = useState({
@@ -65,8 +129,9 @@ export default function ContactVerificationPage() {
 
       // Call detection service
       const result = await detectionService.verifyContacts({ contacts });
-      
+
       setScanResult(result);
+      setInsights(buildContactInsights(result));
       setScanComplete(true);
       
       toast({
@@ -321,21 +386,26 @@ export default function ContactVerificationPage() {
             <div className="glass-card p-6">
               <h3 className="text-lg font-bold text-white mb-4">Verification Details</h3>
               <div className="space-y-4">
-                {scanResult?.details?.map((detail: any, index: number) => (
-                  <div key={index} className="flex items-start gap-3 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50">
-                    {detail.status === 'safe' ? (
-                      <CheckCircle2 className="w-5 h-5 text-holo-green mt-0.5" />
-                    ) : detail.status === 'warning' ? (
-                      <AlertTriangle className="w-5 h-5 text-holo-amber mt-0.5" />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-holo-red mt-0.5" />
-                    )}
-                    <div className="flex-1">
-                      <p className="text-white font-medium">{detail.title}</p>
-                      <p className="text-gray-400 text-sm mt-1">{detail.description}</p>
+                {insights.length > 0 ? (
+                  insights.map((detail, index) => (
+                    <div
+                      key={`${detail.title}-${index}`}
+                      className="flex items-start gap-3 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50"
+                    >
+                      {detail.status === 'safe' ? (
+                        <CheckCircle2 className="w-5 h-5 text-holo-green mt-0.5" />
+                      ) : detail.status === 'warning' ? (
+                        <AlertTriangle className="w-5 h-5 text-holo-amber mt-0.5" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-holo-red mt-0.5" />
+                      )}
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{detail.title}</p>
+                        <p className="text-gray-400 text-sm mt-1">{detail.description}</p>
+                      </div>
                     </div>
-                  </div>
-                )) || (
+                  ))
+                ) : (
                   <>
                     <div className="flex items-start gap-3 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50">
                       <CheckCircle2 className="w-5 h-5 text-holo-green mt-0.5" />

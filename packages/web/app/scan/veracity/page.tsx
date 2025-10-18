@@ -9,20 +9,18 @@ import {
   XCircle,
   Loader2,
   ArrowLeft,
-  Search,
-  Building2,
-  Globe
+  Search
 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { detectionService } from '@/services/detection.service';
+import { detectionService, type VeracityCheckResult } from '@/services/detection.service';
 import Link from 'next/link';
 
 export default function VeracityCheckPage() {
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
-  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanResult, setScanResult] = useState<VeracityCheckResult | null>(null);
   const [progress, setProgress] = useState(0);
   
   const [inputData, setInputData] = useState({
@@ -83,13 +81,6 @@ export default function VeracityCheckPage() {
     if (score >= 70) return { color: 'bg-red-500', text: 'High Risk' };
     if (score >= 40) return { color: 'bg-yellow-500', text: 'Medium Risk' };
     return { color: 'bg-green-500', text: 'Low Risk' };
-  };
-
-  const getVerificationStatus = (exists: boolean) => {
-    if (exists) {
-      return { color: 'text-green-600', icon: CheckCircle2, text: 'Verified' };
-    }
-    return { color: 'text-red-600', icon: XCircle, text: 'Not Found' };
   };
 
   return (
@@ -255,173 +246,86 @@ export default function VeracityCheckPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="glass-card p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Verification Results</h2>
-              <span className={`px-4 py-2 rounded-full text-white text-sm font-medium ${getRiskBadge(scanResult.riskScore || 0).color}`}>
-                {getRiskBadge(scanResult.riskScore || 0).text}
+          <div className="glass-card p-8 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Verification Results</h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  Status: {scanResult.verificationStatus || (scanResult.isVerified ? 'VERIFIED' : 'UNVERIFIED')}
+                </p>
+              </div>
+              <span className={`px-4 py-2 rounded-full text-white text-sm font-medium ${getRiskBadge(scanResult.riskScore).color}`}>
+                {getRiskBadge(scanResult.riskScore).text}
               </span>
             </div>
-            <div className="space-y-6">
-              {/* Asset Existence */}
-              <div>
-                <h3 className="font-semibold mb-3">Asset Verification</h3>
-                <div className="flex items-center space-x-2">
-                  {scanResult.exists ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <XCircle className="h-5 w-5 text-red-600" />
-                  )}
-                  <span className={`font-medium ${scanResult.exists ? 'text-green-600' : 'text-red-600'}`}>
-                    {scanResult.exists ? 'Asset Exists and Verified' : 'Asset Not Found or Unverified'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Company/Project Information */}
-              {scanResult.companyInfo && (
-                <div>
-                  <h3 className="font-semibold mb-3 flex items-center">
-                    <Building2 className="h-4 w-4 mr-2" />
-                    Company/Project Information
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    {scanResult.companyInfo.name && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Name:</span>
-                        <span className="font-medium">{scanResult.companyInfo.name}</span>
-                      </div>
-                    )}
-                    {scanResult.companyInfo.founded && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Founded:</span>
-                        <span className="font-medium">{scanResult.companyInfo.founded}</span>
-                      </div>
-                    )}
-                    {scanResult.companyInfo.headquarters && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Headquarters:</span>
-                        <span className="font-medium">{scanResult.companyInfo.headquarters}</span>
-                      </div>
-                    )}
-                    {scanResult.companyInfo.website && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Website:</span>
-                        <a href={scanResult.companyInfo.website} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
-                          {scanResult.companyInfo.website}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Regulatory Compliance */}
-              {scanResult.regulatoryCompliance && (
-                <div>
-                  <h3 className="font-semibold mb-3">Regulatory Compliance</h3>
-                  <div className="space-y-3">
-                    {scanResult.regulatoryCompliance.sec && (
-                      <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-white">SEC Registration</span>
-                          <span className={`text-sm ${scanResult.regulatoryCompliance.sec.registered ? 'text-holo-green' : 'text-gray-500'}`}>
-                            {scanResult.regulatoryCompliance.sec.registered ? 'Registered' : 'Not Registered'}
-                          </span>
-                        </div>
-                        {scanResult.regulatoryCompliance.sec.filingDate && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            Last Filing: {scanResult.regulatoryCompliance.sec.filingDate}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {scanResult.regulatoryCompliance.finra && (
-                      <div className="p-3 rounded-xl bg-gray-800/30 border border-gray-700">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-white">FINRA Status</span>
-                          <span className={`text-sm ${scanResult.regulatoryCompliance.finra.valid ? 'text-holo-green' : 'text-gray-500'}`}>
-                            {scanResult.regulatoryCompliance.finra.valid ? 'Valid' : 'Not Found'}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Exchange Listings */}
-              {scanResult.exchanges && scanResult.exchanges.length > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-3 flex items-center">
-                    <Globe className="h-4 w-4 mr-2" />
-                    Exchange Listings
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {scanResult.exchanges.map((exchange: string, index: number) => (
-                      <span key={index} className="px-3 py-1 bg-holo-cyan/20 text-holo-cyan rounded-full text-sm font-medium">
-                        {exchange}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Law Enforcement Alerts */}
-              {scanResult.lawEnforcementAlerts && scanResult.lawEnforcementAlerts.length > 0 && (
-                <div className="p-4 rounded-xl bg-holo-red/10 border border-holo-red/30">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 text-holo-red flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <div className="font-medium text-holo-red mb-2">Law Enforcement Alerts</div>
-                      <ul className="space-y-1">
-                        {scanResult.lawEnforcementAlerts.map((alert: any, index: number) => (
-                          <li key={index} className="text-sm text-gray-400">
-                            <span className="text-holo-amber">{alert.source}:</span> {alert.description}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Smart Contract Audit (for crypto) */}
-              {scanResult.smartContractAudit && (
-                <div>
-                  <h3 className="font-semibold mb-3">Smart Contract Audit</h3>
-                  <div className="p-4 rounded-xl bg-gray-800/30 border border-gray-700">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-white">Audit Status</span>
-                      <span className={`text-sm font-medium ${scanResult.smartContractAudit.audited ? 'text-holo-green' : 'text-holo-amber'}`}>
-                        {scanResult.smartContractAudit.audited ? 'Audited' : 'Not Audited'}
-                      </span>
-                    </div>
-                    {scanResult.smartContractAudit.auditor && (
-                      <div className="text-xs text-gray-400">
-                        Auditor: {scanResult.smartContractAudit.auditor}
-                      </div>
-                    )}
-                    {scanResult.smartContractAudit.issues && (
-                      <div className="text-xs text-holo-red mt-1">
-                        Issues Found: {scanResult.smartContractAudit.issues}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Summary */}
-              <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700">
-                <h4 className="font-semibold text-white mb-3">Summary</h4>
-                <p className="text-sm text-gray-300">
-                  Risk Score: <span className="text-holo-amber font-bold">{scanResult.riskScore || 0}/100</span>
-                </p>
-                {scanResult.recommendation && (
-                  <p className="text-sm text-gray-400 mt-3">{scanResult.recommendation}</p>
-                )}
-              </div>
+            <div className="mt-6 p-4 rounded-xl bg-gray-800/30 border border-gray-700">
+              <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">Summary</div>
+              <p className="text-gray-200 leading-relaxed">{scanResult.summary}</p>
+              <p className="text-xs text-gray-500 mt-3">
+                Confidence score: {Math.round(scanResult.confidence ?? 0)}%
+              </p>
             </div>
+          </div>
+
+          <div className="glass-card p-6 mb-6">
+            <h3 className="font-semibold text-white mb-4 flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2 text-holo-amber" />
+              Key Findings
+            </h3>
+            <div className="space-y-3">
+              {(scanResult.keyFindings && scanResult.keyFindings.length > 0)
+                ? scanResult.keyFindings.map((finding, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 border border-gray-700/50">
+                      <div className="h-2 w-2 bg-holo-amber rounded-full mt-1.5 flex-shrink-0" />
+                      <div className="text-sm text-gray-300">{finding}</div>
+                    </div>
+                  ))
+                : (
+                    <p className="text-sm text-gray-400">
+                      No adverse findings reported from the verification checks.
+                    </p>
+                  )}
+            </div>
+          </div>
+
+          <div className="glass-card p-6 mb-6">
+            <h3 className="font-semibold text-white mb-4 flex items-center">
+              <Shield className="h-5 w-5 mr-2 text-holo-green" />
+              Recommended Actions
+            </h3>
+            <ul className="space-y-2">
+              {(scanResult.recommendations && scanResult.recommendations.length > 0)
+                ? scanResult.recommendations.map((recommendation, index) => (
+                    <li key={`${recommendation}-${index}`} className="flex items-start gap-3 text-sm text-gray-300">
+                      <CheckCircle2 className="w-4 h-4 text-holo-green mt-0.5" />
+                      <span>{recommendation}</span>
+                    </li>
+                  ))
+                : (
+                    <li className="text-sm text-gray-400">
+                      Continue monitoring for regulatory updates and maintain standard due diligence.
+                    </li>
+                  )}
+            </ul>
+          </div>
+
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => {
+                setScanComplete(false);
+                setScanResult(null);
+                setInputData(prev => ({ ...prev, ticker: '' }));
+              }}
+              className="glass-card px-6 py-3 text-gray-300 border border-gray-700 hover:border-holo-amber/50 hover:text-white transition-all"
+            >
+              New Verification
+            </button>
+            <Link href="/scan">
+              <button className="holo-button px-6 py-3">
+                Run All Tests
+                <Zap className="w-4 h-4 ml-2 inline" />
+              </button>
+            </Link>
           </div>
         </motion.div>
       )}

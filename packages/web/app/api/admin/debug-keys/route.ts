@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   const debugInfo: any = {
     env: {
       supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing',
-      supabaseKey: (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ? 'Set' : 'Missing',
+      supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Missing',
     },
     database: {
       connected: false,

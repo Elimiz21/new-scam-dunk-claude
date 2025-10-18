@@ -15,8 +15,15 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
-    "types": ["node", "express"]
+    "types": ["node", "express", "jest"]
   },
-  "include": ["src/simple-index.ts"],
+  "include": [
+    "src/simple-index.ts",
+    "src/lib/logger.ts",
+    "src/lib/metrics.ts",
+    "src/lib/config.ts",
+    "src/utils/detection-helpers.ts",
+    "src/services/providers.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

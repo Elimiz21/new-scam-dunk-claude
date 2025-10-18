@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "."
+  },
+  "include": [
+    "src/simple-index.ts",
+    "src/simple-index.test.ts",
+    "src/utils/detection-helpers.ts",
+    "src/lib/logger.ts",
+    "src/lib/config.ts",
+    "src/lib/metrics.ts",
+    "src/services/providers.ts",
+    "jest.setup.ts"
+  ]
+}

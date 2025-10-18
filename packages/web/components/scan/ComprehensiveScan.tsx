@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Shield, 
   Users, 
@@ -26,7 +26,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { detectionService } from '@/services/detection.service';
+import {
+  detectionService,
+  type ContactVerificationResult,
+  type ChatAnalysisResult,
+  type TradingAnalysisResult,
+  type VeracityCheckResult,
+  type ComprehensiveScanResult,
+} from '@/services/detection.service';
+
+interface ScanTestResultView {
+  riskScore: number;
+  riskLevel: string;
+  summary: string;
+  highlights: string[];
+  recommendations: string[];
+}
 
 interface ScanTest {
   id: string;
@@ -36,7 +51,7 @@ interface ScanTest {
   enabled: boolean;
   status: 'idle' | 'running' | 'completed' | 'error';
   progress: number;
-  result?: any;
+  result?: ScanTestResultView;
 }
 
 export function ComprehensiveScan() {
@@ -114,78 +129,139 @@ export function ComprehensiveScan() {
           const emailMatch = line.match(/[\w.-]+@[\w.-]+\.\w+/);
           const phoneMatch = line.match(/[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}/);
           
-          return {
-            name: line.replace(emailMatch?.[0] || '', '').replace(phoneMatch?.[0] || '', '').trim(),
-            email: emailMatch?.[0],
-            phone: phoneMatch?.[0]
-          };
-        })
-        .filter(contact => contact.name || contact.email || contact.phone);
-      
-      // Call the service (using mock for now)
-      const results = await detectionService.runComprehensiveScanMock({
-        contacts,
-        chatContent: inputData.chatContent,
-        ticker: inputData.ticker,
-        assetType: inputData.ticker ? 'stock' : undefined,
-        enabledTests: {
-          contactVerification: scanTests.find(t => t.id === 'contact')?.enabled || false,
-          chatAnalysis: scanTests.find(t => t.id === 'chat')?.enabled || false,
-          tradingAnalysis: scanTests.find(t => t.id === 'trading')?.enabled || false,
-          veracityCheck: scanTests.find(t => t.id === 'veracity')?.enabled || false,
+      return {
+        name: line.replace(emailMatch?.[0] || '', '').replace(phoneMatch?.[0] || '', '').trim(),
+        email: emailMatch?.[0],
+        phone: phoneMatch?.[0]
+      };
+    })
+    .filter(contact => contact.name || contact.email || contact.phone);
+   
+    const chatMessages = inputData.chatContent
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    const contactEnabled = (scanTests.find((t) => t.id === 'contact')?.enabled ?? false) && contacts.length > 0;
+    const chatEnabled = (scanTests.find((t) => t.id === 'chat')?.enabled ?? false) && chatMessages.length > 0;
+    const tradingEnabled = (scanTests.find((t) => t.id === 'trading')?.enabled ?? false) && Boolean(inputData.ticker);
+    const veracityEnabled = (scanTests.find((t) => t.id === 'veracity')?.enabled ?? false) && Boolean(inputData.ticker);
+
+    const results = await detectionService.runComprehensiveScan({
+      contacts,
+      chatContent: chatMessages.join('\n'),
+      ticker: inputData.ticker,
+      assetType: inputData.ticker ? 'stock' : undefined,
+      enabledTests: {
+        contactVerification: contactEnabled,
+        chatAnalysis: chatEnabled,
+        tradingAnalysis: tradingEnabled,
+        veracityCheck: veracityEnabled,
+      },
+    });
+
+    const mapContactResult = (result?: ContactVerificationResult): ScanTestResultView | undefined => {
+      if (!result) return undefined;
+      const highlights = result.keyFindings?.length
+        ? result.keyFindings
+        : [...(result.flags ?? [])];
+      return {
+        riskScore: result.riskScore,
+        riskLevel: result.riskLevel,
+        summary: result.summary ?? 'Contact verification completed.',
+        highlights: highlights.slice(0, 6),
+        recommendations: result.recommendations ?? [],
+      };
+    };
+
+    const mapChatResult = (result?: ChatAnalysisResult): ScanTestResultView | undefined => {
+      if (!result) return undefined;
+      const highlights = result.keyFindings?.length
+        ? result.keyFindings
+        : result.suspiciousMentions ?? [];
+      return {
+        riskScore: result.riskScore,
+        riskLevel: result.riskLevel,
+        summary: result.summary ?? 'Chat analysis completed.',
+        highlights: highlights.slice(0, 6),
+        recommendations: result.recommendations ?? [],
+      };
+    };
+
+    const mapTradingResult = (result?: TradingAnalysisResult): ScanTestResultView | undefined => {
+      if (!result) return undefined;
+      return {
+        riskScore: result.riskScore,
+        riskLevel: result.riskLevel,
+        summary: result.summary,
+        highlights: (result.keyFindings ?? []).slice(0, 6),
+        recommendations: result.recommendations ?? [],
+      };
+    };
+
+    const mapVeracityResult = (result?: VeracityCheckResult): ScanTestResultView | undefined => {
+      if (!result) return undefined;
+      const highlights = result.keyFindings?.length ? result.keyFindings : [];
+      return {
+        riskScore: result.riskScore,
+        riskLevel: result.riskLevel,
+        summary: result.summary ?? 'Verification completed.',
+        highlights: highlights.slice(0, 6),
+        recommendations: result.recommendations ?? [],
+      };
+    };
+
+    setScanTests((prev) =>
+      prev.map((test) => {
+        if (!test.enabled) {
+          return { ...test, status: 'idle', progress: 0, result: undefined };
         }
-      });
-      
-      // Update test results
-      setScanTests(prev => prev.map(test => {
-        let result;
-        switch(test.id) {
+
+        let mapped: ScanTestResultView | undefined;
+        switch (test.id) {
           case 'contact':
-            result = results.contactVerification;
+            mapped = mapContactResult(results.contactVerification);
             break;
           case 'chat':
-            result = results.chatAnalysis;
+            mapped = mapChatResult(results.chatAnalysis);
             break;
           case 'trading':
-            result = results.tradingAnalysis;
+            mapped = mapTradingResult(results.tradingAnalysis);
             break;
           case 'veracity':
-            result = results.veracityCheck;
+            mapped = mapVeracityResult(results.veracityCheck);
             break;
+          default:
+            mapped = undefined;
         }
-        
-        if (result && test.enabled) {
-          return {
-            ...test,
-            status: 'completed',
-            progress: 100,
-            result: {
-              score: result.riskScore || result.overallRiskScore || 0,
-              flags: result.flaggedContacts || result.suspiciousPhrases || result.lawEnforcementFlags || 0,
-              details: result
-            }
-          };
-        }
-        return test;
-      }));
-      
-      setOverallRiskScore(results.overallRiskScore);
-      setOverallProgress(100);
-      setScanComplete(true);
-      
-      toast({
-        title: "Scan Complete",
-        description: `Overall risk score: ${results.overallRiskScore.toFixed(1)}%`,
-      });
-    } catch (error) {
-      toast({
-        title: "Scan Failed",
-        description: "An error occurred during the scan. Please try again.",
-        variant: "destructive"
-      });
-      setIsScanning(false);
-    }
-  };
+
+        return {
+          ...test,
+          status: mapped ? 'completed' : 'error',
+          progress: mapped ? 100 : 0,
+          result: mapped,
+        };
+      })
+    );
+
+    setOverallRiskScore(results.overallRiskScore);
+    setOverallProgress(100);
+    setScanComplete(true);
+
+    toast({
+      title: 'Scan Complete',
+      description: `Overall risk score: ${results.overallRiskScore.toFixed(1)}%`,
+    });
+  } catch (error) {
+    toast({
+      title: 'Scan Failed',
+      description: 'An error occurred during the scan. Please try again.',
+      variant: 'destructive',
+    });
+  } finally {
+    setIsScanning(false);
+  }
+};
 
   const getRiskLevel = (score: number) => {
     if (score < 30) return { level: 'Low', color: 'text-green-500', bgColor: 'bg-green-100' };
@@ -225,7 +301,7 @@ export function ComprehensiveScan() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {scanTests.map((test) => {
               const Icon = test.icon;
-              const risk = test.result ? getRiskLevel(test.result.score) : null;
+              const risk = test.result ? getRiskLevel(test.result.riskScore) : null;
               
               return (
                 <motion.div
@@ -274,7 +350,7 @@ export function ComprehensiveScan() {
                                 Risk: {risk?.level}
                               </Badge>
                               <span className="text-xs text-muted-foreground">
-                                {test.result.flags} flags detected
+                                {test.result.highlights.length} key findings
                               </span>
                             </div>
                           )}

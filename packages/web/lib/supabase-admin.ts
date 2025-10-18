@@ -1,60 +1,43 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-// Hardcoded fallback configuration
-const FALLBACK_SUPABASE_URL = 'https://gcrkijhkecsfafjbojey.supabase.co';
-const FALLBACK_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpamhrZWNzZmFmamJvamV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMzOTE5MTUsImV4cCI6MjA0ODk2NzkxNX0.VsHcZtqR01JVsYMKZ5dvn2yB2zxUJFCvPqQQ7i5FQPA';
-const FALLBACK_SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpamhrZWNzZmFmamJvamV5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMzM5MTkxNSwiZXhwIjoyMDQ4OTY3OTE1fQ.7iQ4mPdAiCDO0SJX4hO-1G_xwi_Ge_xGqC1DJzDcPzc';
+function resolveSupabaseUrl() {
+  const explicitUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!explicitUrl) {
+    console.error('[supabase-admin] Missing SUPABASE_URL environment variable')
+    return null
+  }
+
+  if (explicitUrl.startsWith('postgresql://')) {
+    console.warn('[supabase-admin] PostgreSQL connection string detected; attempting to derive REST URL')
+    const match = explicitUrl.match(/db\.([a-z0-9]+)\.supabase\.co/i)
+    if (match?.[1]) {
+      return `https://${match[1]}.supabase.co`
+    }
+
+    console.error('[supabase-admin] Unable to derive REST URL from PostgreSQL string')
+    return null
+  }
+
+  return explicitUrl
+}
 
 export function getSupabaseClient() {
-  // Try environment variables first
-  let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_SUPABASE_URL;
-  // IMPORTANT: Use service role key for admin operations (database writes)
-  let supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 
-                    FALLBACK_SUPABASE_SERVICE_KEY || // Use service key fallback
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                    FALLBACK_SUPABASE_ANON_KEY;
-  
-  // Fix common configuration mistakes
-  // If the URL is a PostgreSQL connection string, extract the project ID and convert to REST API URL
-  if (supabaseUrl && supabaseUrl.startsWith('postgresql://')) {
-    console.warn('Detected PostgreSQL URL instead of Supabase REST API URL, attempting to fix...');
-    // Extract project ID from the PostgreSQL URL
-    const match = supabaseUrl.match(/db\.([a-z0-9]+)\.supabase\.co/);
-    if (match && match[1]) {
-      supabaseUrl = `https://${match[1]}.supabase.co`;
-      console.log('Fixed Supabase URL:', supabaseUrl);
-    } else {
-      // Fallback to hardcoded URL if we can't parse it
-      console.warn('Could not parse PostgreSQL URL, using fallback');
-      supabaseUrl = FALLBACK_SUPABASE_URL;
-    }
+  const supabaseUrl = resolveSupabaseUrl()
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('[supabase-admin] Missing Supabase URL or service role key; admin client unavailable')
+    return null
   }
-  
-  // Clean the key - remove any whitespace or newlines
-  if (supabaseKey) {
-    supabaseKey = supabaseKey.replace(/[\s\n\r]+/g, '').trim();
-  }
-  
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('Supabase configuration missing even with fallbacks');
-    return null;
-  }
-  
+
+  const cleanedKey = serviceRoleKey.replace(/[\s\n\r]+/g, '').trim()
+
   try {
-    const client = createClient(supabaseUrl, supabaseKey);
-    
-    // Test the connection
-    client.from('api_keys').select('count').limit(1).then(({ error }) => {
-      if (error) {
-        console.warn('Supabase connection test failed:', error.message);
-      } else {
-        console.log('Supabase connection successful');
-      }
-    });
-    
-    return client;
+    return createClient(supabaseUrl, cleanedKey, {
+      auth: { persistSession: false },
+    })
   } catch (error) {
-    console.error('Failed to create Supabase client:', error);
-    return null;
+    console.error('[supabase-admin] Failed to instantiate client:', error)
+    return null
   }
 }
