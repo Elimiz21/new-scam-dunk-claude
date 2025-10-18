@@ -12,7 +12,8 @@ import {
   LineChart,
   Activity,
   DollarSign,
-  Shield
+  Shield,
+  Zap
 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
