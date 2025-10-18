@@ -41,6 +41,10 @@ interface ScanTest {
   color: string;
 }
 
+const hasResult = (
+  test: ScanTest
+): test is ScanTest & { result: ScanTestResultView } => Boolean(test.result);
+
 export function HolographicScan() {
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
@@ -283,6 +287,8 @@ export function HolographicScan() {
     return { text: 'Low Risk', color: 'text-holo-green', bg: 'bg-holo-green/20' };
   };
 
+  const testsWithResults = scanTests.filter((test) => test.enabled).filter(hasResult);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-holo-dark via-gray-900 to-black py-8 px-4">
       <div className="container mx-auto max-w-7xl">
@@ -508,9 +514,7 @@ export function HolographicScan() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {scanTests
-                .filter(test => test.enabled && test.result)
-                .map((test) => (
+              {testsWithResults.map((test) => (
                   <div key={test.id} className="p-4 rounded-xl bg-gray-800/30 border border-gray-700">
                     <div className="flex items-center gap-3 mb-2">
                       <Image src={test.icon} alt={test.name} width={24} height={24} />

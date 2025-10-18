@@ -9,7 +9,10 @@ import {
   XCircle,
   Loader2,
   ArrowLeft,
-  Search
+  Search,
+  Building2,
+  Globe,
+  Zap
 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
