@@ -17,6 +17,9 @@
 - Centralised config loading with env validation (`packages/api/src/lib/config.ts`), updated Supabase client/Express server to rely on it (`packages/api/src/lib/supabase.ts`, `packages/api/src/simple-index.ts`, `packages/api/src/lib/logger.ts`).
 - Added TypeScript lint script and root `lint`/`ci` commands; introduced GitHub Actions workflow `.github/workflows/api-ci.yml` for automated lint+test on Node 20.
 - Implemented feature-flagged external provider hooks for contact/chat/trading/veracity detections (`packages/api/src/services/providers.ts`) with graceful fallbacks and telemetry metadata.
+- 2025-10-18: Fixed holographic login to use store loading flag and import missing Lucide icons; corrected trading/veracity scan icon imports (`packages/web/app/(auth)/login/holographic.tsx`, `packages/web/app/scan/trading/page.tsx`, `packages/web/app/scan/veracity/page.tsx`).
+- 2025-10-18: Added type guards for holographic scan results to satisfy strict Next.js build (`packages/web/components/scan/HolographicScan.tsx`).
+- Verified both `npm run test` and `npm --prefix packages/web run build` locally prior to deployment.
 
 ## Required Tests & Verifications (Next Session)
 - ✅ Run real Supabase-backed auth flow: register/login via web client, hit `/api/users/profile` GET/PATCH, confirm sanitized responses and persistence.

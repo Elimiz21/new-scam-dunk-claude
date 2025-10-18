@@ -54,11 +54,17 @@
   - Implemented OpenAI GPT-based chat analysis fallback and Have I Been Pwned breach lookups when direct provider URLs are unset.
   - Expanded automated API coverage to exercise external provider integrations (contact, trading, chat, veracity) and Supabase API key retrieval.
   - Rewired the Next.js detection service to the Express API and refreshed scan UIs (contact/chat/trading/veracity) to surface real provider findings and recommendations.
+  - Fixed auth/trading/veracity pages to consume store loading state, import all Lucide icons, and tightened type guards so `npm --prefix packages/web run build` passes locally before deployment.
 
 ## Upcoming Priorities
 1. Extend provider network (e.g., domain reputation, business registry checks) and surface results consistently in the web dashboard UI.
 2. Stand up automated quality gates (UI/end-to-end smoke tests, linting extension to web) ahead of broader UX polish.
 3. Prepare documentation and operational runbooks ahead of production hardening (TLS, deployment playbooks, alert routing).
+4. Restore EmailRep/HIBP integrations when keys become available and re-run the full build/test pipeline.
+
+## Verification Checklist (latest session)
+- `npm run test`
+- `npm --prefix packages/web run build`
 
 ## Notes for Next Session
 - Verify the Express build against real Supabase data (login, `/api/users/profile`, detection routes) and capture telemetry output for baseline metrics.
