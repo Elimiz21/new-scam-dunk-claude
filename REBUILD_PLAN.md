@@ -55,12 +55,16 @@
   - Expanded automated API coverage to exercise external provider integrations (contact, trading, chat, veracity) and Supabase API key retrieval.
   - Rewired the Next.js detection service to the Express API and refreshed scan UIs (contact/chat/trading/veracity) to surface real provider findings and recommendations.
   - Fixed auth/trading/veracity pages to consume store loading state, import all Lucide icons, and tightened type guards so `npm --prefix packages/web run build` passes locally before deployment.
+  - Introduced Playwright-based smoke tests for landing/login/register flows with automated dev-server orchestration to guard critical entry points.
+  - Added authenticated Playwright flows for login, registration, and dashboard widgets so the primary user journey is covered end-to-end without external dependencies.
+  - Retired the legacy holographic login variant to avoid mock-auth regressions and keep the entry experience consistent with production.
+  - Authored `OPERATIONS_RUNBOOK.md` to document daily quality gates, deployment checks, and rollback procedures.
+  - Extended root lint/test commands to cover the Next.js web package, establishing `next lint` as part of the shared CI gate.
 
 ## Upcoming Priorities
 1. Extend provider network (e.g., domain reputation, business registry checks) and surface results consistently in the web dashboard UI.
-2. Stand up automated quality gates (UI/end-to-end smoke tests, linting extension to web) ahead of broader UX polish.
-3. Prepare documentation and operational runbooks ahead of production hardening (TLS, deployment playbooks, alert routing).
-4. Restore EmailRep/HIBP integrations when keys become available and re-run the full build/test pipeline.
+2. Restore EmailRep/HIBP integrations when keys become available and re-run the full build/test pipeline.
+3. Validate telemetry + auth flows against a real Supabase instance and capture findings in `OPERATIONS_RUNBOOK.md`.
 
 ## Verification Checklist (latest session)
 - `npm run test`
@@ -69,5 +73,5 @@
 ## Notes for Next Session
 - Verify the Express build against real Supabase data (login, `/api/users/profile`, detection routes) and capture telemetry output for baseline metrics.
 - Backend TypeScript compilation currently blocked by large NestJS code paths; previous attempt rolled back—needs a scoped strategy when resuming Step 2.
-- Add CI automation, linting, and smoke tests to the workflow before tackling Step 4 infra tasks.
-- Ensure removal of deprecated mock login logic in `/app/(auth)/login/*` after real auth is live.
+- Wire the new Playwright suite into CI before tackling Step 4 infra tasks.
+- Gather production-grade Supabase credentials (URL + service-role key) to unblock live auth/telemetry verification steps.

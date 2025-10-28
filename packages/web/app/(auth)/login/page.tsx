@@ -248,6 +248,7 @@ export default function LoginPage() {
               <input
                 type="email"
                 placeholder="Enter your email"
+                autoComplete="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 style={styles.input}
@@ -261,6 +262,7 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   style={styles.input}

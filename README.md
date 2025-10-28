@@ -75,6 +75,47 @@ docker-compose exec api npm run db:seed
 docker-compose exec api npm run create:admin
 ```
 
+## 🔄 Working From Another Computer
+
+Follow these steps if you need to continue this project on a different machine:
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Elimiz21/new-scam-dunk-claude.git
+   cd new-scam-dunk-claude
+   ```
+2. **Install dependencies**
+   ```bash
+   npm install
+   npm --prefix packages/api install
+   ```
+3. **Restore environment variables**
+   - Copy `.env.local` (web) and `packages/api/.env` (API) from your original workstation, or recreate them using values from the Supabase dashboard and other provider portals.
+   - Transfer secrets securely and keep them out of version control.
+4. **Verify Git remotes**
+   ```bash
+   git remote -v
+   ```
+   Ensure `origin` points to `https://github.com/Elimiz21/new-scam-dunk-claude.git`. Update it with `git remote set-url origin <url>` if needed.
+5. **Optional tooling**
+   ```bash
+   npm --prefix packages/api install prisma
+   ```
+   Only required if you plan to run Prisma migrations or database scripts locally.
+6. **Start the stack**
+   ```bash
+   npm run dev                         # web
+   npm --prefix packages/api run dev   # API
+   ```
+
+When you finish working, push your branch so the next device can pull the latest changes:
+
+```bash
+git add .
+git commit -m "Describe your changes"
+git push origin <branch-name>
+```
+
 ## 🏗️ Architecture
 
 ```mermaid

@@ -9,11 +9,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { useScanStore } from '@/lib/stores/scan-store'
 import { formatBytes } from '@/lib/utils'
-import { 
-  Upload, 
-  FileText, 
-  Image, 
-  AlertCircle, 
+import {
+  Upload,
+  FileText,
+  Image as ImageIcon,
+  AlertCircle,
   X,
   ScanLine,
   CheckCircle,
@@ -223,7 +223,7 @@ export function ChatUploader({ onScanStart }: ChatUploaderProps) {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <Image className="h-4 w-4 text-blue-500" />
+                  <ImageIcon className="h-4 w-4 text-blue-500" />
                 </div>
                 <div>
                   <div className="font-medium text-sm">Chat Screenshots</div>

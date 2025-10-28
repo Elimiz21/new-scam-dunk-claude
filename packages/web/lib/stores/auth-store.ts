@@ -45,7 +45,8 @@ interface AuthState {
   token: string | null
   isAuthenticated: boolean
   loading: boolean
-  
+  initialized: boolean
+
   // Actions
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterData) => Promise<void>
@@ -70,6 +71,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       loading: false,
+      initialized: false,
 
       login: async (email: string, password: string) => {
         set({ loading: true })
@@ -93,6 +95,7 @@ export const useAuthStore = create<AuthState>()(
             token: data.token,
             isAuthenticated: true,
             loading: false,
+            initialized: true,
           })
           setAuthToken(data.token)
         } catch (error) {
@@ -123,6 +126,7 @@ export const useAuthStore = create<AuthState>()(
             token: result.token,
             isAuthenticated: true,
             loading: false,
+            initialized: true,
           })
           setAuthToken(result.token)
         } catch (error) {
@@ -137,6 +141,7 @@ export const useAuthStore = create<AuthState>()(
           token: null,
           isAuthenticated: false,
           loading: false,
+          initialized: true,
         })
         
         setAuthToken(null)
@@ -185,18 +190,24 @@ export const useAuthStore = create<AuthState>()(
         const { token } = get()
 
         if (storedToken && !token) {
-          set({ token: storedToken, isAuthenticated: true })
-        } else if (token) {
-          set({ isAuthenticated: true })
+          set({ token: storedToken, isAuthenticated: true, initialized: true })
+          return
         }
+
+        if (token) {
+          set({ isAuthenticated: true, initialized: true })
+          return
+        }
+
+        set({ initialized: true })
       },
 
       setUser: (user: User) => {
-        set({ user, isAuthenticated: true })
+        set({ user, isAuthenticated: true, initialized: true })
       },
 
       setToken: (token: string) => {
-        set({ token, isAuthenticated: true })
+        set({ token, isAuthenticated: true, initialized: true })
         setAuthToken(token)
       },
     }),
@@ -206,7 +217,13 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
+        initialized: state.initialized,
       }),
     }
   )
 )
+
+if (typeof window !== 'undefined') {
+  // Allow E2E tests to override auth behaviour without affecting production code.
+  ;(window as any).__scamDunkAuthStore = useAuthStore
+}

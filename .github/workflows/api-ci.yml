@@ -17,14 +17,20 @@ jobs:
           node-version: 20
           cache: 'npm'
       - name: Install root dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
       - name: Install API dependencies
-        run: npm --prefix packages/api install
+        run: npm --prefix packages/api install --legacy-peer-deps
+      - name: Install Web dependencies
+        run: npm --prefix packages/web install --legacy-peer-deps
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        working-directory: ./packages/web
       - name: Lint
         run: npm run lint
       - name: Test
         run: npm run test
         env:
+          CI: true
           SUPABASE_URL: https://example.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: test-service-role
           JWT_SECRET: test-secret

@@ -87,3 +87,9 @@ secrets/
 tmp/
 temp/
 .vercel
+
+# Playwright
+playwright-report/
+test-results/
+packages/web/playwright-report/
+packages/web/test-results/

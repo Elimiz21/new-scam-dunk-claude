@@ -344,6 +344,7 @@ export default function RegisterPage() {
               <input
                 type="email"
                 placeholder="Enter your email"
+                autoComplete="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 style={styles.input}
@@ -371,6 +372,7 @@ export default function RegisterPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Create a strong password"
+                  autoComplete="new-password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   style={styles.input}
@@ -413,6 +415,7 @@ export default function RegisterPage() {
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm your password"
+                  autoComplete="new-password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   style={styles.input}

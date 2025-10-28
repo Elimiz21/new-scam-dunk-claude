@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/$/, '')
+
 export interface ScanResult {
   id: string
   status: 'pending' | 'processing' | 'completed' | 'failed'
@@ -64,10 +66,10 @@ export const useScanStore = create<ScanState>()((set, get) => ({
       const formData = new FormData()
       formData.append('chatFile', file)
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scans`, {
+      const response = await fetch(`${API_BASE_URL}/scans`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         },
         body: formData,
       })
@@ -96,9 +98,9 @@ export const useScanStore = create<ScanState>()((set, get) => ({
     set({ loading: true })
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scans/${scanId}`, {
+      const response = await fetch(`${API_BASE_URL}/scans/${scanId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         },
       })
 
@@ -125,9 +127,9 @@ export const useScanStore = create<ScanState>()((set, get) => ({
     set({ loading: true })
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scans`, {
+      const response = await fetch(`${API_BASE_URL}/scans`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         },
       })
 
@@ -154,10 +156,10 @@ export const useScanStore = create<ScanState>()((set, get) => ({
     set({ loading: true })
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scans/${scanId}`, {
+      const response = await fetch(`${API_BASE_URL}/scans/${scanId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         },
       })
 
