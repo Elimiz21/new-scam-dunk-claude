@@ -4,7 +4,7 @@
   "description": "AI-Native Anti-Scam Investment Protection Platform",
   "private": true,
   "scripts": {
-    "build": "cd packages/web && npm install --legacy-peer-deps --production=false && npm run build",
+    "build": "cd packages/web && npm install --legacy-peer-deps --include=dev && npm run build",
     "dev": "cd packages/web && npm run dev",
     "web:dev": "cd packages/web && npm run dev",
     "lint": "npm run lint:api && npm run lint:web",
