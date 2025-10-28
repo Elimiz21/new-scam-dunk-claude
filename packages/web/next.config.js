@@ -1,4 +1,5 @@
 const { withSentryConfig } = require('@sentry/nextjs');
+const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -127,11 +128,9 @@ const nextConfig = {
     }
     
     // Optimizations for production
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        // Remove incorrect alias that was causing build issues
-      }
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname),
     }
     
     // Bundle analyzer (only in development with ANALYZE=true)
