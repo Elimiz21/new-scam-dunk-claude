@@ -87,6 +87,7 @@ secrets/
 tmp/
 temp/
 .vercel
+supabase/.temp/
 
 # Playwright
 playwright-report/
