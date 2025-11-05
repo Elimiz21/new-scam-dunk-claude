@@ -377,7 +377,7 @@ export default function ContactVerificationPage() {
                 </div>
               </div>
               
-              <p className="text-gray-400 max-w-2xl mx-auto">
+              <p className="text-gray-400 max-w-2xl mx-auto" data-testid="contact-summary">
                 {scanResult?.summary || 'Contact verification completed. No immediate red flags detected, but always remain vigilant.'}
               </p>
             </div>
@@ -391,6 +391,7 @@ export default function ContactVerificationPage() {
                     <div
                       key={`${detail.title}-${index}`}
                       className="flex items-start gap-3 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50"
+                      data-testid="contact-insight"
                     >
                       {detail.status === 'safe' ? (
                         <CheckCircle2 className="w-5 h-5 text-holo-green mt-0.5" />

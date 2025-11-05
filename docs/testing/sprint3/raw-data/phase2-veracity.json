@@ -1,0 +1,1 @@
+{"success":true,"data":{"targetType":"crypto","targetIdentifier":"BTC","isVerified":true,"verificationStatus":"VERIFIED","overallConfidence":94,"riskLevel":"LOW","summary":"Entity passes heuristic verification checks.","keyFindings":["No adverse indicators detected."],"recommendations":["Maintain standard due diligence cadence."]},"meta":{"cached":true}}

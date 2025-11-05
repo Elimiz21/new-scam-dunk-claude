@@ -1,0 +1,52 @@
+[
+  {
+    "key_name": "NUMVERIFY_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-10-18T09:34:28.902775+00:00"
+  },
+  {
+    "key_name": "ETHERSCAN_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-09-29T10:10:11.584+00:00"
+  },
+  {
+    "key_name": "NEWS_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-09-29T10:05:21.153+00:00"
+  },
+  {
+    "key_name": "COINMARKETCAP_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-09-29T10:03:46.381+00:00"
+  },
+  {
+    "key_name": "YAHOO_FINANCE_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-09-29T09:59:57.518+00:00"
+  },
+  {
+    "key_name": "HUGGINGFACE_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-09-29T09:48:55.653+00:00"
+  },
+  {
+    "key_name": "TRUECALLER_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-09-29T09:48:47.957+00:00"
+  },
+  {
+    "key_name": "ALPHA_VANTAGE_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-09-06T09:20:18.83+00:00"
+  },
+  {
+    "key_name": "OPENAI_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-09-06T09:17:37.271+00:00"
+  },
+  {
+    "key_name": "ANTHROPIC_API_KEY",
+    "is_active": true,
+    "updated_at": "2025-09-06T09:16:57.999+00:00"
+  }
+]

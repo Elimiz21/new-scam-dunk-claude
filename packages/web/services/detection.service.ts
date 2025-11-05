@@ -174,7 +174,33 @@ export interface ComprehensiveScanResult {
   };
 }
 
+declare global {
+  interface Window {
+    __scamDunkMocks?: {
+      contactVerification?: (request: ContactVerificationRequest) => ContactVerificationResult | Promise<ContactVerificationResult>;
+      chatAnalysis?: (request: ChatAnalysisRequest) => ChatAnalysisResult | Promise<ChatAnalysisResult>;
+      tradingAnalysis?: (request: TradingAnalysisRequest) => TradingAnalysisResult | Promise<TradingAnalysisResult>;
+      veracityCheck?: (request: VeracityCheckRequest) => VeracityCheckResult | Promise<VeracityCheckResult>;
+      comprehensiveScan?: (request: ComprehensiveScanRequest) => ComprehensiveScanResult | Promise<ComprehensiveScanResult>;
+    };
+  }
+}
+
 class DetectionService {
+  private static getMocks(): {
+    contactVerification?: (request: ContactVerificationRequest) => ContactVerificationResult | Promise<ContactVerificationResult>;
+    chatAnalysis?: (request: ChatAnalysisRequest) => ChatAnalysisResult | Promise<ChatAnalysisResult>;
+    tradingAnalysis?: (request: TradingAnalysisRequest) => TradingAnalysisResult | Promise<TradingAnalysisResult>;
+    veracityCheck?: (request: VeracityCheckRequest) => VeracityCheckResult | Promise<VeracityCheckResult>;
+    comprehensiveScan?: (request: ComprehensiveScanRequest) => ComprehensiveScanResult | Promise<ComprehensiveScanResult>;
+  } | undefined {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    return (window as any).__scamDunkMocks;
+  }
+
   private readonly api = axios.create({
     baseURL: API_BASE_URL,
     headers: { 'Content-Type': 'application/json' },
@@ -219,6 +245,11 @@ class DetectionService {
   }
 
   async verifyContacts(request: ContactVerificationRequest): Promise<ContactVerificationResult> {
+    const mock = DetectionService.getMocks()?.contactVerification;
+    if (mock) {
+      return Promise.resolve(mock(request));
+    }
+
     const details = request.contacts || [];
     const queue: Array<{ type: 'email' | 'phone'; value: string }> = [];
     const seen = new Set<string>();
@@ -345,6 +376,11 @@ class DetectionService {
   }
 
   async analyzeChat(request: ChatAnalysisRequest): Promise<ChatAnalysisResult> {
+    const mock = DetectionService.getMocks()?.chatAnalysis;
+    if (mock) {
+      return Promise.resolve(mock(request));
+    }
+
     if (!request.messages || request.messages.length === 0) {
       throw new Error('At least one message is required for analysis');
     }
@@ -384,6 +420,11 @@ class DetectionService {
   }
 
   async analyzeTradingActivity(request: TradingAnalysisRequest): Promise<TradingAnalysisResult> {
+    const mock = DetectionService.getMocks()?.tradingAnalysis;
+    if (mock) {
+      return Promise.resolve(mock(request));
+    }
+
     if (!request.ticker) {
       throw new Error('Ticker symbol is required');
     }
@@ -416,6 +457,11 @@ class DetectionService {
   }
 
   async checkVeracity(request: VeracityCheckRequest): Promise<VeracityCheckResult> {
+    const mock = DetectionService.getMocks()?.veracityCheck;
+    if (mock) {
+      return Promise.resolve(mock(request));
+    }
+
     if (!request.ticker) {
       throw new Error('Ticker or identifier is required');
     }
@@ -456,6 +502,11 @@ class DetectionService {
   }
 
   async runComprehensiveScan(request: ComprehensiveScanRequest): Promise<ComprehensiveScanResult> {
+    const mock = DetectionService.getMocks()?.comprehensiveScan;
+    if (mock) {
+      return Promise.resolve(mock(request));
+    }
+
     const completedChecks: string[] = [];
     const subScores: number[] = [];
 

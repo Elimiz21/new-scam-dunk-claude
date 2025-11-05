@@ -1,0 +1,1 @@
+{"success":true,"data":{"contactType":"email","contactValue":"fraudster@example.com","isScammer":false,"riskScore":16,"riskLevel":"LOW","confidence":71,"verificationSources":["truecaller","numverify"],"flags":[],"recommendations":["Interaction appears low risk","Keep routine security hygiene"],"details":[]},"meta":{"cached":true}}

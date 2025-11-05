@@ -38,3 +38,17 @@
 ## Dependencies / Connections
 - Supabase service-role key and URL must be present in env for both Express and Next.js admin routes.
 - External provider credentials required once real detection integrations are wired.
+
+## 2025-11-05 — Phase 2 Validation
+- Rotated Supabase pooled credentials (`aws-0-eu-north-1.pooler.supabase.com:6543`) and updated local/web env bundles so Prisma and Next.js admin routes connect successfully.
+- Re-registered user (`phase2@example.com`) through live API, exercised login/profile, and reused issued JWT for authenticated detection calls.
+- `npm --prefix packages/api run test` confirmed Jest integration suite against live Supabase; Prometheus metrics exposed expected counters.
+- Ran `node packages/api/scripts/qa-live-check.mjs` with Supabase vars injected to validate `/health` and service-role connectivity.
+- Manual endpoint coverage with cached + rate-limited behaviour documented in `docs/testing/sprint3/raw-data/phase2-*.json` and `phase2-rate-limit.csv`.
+- Captured fresh Prometheus snapshot (`phase2-metrics.txt`) showing cache hits and HTTP 429s after threshold.
+- Observed Supabase REST throws `PGRST205` for `detection_telemetry` table (still missing in schema); telemetry currently buffered only—flag for follow-up.
+- 2025-11-05 (later): Created `public.detection_telemetry` via Prisma raw SQL and confirmed Supabase REST returns live telemetry entries; gap closed.
+- 2025-11-05 (Phase 3 QA): Verified provider inventory via Supabase API (`docs/testing/sprint3/raw-data/phase3-api-keys.json`), executed lint/test/build/e2e suite with new client-side mocks for detection flows, and captured Prometheus + detection payload artifacts under `docs/testing/sprint3/raw-data/`.
+- 2025-11-05 (Phase 4 QA): Re-ran root `npm run lint`, `npm run test`, and `npm --prefix packages/web run build`; Playwright suite now relies on `window.__scamDunkMocks` to avoid live provider dependency. Manual accessibility spot-checks pending.
+- 2025-11-05 (Phase 5 prep): Production health probe (`/api/health`) returns 404 — captured in `docs/testing/sprint3/raw-data/phase5-production-health.txt`. Deployment status updated to reflect blocker; redeploy deferred until endpoint contract clarified.
+- 2025-11-05 (Phase 5 follow-up): Added Next.js `/api/health` route to mirror Express health payload (`packages/web/app/api/health/route.ts`). Local lint/test/build suites pass; production needs redeploy to pick up the endpoint.
