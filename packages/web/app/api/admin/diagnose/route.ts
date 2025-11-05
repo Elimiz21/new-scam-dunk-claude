@@ -130,39 +130,5 @@ export async function GET(request: NextRequest) {
     });
   }
   
-  // Test 3: Try with hardcoded values
-  try {
-    const url = 'https://gcrkijhkecsfafjbojey.supabase.co';
-    const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpamhrZWNzZmFmamJvamV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMzOTE5MTUsImV4cCI6MjA0ODk2NzkxNX0.VsHcZtqR01JVsYMKZ5dvn2yB2zxUJFCvPqQQ7i5FQPA';
-    
-    const client = createClient(url, key);
-    diagnosis.tests.push({
-      test: 'Create client with hardcoded values',
-      success: true
-    });
-    
-    // Try a simple query
-    try {
-      const { error } = await client.from('api_keys').select('count').single();
-      diagnosis.tests.push({
-        test: 'Query with hardcoded client',
-        success: !error,
-        error: error?.message
-      });
-    } catch (e: any) {
-      diagnosis.tests.push({
-        test: 'Query with hardcoded client',
-        success: false,
-        error: e.message
-      });
-    }
-  } catch (e: any) {
-    diagnosis.tests.push({
-      test: 'Create client with hardcoded values',
-      success: false,
-      error: e.message
-    });
-  }
-  
   return NextResponse.json(diagnosis);
 }

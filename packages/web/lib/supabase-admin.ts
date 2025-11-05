@@ -1,43 +1,55 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-function resolveSupabaseUrl() {
-  const explicitUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-  if (!explicitUrl) {
-    console.error('[supabase-admin] Missing SUPABASE_URL environment variable')
-    return null
+type ClientRole = 'service' | 'anon';
+
+function coerceSupabaseUrl(rawUrl: string | undefined) {
+  if (!rawUrl) return undefined;
+
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return undefined;
+
+  if (!trimmed.startsWith('postgresql://')) {
+    return trimmed;
   }
 
-  if (explicitUrl.startsWith('postgresql://')) {
-    console.warn('[supabase-admin] PostgreSQL connection string detected; attempting to derive REST URL')
-    const match = explicitUrl.match(/db\.([a-z0-9]+)\.supabase\.co/i)
-    if (match?.[1]) {
-      return `https://${match[1]}.supabase.co`
-    }
-
-    console.error('[supabase-admin] Unable to derive REST URL from PostgreSQL string')
-    return null
+  const match = trimmed.match(/db\.([a-z0-9]+)\.supabase\.co/i);
+  if (match?.[1]) {
+    console.warn('Detected Postgres connection string; derived Supabase REST URL automatically.');
+    return `https://${match[1]}.supabase.co`;
   }
 
-  return explicitUrl
+  console.error('Unable to derive Supabase REST URL from Postgres connection string.');
+  return undefined;
 }
 
-export function getSupabaseClient() {
-  const supabaseUrl = resolveSupabaseUrl()
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+function pickKey(role: ClientRole) {
+  const candidates =
+    role === 'service'
+      ? [process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY]
+      : [process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY];
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.error('[supabase-admin] Missing Supabase URL or service role key; admin client unavailable')
-    return null
+  for (const candidate of candidates) {
+    if (candidate?.trim()) {
+      return candidate.replace(/[\s\n\r]+/g, '').trim();
+    }
   }
 
-  const cleanedKey = serviceRoleKey.replace(/[\s\n\r]+/g, '').trim()
+  return undefined;
+}
+
+export function getSupabaseClient(role: ClientRole = 'service') {
+  const supabaseUrl = coerceSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const supabaseKey = pickKey(role);
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Supabase configuration missing. Ensure environment variables are set via Vercel secrets.');
+    return null;
+  }
 
   try {
-    return createClient(supabaseUrl, cleanedKey, {
-      auth: { persistSession: false },
-    })
+    return createClient(supabaseUrl, supabaseKey);
   } catch (error) {
-    console.error('[supabase-admin] Failed to instantiate client:', error)
-    return null
+    console.error('Failed to instantiate Supabase client:', error);
+    return null;
   }
 }

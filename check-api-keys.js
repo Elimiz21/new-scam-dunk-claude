@@ -5,15 +5,12 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gcrkijxkecs
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseServiceKey) {
-  console.log('⚠️  No SUPABASE_SERVICE_ROLE_KEY found in environment');
-  console.log('Checking with fallback credentials...');
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY not found. Export it before running this script.');
+  process.exit(1);
 }
 
 // Create Supabase client
-const supabase = createClient(
-  supabaseUrl,
-  supabaseServiceKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpanhrZWNzZmFmamJvamV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwNzcxMzYsImV4cCI6MjA1MjY1MzEzNn0.l7E7uAv1lguno9vDMjNGJ0GVkonCSpyi1dM-hc5SH5s'
-);
+const supabase = createClient(supabaseUrl, supabaseServiceKey.trim());
 
 async function checkApiKeys() {
   console.log('🔍 Checking Supabase database for existing API keys...\n');

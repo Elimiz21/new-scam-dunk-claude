@@ -34,17 +34,25 @@ After deployment, go to: https://vercel.com/dashboard
 
 1. Click on your **scam-dunk** project
 2. Go to **Settings** → **Environment Variables**
-3. Add these variables (COPY AND PASTE):
+3. Add these variables (copy the real values from the secure vault—_never paste them into this file_):
 
 ```
-DATABASE_URL=postgresql://postgres.gcrkijxkecsfafjbojey:Elinka025045139@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?pgbouncer=true
-DIRECT_URL=postgresql://postgres.gcrkijxkecsfafjbojey:Elinka025045139@aws-0-eu-central-1.pooler.supabase.com:5432/postgres
+DATABASE_URL=<Supabase pooled connection string (Settings → Database)>
+DIRECT_URL=<Supabase direct connection string>
 NEXT_PUBLIC_SUPABASE_URL=https://gcrkijxkecsfafjbojey.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpanhrZWNzZmFmamJvamV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMzOTE5MTUsImV4cCI6MjA0ODk2NzkxNX0.VsHcZtqR01JVsYMKZ5dvn2yB2zxUJFCvPqQQ7i5FQPA
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpanhrZWNzZmFmamJvamV5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMzM5MTkxNSwiZXhwIjoyMDQ4OTY3OTE1fQ.t9XBUPK3Nl5e7EiZCKRjkUyKQ7nL3rHfBGZ1f76FXgM
-NEXTAUTH_SECRET=your-super-secret-key-change-this-123456
-JWT_SECRET=another-secret-key-change-this-789012
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase anon key from Settings → API>
+SUPABASE_SERVICE_ROLE_KEY=<Supabase service-role key from Settings → API>
+NEXTAUTH_SECRET=<generate via `openssl rand -base64 32`>
+JWT_SECRET=<generate via `openssl rand -base64 32`>
+OPENAI_API_KEY=<provider key>
 ```
+
+**Automation option (recommended):**
+```bash
+vercel env pull .env.vercel
+node scripts/sync-vercel-env.mjs
+```
+(See `docs/testing/sprint0/environment-and-tooling-inventory.md` for the rotation runbook.)
 
 ### Step 5: Redeploy
 ```bash

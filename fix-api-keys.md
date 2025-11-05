@@ -14,8 +14,8 @@ Go to your Vercel dashboard: https://vercel.com/dashboard
 3. Update these variables:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://gcrkijhkecsfafjbojey.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpamhrZWNzZmFmamJvamV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMzOTE5MTUsImV4cCI6MjA0ODk2NzkxNX0.VsHcZtqR01JVsYMKZ5dvn2yB2zxUJFCvPqQQ7i5FQPA
+NEXT_PUBLIC_SUPABASE_URL=https://gcrkijxkecsfafjbojey.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<paste the refreshed anon key from Supabase Settings → API>
 ```
 
 **IMPORTANT**: Make sure there are NO line breaks or extra spaces in the API key!
@@ -29,7 +29,7 @@ If you have access to your Supabase dashboard:
 4. Copy the `service_role` key (NOT the anon key)
 5. Add it to Vercel:
 ```
-SUPABASE_SERVICE_ROLE_KEY=[your-service-role-key]
+SUPABASE_SERVICE_ROLE_KEY=<paste the refreshed service-role key>
 ```
 
 ### 3. Redeploy After Fixing Variables

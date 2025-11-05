@@ -1,8 +1,13 @@
 #!/bin/bash
 
 # Supabase credentials
-SUPABASE_URL="https://gcrkijxkecsfafjbojey.supabase.co"
-SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpanhrZWNzZmFmamJvamV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwNzcxMzYsImV4cCI6MjA1MjY1MzEzNn0.l7E7uAv1lguno9vDMjNGJ0GVkonCSpyi1dM-hc5SH5s"
+SUPABASE_URL="${NEXT_PUBLIC_SUPABASE_URL:-https://gcrkijxkecsfafjbojey.supabase.co}"
+SUPABASE_ANON_KEY="${NEXT_PUBLIC_SUPABASE_ANON_KEY}"
+
+if [ -z "$SUPABASE_ANON_KEY" ]; then
+  echo "❌ NEXT_PUBLIC_SUPABASE_ANON_KEY not exported. Run 'export NEXT_PUBLIC_SUPABASE_ANON_KEY=...' before using this script."
+  exit 1
+fi
 
 echo "🔍 Checking Supabase database for API keys..."
 echo ""

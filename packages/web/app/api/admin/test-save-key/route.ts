@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Hardcoded configuration - same as in supabase-admin.ts
-const SUPABASE_URL = 'https://gcrkijhkecsfafjbojey.supabase.co';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpamhrZWNzZmFmamJvamV5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMzM5MTkxNSwiZXhwIjoyMDQ4OTY3OTE1fQ.7iQ4mPdAiCDO0SJX4hO-1G_xwi_Ge_xGqC1DJzDcPzc';
+function resolveSupabaseConfig() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+  if (!url || !key) {
+    throw new Error('Supabase environment variables missing. Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are configured.');
+  }
+
+  return { url, key };
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,11 +21,10 @@ export async function POST(request: NextRequest) {
         error: 'Missing keyName or keyValue'
       }, { status: 400 });
     }
-    
     console.log(`Attempting to save key: ${keyName}`);
-    
-    // Create Supabase client with service role key
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+    const { url, key } = resolveSupabaseConfig();
+    const supabase = createClient(url, key);
     
     // First check if key exists
     const { data: existing, error: checkError } = await supabase

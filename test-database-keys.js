@@ -4,15 +4,19 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Use the same configuration as the app
 const SUPABASE_URL = 'https://gcrkijhkecsfafjbojey.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjcmtpamhrZWNzZmFmamJvamV5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMzM5MTkxNSwiZXhwIjoyMDQ4OTY3OTE1fQ.7iQ4mPdAiCDO0SJX4hO-1G_xwi_Ge_xGqC1DJzDcPzc';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_SERVICE_KEY) {
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY not exported. Run `export SUPABASE_SERVICE_ROLE_KEY=...` first.');
+  process.exit(1);
+}
 
 async function testDatabaseKeys() {
   console.log('=== Testing Database API Key Storage ===\n');
   
   try {
     // Create Supabase client
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY.trim());
     console.log('✓ Connected to Supabase\n');
     
     // 1. Check if api_keys table exists
