@@ -1,0 +1,5 @@
+Target: https://scam-dunk-production.vercel.app/metrics
+Timestamp: 2025-11-06T12:00:32Z
+Result: 404 (served Next.js not-found page; Prometheus metrics endpoint not exposed on public Vercel host)
+Notes: Prometheus telemetry still accessible via Express service `/metrics`, but requires internal routing. Follow up with infrastructure team to expose authenticated metrics endpoint for production monitoring.
+

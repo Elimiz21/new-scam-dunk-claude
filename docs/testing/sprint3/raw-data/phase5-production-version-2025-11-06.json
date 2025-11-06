@@ -1,0 +1,50 @@
+{
+  "response": {
+    "status": 200,
+    "headers": {
+      "cache-control": "public, max-age=0, must-revalidate",
+      "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://scam-dunk-production.vercel.app wss://scam-dunk-production.vercel.app https://www.google-analytics.com; frame-ancestors 'none';",
+      "content-type": "application/json",
+      "date": "Thu, 06 Nov 2025 12:03:21 GMT",
+      "server": "Vercel",
+      "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+      "x-vercel-cache": "PRERENDER",
+      "x-vercel-id": "fra1::gj9vn-1762430600814-5e317acd7132"
+    },
+    "body": {
+      "version": "2.1.0",
+      "buildDate": "2025-08-23T10:45:00Z",
+      "features": {
+        "pricing": {
+          "freeTrial": true,
+          "payPerScan": "$4.99",
+          "personal": "$9.99/month",
+          "family": "$19.99/month",
+          "teams": "$49.99/month"
+        },
+        "apis": {
+          "primaryCrypto": "CoinMarketCap",
+          "scammerDatabases": 12,
+          "newDatabases": [
+            "FBI IC3",
+            "INTERPOL",
+            "ScamAlert Singapore",
+            "Scamwatch Australia",
+            "Action Fraud UK",
+            "PhishTank",
+            "VirusTotal",
+            "Google Safe Browsing",
+            "URLVoid",
+            "AbuseIPDB",
+            "BBB Scam Tracker",
+            "APWG eCrime Exchange"
+          ]
+        }
+      },
+      "environment": "production",
+      "timestamp": "2025-11-06T10:59:40.768Z"
+    }
+  },
+  "capturedAt": "2025-11-06T12:03:21Z"
+}
+

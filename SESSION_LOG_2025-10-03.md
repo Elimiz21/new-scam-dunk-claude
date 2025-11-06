@@ -52,3 +52,10 @@
 - 2025-11-05 (Phase 4 QA): Re-ran root `npm run lint`, `npm run test`, and `npm --prefix packages/web run build`; Playwright suite now relies on `window.__scamDunkMocks` to avoid live provider dependency. Manual accessibility spot-checks pending.
 - 2025-11-05 (Phase 5 prep): Production health probe (`/api/health`) returns 404 — captured in `docs/testing/sprint3/raw-data/phase5-production-health.txt`. Deployment status updated to reflect blocker; redeploy deferred until endpoint contract clarified.
 - 2025-11-05 (Phase 5 follow-up): Added Next.js `/api/health` route to mirror Express health payload (`packages/web/app/api/health/route.ts`). Local lint/test/build suites pass; production needs redeploy to pick up the endpoint.
+
+## 2025-11-06 — Phase 5 production verification
+- Re-read LIVE_TESTING_GAMEPLAN and latest runbooks, then executed daily gates: `npm run lint`, `SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… JWT_SECRET=… npm run test`, and `npm --prefix packages/web run build` (Playwright suite green, Next.js build clean).
+- Deployed `feature/live-testing-prep` via `npx vercel deploy --prod --archive=tgz --yes` (build alias `scam-dunk-production-1iltss1ui`, commit `3aa5619`).
+- Post-deploy smoke confirmed `https://scam-dunk-production.vercel.app/api/health` → 200 with `{ status: "OK", version: "ebf8dffc1c3a356b8160fa421b6169d5cc0a8071" }`; response logged in `docs/testing/sprint3/raw-data/phase5-production-health-latest.txt`.
+- Collected production `/api/version` payload (`docs/testing/sprint3/raw-data/phase5-production-version-2025-11-06.json`) for release audit; attempted `/metrics` capture noted 404 (see `docs/testing/sprint3/raw-data/phase5-production-metrics-attempt-2025-11-06.txt`)—requires internal routing to expose Prometheus externally.
+- Updated `DEPLOYMENT_STATUS.txt` to Healthy; created follow-up to expose authenticated metrics endpoint and scheduled accessibility spot-check session for 2025-11-07 with UX QA (focus: dashboard graphs, holographic flows).

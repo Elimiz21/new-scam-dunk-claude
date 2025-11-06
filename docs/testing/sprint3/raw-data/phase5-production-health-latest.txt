@@ -1,0 +1,20 @@
+HTTP/2 200 
+age: 0
+cache-control: public, max-age=0, must-revalidate
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://scam-dunk-production.vercel.app wss://scam-dunk-production.vercel.app https://www.google-analytics.com; frame-ancestors 'none';
+content-type: application/json
+date: Thu, 06 Nov 2025 11:00:20 GMT
+permissions-policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+referrer-policy: strict-origin-when-cross-origin
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Url
+x-content-type-options: nosniff
+x-dns-prefetch-control: on
+x-frame-options: SAMEORIGIN
+x-matched-path: /api/health
+x-vercel-cache: MISS
+x-vercel-id: fra1::iad1::jf52n-1762426819758-e7f3cd0e891c
+x-xss-protection: 1; mode=block
+
+{"status":"OK","timestamp":"2025-11-06T11:00:20.167Z","environment":"production","version":"ebf8dffc1c3a356b8160fa421b6169d5cc0a8071"}
