@@ -2,9 +2,29 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth-store'
-import { Shield, Menu, X, User, Settings, LogOut, Zap, Home, DollarSign, HeadphonesIcon, FileText, CreditCard, HelpCircle } from 'lucide-react'
+import {
+  Shield,
+  Menu,
+  X,
+  User,
+  Settings,
+  LogOut,
+  Zap,
+  Home,
+  DollarSign,
+  HeadphonesIcon,
+  FileText,
+  CreditCard,
+  HelpCircle,
+  Compass,
+  Milestone,
+  BookOpenCheck,
+  Users,
+  BarChart3,
+  PlugZap,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 
@@ -13,6 +33,7 @@ export function HolographicHeader() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const { user, isAuthenticated, logout } = useAuthStore()
   const router = useRouter()
+  const pathname = usePathname()
   const userMenuRef = useRef<HTMLDivElement>(null)
 
   const handleLogout = () => {
@@ -20,13 +41,30 @@ export function HolographicHeader() {
     router.push('/')
   }
 
-  const navigation = [
+  const defaultNavigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Scan', href: '/scan', icon: Zap },
     { name: 'Features', href: '/#features', icon: FileText },
     { name: 'Pricing', href: '/pricing', icon: DollarSign },
     { name: 'Support', href: '/support', icon: HeadphonesIcon },
   ]
+
+  const marketingNavigation = [
+    { name: 'Overview', href: '/marketing#overview', icon: Compass },
+    { name: 'Timeline', href: '/marketing#timeline', icon: Milestone },
+    { name: 'Workflow', href: '/marketing#workflow', icon: Zap },
+    { name: 'Docs', href: '/marketing#documents', icon: BookOpenCheck },
+    { name: 'Agents', href: '/marketing#agents', icon: User },
+    { name: 'Analytics', href: '/marketing#analytics', icon: BarChart3 },
+    { name: 'Integrations', href: '/marketing#integrations', icon: PlugZap },
+    { name: 'Team', href: '/marketing#team', icon: Users },
+  ]
+
+  const isMarketing = pathname?.startsWith('/marketing')
+  const navigation = isMarketing ? marketingNavigation : defaultNavigation
+  const primaryCta = isMarketing
+    ? { href: '/marketing#prompts', label: 'Manage Prompts' }
+    : { href: '/scan', label: 'Start Scanning' }
 
   const userNavigation = [
     { name: 'My Account', href: '/account', icon: User },
@@ -61,12 +99,14 @@ export function HolographicHeader() {
     <header className="sticky top-0 z-50 w-full glass-card border-b border-gray-800">
       <nav className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-3 group">
+        <Link href={isMarketing ? '/marketing' : '/'} className="flex items-center space-x-3 group">
           <div className="relative">
             <Shield className="h-8 w-8 text-holo-cyan drop-shadow-lg" />
             <div className="absolute inset-0 rounded-full bg-holo-cyan/20 blur-xl animate-pulse" />
           </div>
-          <span className="text-xl font-bold holo-text">Scam Dunk</span>
+          <span className="text-xl font-bold holo-text">
+            {isMarketing ? 'Scam Dunk · Marketing' : 'Scam Dunk'}
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -89,12 +129,8 @@ export function HolographicHeader() {
             <>
               {/* Desktop User Menu */}
               <div className="hidden md:flex md:items-center md:space-x-4">
-                <Link
-                  href="/scan"
-                  className="holo-button px-4 py-2 text-sm"
-                >
-                  <Zap className="w-4 h-4 mr-2 inline" />
-                  Start Scanning
+                <Link href={primaryCta.href} className="holo-button px-4 py-2 text-sm">
+                  {primaryCta.label}
                 </Link>
                 
                 {/* User Avatar Dropdown */}

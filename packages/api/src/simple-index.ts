@@ -7,6 +7,8 @@ import { createClient } from '@supabase/supabase-js';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import multer from 'multer';
+import path from 'path';
 import { config } from './lib/config';
 import logger from './lib/logger';
 import {
@@ -191,6 +193,295 @@ const MAX_TELEMETRY_EVENTS = 200;
 const detectionRateWindows = new Map<string, { windowStart: number; count: number }>();
 const detectionCache = new Map<string, { expiresAt: number; payload: unknown }>();
 const telemetryBuffer: DetectionTelemetryEvent[] = [];
+
+const CHAT_IMPORT_BUCKET = process.env.CHAT_IMPORT_BUCKET || 'chat-imports';
+const CHAT_IMPORT_CHUNK_SIZE = 1024 * 1024; // 1MB chunks
+const CHAT_IMPORT_MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const CHAT_IMPORT_SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+const multipartUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: CHAT_IMPORT_MAX_FILE_SIZE,
+  },
+});
+
+type UploadSession = {
+  userId: string;
+  fileName: string;
+  totalSize: number;
+  totalChunks: number;
+  chunkSize: number;
+  createdAt: number;
+  chunks: Map<number, Buffer>;
+};
+
+type FallbackChatImport = {
+  id: string;
+  userId: string;
+  status: string;
+  platform: string;
+  overall_risk_score: number;
+  risk_level: string;
+  message_count: number;
+  participant_count: number;
+  metadata: Record<string, unknown>;
+  summary: string;
+  key_findings: string[];
+  created_at: string;
+  updated_at: string;
+  file_path: string;
+};
+
+const uploadSessions = new Map<string, UploadSession>();
+const fallbackChatImports = new Map<string, FallbackChatImport>();
+let chatImportBucketInitialized = false;
+
+const ensureChatImportBucket = async () => {
+  if (chatImportBucketInitialized) {
+    return;
+  }
+
+  const { data: existingBucket, error: bucketError } = await supabase.storage.getBucket(CHAT_IMPORT_BUCKET);
+  if (bucketError) {
+    // Some self-hosted installs return a 404 error for getBucket when it doesn't exist.
+    // We'll fall back to attempting creation below.
+    logger.debug({ err: bucketError }, 'getBucket returned error, attempting to create bucket');
+  }
+
+  if (!existingBucket) {
+    const { error: createError } = await supabase.storage.createBucket(CHAT_IMPORT_BUCKET, {
+      public: false,
+      fileSizeLimit: CHAT_IMPORT_MAX_FILE_SIZE,
+    });
+
+    if (createError && !/already exists/i.test(createError.message || '')) {
+      throw new Error(`Unable to ensure chat import bucket: ${createError.message}`);
+    }
+  }
+
+  chatImportBucketInitialized = true;
+};
+
+const cleanupStaleUploads = () => {
+  const now = Date.now();
+  for (const [uploadId, session] of uploadSessions.entries()) {
+    if (now - session.createdAt > CHAT_IMPORT_SESSION_TTL_MS) {
+      uploadSessions.delete(uploadId);
+    }
+  }
+};
+
+const SUPPORTED_CHAT_PLATFORMS = new Set([
+  'WHATSAPP',
+  'TELEGRAM',
+  'DISCORD',
+  'INSTAGRAM',
+  'SIGNAL',
+  'IMESSAGE',
+  'OTHER',
+]);
+
+const normalizeChatPlatform = (value?: string | null): string => {
+  if (!value) {
+    return 'OTHER';
+  }
+
+  const normalised = value.toString().trim().toUpperCase();
+  return SUPPORTED_CHAT_PLATFORMS.has(normalised) ? normalised : 'OTHER';
+};
+
+const CONTENT_TYPE_MAP: Record<string, string> = {
+  '.txt': 'text/plain',
+  '.md': 'text/markdown',
+  '.log': 'text/plain',
+  '.json': 'application/json',
+  '.csv': 'text/csv',
+  '.html': 'text/html',
+  '.htm': 'text/html',
+};
+
+const guessContentType = (fileName: string) => {
+  const ext = path.extname(fileName).toLowerCase();
+  return CONTENT_TYPE_MAP[ext] ?? 'application/octet-stream';
+};
+
+const analyseChatImportBuffer = (buffer: Buffer) => {
+  const text = buffer.toString('utf8');
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const participants = new Set<string>();
+  const keywordCatalogue = ['urgent', 'wire', 'transfer', 'crypto', 'guaranteed', 'profit', 'password', 'otp', 'wallet'];
+  const lower = text.toLowerCase();
+  const keywordHits = keywordCatalogue.filter((keyword) => lower.includes(keyword));
+
+  lines.forEach((line) => {
+    const match = line.match(/^([^:]{1,64}):/);
+    if (match) {
+      participants.add(match[1].trim());
+    }
+  });
+
+  const messageCount = lines.length;
+  const participantCount = participants.size || (messageCount > 0 ? 1 : 0);
+
+  let riskScore = Math.min(100, keywordHits.length * 20);
+  if (messageCount > 200) {
+    riskScore = Math.min(100, riskScore + 20);
+  } else if (messageCount > 100) {
+    riskScore = Math.min(100, riskScore + 10);
+  }
+
+  if (riskScore === 0 && messageCount > 0) {
+    riskScore = 15;
+  }
+
+  const riskLevel = riskScore >= 70 ? 'HIGH' : riskScore >= 40 ? 'MEDIUM' : 'LOW';
+  const summary =
+    riskLevel === 'HIGH'
+      ? 'Conversation contains multiple high-risk indicators (keywords and volume).'
+      : riskLevel === 'MEDIUM'
+        ? 'Conversation includes potential risk signals. Review details carefully.'
+        : 'Conversation appears low-risk based on heuristics.';
+
+  const keyFindings = [
+    `${messageCount} messages analysed`,
+    `${participantCount} participants detected`,
+  ];
+
+  if (keywordHits.length) {
+    keyFindings.push(`Keywords detected: ${keywordHits.join(', ')}`);
+  }
+
+  return {
+    text,
+    messageCount,
+    participantCount,
+    keywordHits,
+    riskScore,
+    riskLevel,
+    summary,
+    keyFindings,
+  };
+};
+
+const persistChatImport = async (
+  userId: string,
+  fileName: string,
+  fileBuffer: Buffer,
+  options: {
+    platform?: string;
+    language?: string | null;
+    timezone?: string | null;
+    source: 'direct' | 'chunked';
+    contentType?: string | null;
+    startedAt?: number;
+  },
+) => {
+  await ensureChatImportBucket();
+
+  const startedAtMs = options.startedAt ?? Date.now();
+  const finishedAtMs = Date.now();
+  const processingTime = Math.max(1, finishedAtMs - startedAtMs);
+
+  const analytics = analyseChatImportBuffer(fileBuffer);
+  const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+  const safeFileName = fileName.replace(/[^\w.-]+/g, '_');
+  const storagePath = `${userId}/${fileHash.slice(0, 12)}-${Date.now()}-${safeFileName || 'chat-import.txt'}`;
+  const contentType = options.contentType ?? guessContentType(fileName);
+
+  const uploadResponse = await supabase.storage
+    .from(CHAT_IMPORT_BUCKET)
+    .upload(storagePath, fileBuffer, {
+      contentType,
+      upsert: true,
+    });
+
+  if (uploadResponse.error) {
+    throw new Error(`Failed to upload chat transcript: ${uploadResponse.error.message}`);
+  }
+
+  const metadata: Record<string, unknown> = {
+    source: options.source,
+    language: options.language ?? null,
+    timezone: options.timezone ?? null,
+    keywords: analytics.keywordHits,
+  };
+
+  const platform = normalizeChatPlatform(options.platform);
+
+  const { data: chatImportRecord, error: insertError } = await supabase
+    .from('chat_imports')
+    .insert([
+      {
+        user_id: userId,
+        platform,
+        status: 'COMPLETED',
+        original_file_name: fileName,
+        file_size: fileBuffer.length,
+        file_path: storagePath,
+        file_hash: fileHash,
+        processing_started_at: new Date(startedAtMs).toISOString(),
+        processing_ended_at: new Date(finishedAtMs).toISOString(),
+        processing_time: processingTime,
+        message_count: analytics.messageCount,
+        participant_count: analytics.participantCount,
+        metadata,
+        overall_risk_score: analytics.riskScore,
+        risk_level: analytics.riskLevel,
+        key_findings: analytics.keyFindings,
+        summary: analytics.summary,
+      },
+    ])
+    .select(
+      'id, status, overall_risk_score, risk_level, message_count, participant_count, metadata, summary, key_findings, created_at, updated_at, file_path',
+    )
+    .single();
+
+  if (insertError || !chatImportRecord) {
+    if (insertError && /chat_imports/i.test(insertError.message || '')) {
+      const fallbackId = crypto.randomUUID();
+      const fallbackRecord: FallbackChatImport = {
+        id: fallbackId,
+        userId,
+        status: 'COMPLETED',
+        platform,
+        overall_risk_score: analytics.riskScore,
+        risk_level: analytics.riskLevel,
+        message_count: analytics.messageCount,
+        participant_count: analytics.participantCount,
+        metadata,
+        summary: analytics.summary,
+        key_findings: analytics.keyFindings,
+        created_at: new Date(startedAtMs).toISOString(),
+        updated_at: new Date(finishedAtMs).toISOString(),
+        file_path: storagePath,
+      };
+
+      fallbackChatImports.set(fallbackId, fallbackRecord);
+      setTimeout(() => {
+        const existing = fallbackChatImports.get(fallbackId);
+        if (existing && existing.userId === userId) {
+          fallbackChatImports.delete(fallbackId);
+        }
+      }, CHAT_IMPORT_SESSION_TTL_MS);
+
+      return {
+        chatImportId: fallbackId,
+        record: fallbackRecord,
+        storagePath,
+        fallback: true as const,
+      };
+    }
+
+    throw new Error(insertError?.message || 'Failed to create chat import record');
+  }
+
+  return {
+    chatImportId: chatImportRecord.id,
+    record: chatImportRecord,
+    storagePath,
+  };
+};
 
 const recordTelemetry = (event: DetectionTelemetryEvent) => {
   telemetryBuffer.push(event);
@@ -1268,6 +1559,371 @@ app.post('/api/veracity-checking', authMiddleware, async (req: AuthRequest, res:
 
     res.status(500).json({ success: false, error: 'Veracity checking failed' });
   }
+});
+
+app.post('/api/chat-import/upload', authMiddleware, multipartUpload.single('file'), async (req: AuthRequest, res: express.Response) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Authorization required' });
+  }
+
+  const file = (req as any).file as Express.Multer.File | undefined;
+  if (!file || !file.buffer) {
+    return res.status(400).json({ success: false, error: 'File is required' });
+  }
+
+  try {
+    const { platform, language, timezone } = (req.body ?? {}) as Record<string, string | undefined>;
+    const startedAt = Date.now();
+    const result = await persistChatImport(user.id, file.originalname || 'chat-import.txt', file.buffer, {
+      platform,
+      language: language ?? null,
+      timezone: timezone ?? null,
+      source: 'direct',
+      contentType: file.mimetype || guessContentType(file.originalname || 'chat-import.txt'),
+      startedAt,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        chatImportId: result.chatImportId,
+        status: result.record.status,
+        summary: result.record.summary,
+        riskLevel: result.record.risk_level,
+        riskScore: result.record.overall_risk_score,
+        message: 'Upload processed successfully.',
+        filePath: result.storagePath,
+      },
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Chat import upload failed');
+    const message = error instanceof Error ? error.message : 'Unable to process chat upload';
+    res.status(400).json({ success: false, error: message });
+  }
+});
+
+app.post('/api/chat-import/initialize', authMiddleware, async (req: AuthRequest, res: express.Response) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Authorization required' });
+  }
+
+  const { fileName, totalSize } = req.body as { fileName?: string; totalSize?: number };
+
+  if (!fileName || typeof fileName !== 'string') {
+    return res.status(400).json({ success: false, error: 'fileName is required' });
+  }
+
+  if (typeof totalSize !== 'number' || Number.isNaN(totalSize) || totalSize <= 0) {
+    return res.status(400).json({ success: false, error: 'totalSize must be a positive number' });
+  }
+
+  cleanupStaleUploads();
+
+  const uploadId = crypto.randomUUID();
+  const chunkSize = CHAT_IMPORT_CHUNK_SIZE;
+  const totalChunks = Math.max(1, Math.ceil(totalSize / chunkSize));
+
+  uploadSessions.set(uploadId, {
+    userId: user.id,
+    fileName,
+    totalSize,
+    totalChunks,
+    chunkSize,
+    createdAt: Date.now(),
+    chunks: new Map(),
+  });
+
+  res.json({
+    success: true,
+    data: {
+      uploadId,
+      chunkSize,
+      totalChunks,
+    },
+  });
+});
+
+app.post(
+  '/api/chat-import/upload-chunk/:uploadId/:chunkIndex',
+  authMiddleware,
+  multipartUpload.single('chunk'),
+  async (req: AuthRequest, res: express.Response) => {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ success: false, error: 'Authorization required' });
+    }
+
+    const { uploadId, chunkIndex: chunkIndexParam } = req.params;
+
+    cleanupStaleUploads();
+
+    const chunkIndex = Number(chunkIndexParam);
+    if (!Number.isInteger(chunkIndex) || chunkIndex < 0) {
+      return res.status(400).json({ success: false, error: 'Invalid chunk index' });
+    }
+
+    const session = uploadSessions.get(uploadId);
+    if (!session) {
+      return res.status(404).json({ success: false, error: 'Upload session not found' });
+    }
+
+    if (session.userId !== user.id) {
+      return res.status(403).json({ success: false, error: 'Upload session belongs to a different user' });
+    }
+
+    if (chunkIndex >= session.totalChunks) {
+      return res.status(400).json({ success: false, error: 'Chunk index exceeds expected total' });
+    }
+
+    const chunkFile = (req as any).file as Express.Multer.File | undefined;
+    if (!chunkFile || !chunkFile.buffer) {
+      return res.status(400).json({ success: false, error: 'Chunk payload is required' });
+    }
+
+    session.chunks.set(chunkIndex, Buffer.from(chunkFile.buffer));
+
+    const progressRatio = session.chunks.size / session.totalChunks;
+    const progress = Math.min(100, Math.round(progressRatio * 100));
+    const isComplete = session.chunks.size === session.totalChunks;
+
+    res.json({
+      success: true,
+      data: {
+        uploadId,
+        chunkIndex,
+        progress,
+        isComplete,
+      },
+    });
+  },
+);
+
+app.post('/api/chat-import/finalize', authMiddleware, async (req: AuthRequest, res: express.Response) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Authorization required' });
+  }
+
+  const { uploadId, platform, language, timezone } = req.body as {
+    uploadId?: string;
+    platform?: string;
+    language?: string | null;
+    timezone?: string | null;
+  };
+
+  if (!uploadId || typeof uploadId !== 'string') {
+    return res.status(400).json({ success: false, error: 'uploadId is required' });
+  }
+
+  cleanupStaleUploads();
+
+  const session = uploadSessions.get(uploadId);
+  if (!session) {
+    return res.status(404).json({ success: false, error: 'Upload session not found' });
+  }
+
+  if (session.userId !== user.id) {
+    return res.status(403).json({ success: false, error: 'Upload session belongs to a different user' });
+  }
+
+  if (session.chunks.size !== session.totalChunks) {
+    return res.status(400).json({ success: false, error: 'Upload is incomplete. Missing chunks.' });
+  }
+
+  try {
+    const orderedBuffers = Array.from(session.chunks.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([, buffer]) => buffer);
+    const combinedBuffer = Buffer.concat(orderedBuffers);
+
+    const result = await persistChatImport(user.id, session.fileName, combinedBuffer, {
+      platform,
+      language: language ?? null,
+      timezone: timezone ?? null,
+      source: 'chunked',
+      contentType: guessContentType(session.fileName),
+      startedAt: session.createdAt,
+    });
+
+    uploadSessions.delete(uploadId);
+
+    res.json({
+      success: true,
+      data: {
+        chatImportId: result.chatImportId,
+        status: result.record.status,
+        summary: result.record.summary,
+        riskLevel: result.record.risk_level,
+        riskScore: result.record.overall_risk_score,
+        filePath: result.storagePath,
+        message: 'File upload completed. Processing finished.',
+      },
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Chat import finalize failed');
+    const message = error instanceof Error ? error.message : 'Unable to finalize chat upload';
+    res.status(400).json({ success: false, error: message });
+  }
+});
+
+app.delete('/api/chat-import/upload/:uploadId', authMiddleware, async (req: AuthRequest, res: express.Response) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Authorization required' });
+  }
+
+  const { uploadId } = req.params;
+  const session = uploadSessions.get(uploadId);
+
+  if (session && session.userId !== user.id) {
+    return res.status(403).json({ success: false, error: 'Upload session belongs to a different user' });
+  }
+
+  if (session) {
+    uploadSessions.delete(uploadId);
+  }
+
+  res.json({
+    success: true,
+    data: {
+      uploadId,
+      cancelled: Boolean(session),
+    },
+  });
+});
+
+app.get('/api/chat-import/upload/:uploadId/progress', authMiddleware, async (req: AuthRequest, res: express.Response) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Authorization required' });
+  }
+
+  const { uploadId } = req.params;
+
+  cleanupStaleUploads();
+
+  const session = uploadSessions.get(uploadId);
+
+  if (!session) {
+    return res.json({
+      success: true,
+      data: {
+        progress: 100,
+        isComplete: true,
+      },
+    });
+  }
+
+  if (session.userId !== user.id) {
+    return res.status(403).json({ success: false, error: 'Upload session belongs to a different user' });
+  }
+
+  const progressRatio = session.chunks.size / session.totalChunks;
+  const progress = Math.min(100, Math.round(progressRatio * 100));
+  const isComplete = session.chunks.size === session.totalChunks;
+
+  res.json({
+    success: true,
+    data: {
+      progress,
+      isComplete,
+    },
+  });
+});
+
+app.get('/api/chat-import/status/:chatImportId', authMiddleware, async (req: AuthRequest, res: express.Response) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Authorization required' });
+  }
+
+  const { chatImportId } = req.params;
+
+  const { data, error } = await supabase
+    .from('chat_imports')
+    .select(
+      'id, status, platform, overall_risk_score, risk_level, message_count, participant_count, metadata, summary, key_findings, created_at, updated_at',
+    )
+    .eq('id', chatImportId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error && !/chat_imports/i.test(error.message || '')) {
+    logger.error({ err: error }, 'Failed to fetch chat import status');
+    return res.status(500).json({ success: false, error: 'Failed to load chat import status' });
+  }
+
+  let record: any = data;
+
+  if (!record) {
+    const fallback = fallbackChatImports.get(chatImportId);
+    if (fallback && fallback.userId === user.id) {
+      const { userId: _ignore, ...rest } = fallback;
+      record = rest;
+    } else {
+      return res.status(404).json({ success: false, error: 'Chat import not found' });
+    }
+  }
+
+  res.json({
+    success: true,
+    data: record,
+  });
+});
+
+app.get('/api/chat-import/results/:chatImportId', authMiddleware, async (req: AuthRequest, res: express.Response) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Authorization required' });
+  }
+
+  const { chatImportId } = req.params;
+
+  const { data, error } = await supabase
+    .from('chat_imports')
+    .select(
+      'id, status, platform, overall_risk_score, risk_level, message_count, participant_count, metadata, summary, key_findings, file_path, created_at, updated_at',
+    )
+    .eq('id', chatImportId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error && !/chat_imports/i.test(error.message || '')) {
+    logger.error({ err: error }, 'Failed to fetch chat import results');
+    return res.status(500).json({ success: false, error: 'Failed to load chat import results' });
+  }
+
+  let record: any = data;
+
+  if (!record) {
+    const fallback = fallbackChatImports.get(chatImportId);
+    if (fallback && fallback.userId === user.id) {
+      const { userId: _ignore, ...rest } = fallback;
+      record = rest;
+    } else {
+      return res.status(404).json({ success: false, error: 'Chat import not found' });
+    }
+  }
+
+  let downloadUrl: string | null = null;
+  if (record.file_path) {
+    const signedUrlResponse = await supabase.storage.from(CHAT_IMPORT_BUCKET).createSignedUrl(record.file_path, 60 * 60);
+    if (signedUrlResponse.error) {
+      logger.warn({ err: signedUrlResponse.error }, 'Failed to create signed URL for chat import');
+    } else {
+      downloadUrl = signedUrlResponse.data?.signedUrl ?? null;
+    }
+  }
+
+  res.json({
+    success: true,
+    data: {
+      ...record,
+      downloadUrl,
+    },
+  });
 });
 
 // Comprehensive scan endpoint

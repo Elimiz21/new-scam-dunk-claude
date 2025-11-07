@@ -2,6 +2,12 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/$/, '')
+const resolveAuthUrl = (path: string) => {
+  if (typeof window !== 'undefined') {
+    return `/api${path}`
+  }
+  return `${API_BASE_URL}${path}`
+}
 
 function setAuthToken(token: string | null) {
   if (typeof window === 'undefined') return
@@ -76,7 +82,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ loading: true })
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          const response = await fetch(resolveAuthUrl('/auth/login'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -107,7 +113,7 @@ export const useAuthStore = create<AuthState>()(
       register: async (data: RegisterData) => {
         set({ loading: true })
         try {
-          const response = await fetch(`${API_BASE_URL}/auth/register`, {
+          const response = await fetch(resolveAuthUrl('/auth/register'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

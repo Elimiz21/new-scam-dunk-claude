@@ -81,6 +81,8 @@ const styles = {
     border: '1px solid #d1d5db',
     borderRadius: '8px',
     fontSize: '0.875rem',
+    color: '#1f2937',
+    backgroundColor: '#ffffff',
     transition: 'border-color 0.2s, box-shadow 0.2s',
     outline: 'none'
   },
