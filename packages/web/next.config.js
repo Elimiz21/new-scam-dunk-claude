@@ -1,6 +1,10 @@
 const { withSentryConfig } = require('@sentry/nextjs');
 const path = require('path');
 
+// Marketing-only deployment mode
+const isMarketingDeploy = process.env.NEXT_PUBLIC_APP_MODE === 'marketing';
+const mainAppUrl = process.env.NEXT_PUBLIC_MAIN_APP_URL || 'https://scam-dunk-production.vercel.app';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -84,9 +88,22 @@ const nextConfig = {
     ]
   },
   
+  // Rewrites for marketing-only deployment
+  async rewrites() {
+    if (isMarketingDeploy) {
+      return [
+        {
+          source: '/',
+          destination: '/marketing',
+        },
+      ];
+    }
+    return [];
+  },
+
   // Redirects for common patterns
   async redirects() {
-    return [
+    const baseRedirects = [
       {
         source: '/home',
         destination: '/',
@@ -97,7 +114,41 @@ const nextConfig = {
         destination: '/scan',
         permanent: true,
       }
-    ]
+    ];
+
+    // If marketing deployment, redirect main app routes to production app
+    if (isMarketingDeploy) {
+      return [
+        ...baseRedirects,
+        {
+          source: '/scan/:path*',
+          destination: `${mainAppUrl}/scan/:path*`,
+          permanent: false,
+        },
+        {
+          source: '/dashboard',
+          destination: `${mainAppUrl}/dashboard`,
+          permanent: false,
+        },
+        {
+          source: '/alerts',
+          destination: `${mainAppUrl}/alerts`,
+          permanent: false,
+        },
+        {
+          source: '/history',
+          destination: `${mainAppUrl}/history`,
+          permanent: false,
+        },
+        {
+          source: '/chat-import',
+          destination: `${mainAppUrl}/chat-import`,
+          permanent: false,
+        },
+      ];
+    }
+
+    return baseRedirects;
   },
   
   // Production build output

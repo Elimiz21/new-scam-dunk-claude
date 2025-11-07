@@ -60,6 +60,16 @@ export function MarketingHero() {
             >
               Connect Integrations
             </Link>
+            {process.env.NEXT_PUBLIC_APP_MODE === 'marketing' && (
+              <Link
+                href={process.env.NEXT_PUBLIC_MAIN_APP_URL || 'https://scam-dunk-production.vercel.app'}
+                className="rounded-xl border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:border-white/40 hover:text-white"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                → Main App
+              </Link>
+            )}
           </div>
         </div>
 
