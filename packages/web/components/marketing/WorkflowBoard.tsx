@@ -30,7 +30,7 @@ export function WorkflowBoard({ lanes }: Props) {
             className="flex flex-col gap-4 rounded-3xl border border-white/12 bg-white/[0.05] p-4 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.65)]"
           >
             <header className="space-y-1">
-              <p className="text-sm text-white/50">{lane.icon} {lane.title}</p>
+              <p className="text-sm text-white/50">{lane.title}</p>
               <p className="text-xs text-white/40">{lane.description}</p>
             </header>
             <div className="flex-1 space-y-3">
@@ -75,7 +75,7 @@ export function WorkflowBoard({ lanes }: Props) {
                   )}
                   {task.docRef && (
                     <a
-                      href={`https://github.com/Elimiz21/new-scam-dunk-claude/blob/cursor/develop-comprehensive-app-marketing-strategy-60f6/${encodeURIComponent(
+                      href={`https://github.com/Elimiz21/new-scam-dunk-claude/blob/main/${encodeURIComponent(
                         'gpt5 marketing docs',
                       )}/${task.docRef}`}
                       target="_blank"
