@@ -1,7 +1,8 @@
 """BERT-based text classifier for scam detection."""
 
 import logging
-from typing import List, Dict, Tuple, Optional
+import re
+from typing import List, Dict, Tuple, Optional, Any
 import torch
 import torch.nn as nn
 import numpy as np

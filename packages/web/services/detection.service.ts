@@ -174,6 +174,13 @@ export interface ComprehensiveScanResult {
   };
 }
 
+export interface StreamUpdate {
+  step: 'bert' | 'pattern' | 'sentiment' | 'ensemble' | 'explanation' | 'final';
+  status: 'running' | 'completed' | 'error';
+  message?: string;
+  result?: any;
+}
+
 declare global {
   interface Window {
     __scamDunkMocks?: {
@@ -373,6 +380,77 @@ class DetectionService {
         highestRiskScore: Math.max(...validResults.map((check) => check.result.riskScore ?? 0)),
       },
     };
+  }
+
+
+
+  async analyzeChatStream(
+    request: ChatAnalysisRequest,
+    onUpdate: (update: StreamUpdate) => void
+  ): Promise<void> {
+    const mock = DetectionService.getMocks()?.chatAnalysis;
+    if (mock) {
+      const result = await Promise.resolve(mock(request));
+      onUpdate({ step: 'final', status: 'completed', result });
+      return;
+    }
+
+    if (!request.messages || request.messages.length === 0) {
+      throw new Error('At least one message is required for analysis');
+    }
+
+    const payload = {
+      platform: request.platform ?? 'unknown',
+      messages: request.messages.map((text) => ({ text })),
+      stream: true,
+    };
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const response = await fetch(`${API_BASE_URL}/chat-analysis`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Response body is not readable');
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              onUpdate(data);
+            } catch (e) {
+              console.warn('Failed to parse SSE message:', line);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Streaming analysis failed:', error);
+      throw error;
+    }
   }
 
   async analyzeChat(request: ChatAnalysisRequest): Promise<ChatAnalysisResult> {

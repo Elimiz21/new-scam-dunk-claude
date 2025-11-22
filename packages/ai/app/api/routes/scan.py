@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, List, Optional
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Body
 from pydantic import BaseModel, Field
 
 from app.api.schemas import AnalyzeTextRequest, AnalyzeTextResponse
@@ -288,7 +288,7 @@ async def get_scan_results(scan_id: str) -> ScanResponse:
     description="Scan multiple pieces of content in batch"
 )
 async def bulk_scan(
-    contents: List[str] = Field(..., min_items=1, max_items=50),
+    contents: List[str] = Body(..., min_items=1, max_items=50),
     background_tasks: BackgroundTasks = None
 ) -> Dict[str, Any]:
     """

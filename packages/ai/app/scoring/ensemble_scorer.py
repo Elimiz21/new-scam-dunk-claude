@@ -73,6 +73,67 @@ class EnsembleScorer:
         except Exception as e:
             logger.error(f"Error initializing ensemble models: {e}")
     
+    def predict_stream(self, text: str, explain: bool = True):
+        """
+        Generate ensemble prediction for single text, yielding intermediate results.
+        
+        Args:
+            text: Input text to analyze
+            explain: Whether to generate explanations
+            
+        Yields:
+            Dictionary with step information and partial results
+        """
+        start_time = datetime.now()
+        model_predictions = []
+        
+        try:
+            # 1. BERT/Pattern-based prediction
+            yield {"step": "bert", "status": "running", "message": "Analyzing text patterns with AI..."}
+            bert_prediction = self._get_bert_prediction(text)
+            model_predictions.append(bert_prediction)
+            yield {"step": "bert", "status": "completed", "result": bert_prediction}
+            
+            # 2. Pattern matching prediction
+            yield {"step": "pattern", "status": "running", "message": "Scanning for known scam indicators..."}
+            pattern_prediction = self._get_pattern_prediction(text)
+            model_predictions.append(pattern_prediction)
+            yield {"step": "pattern", "status": "completed", "result": pattern_prediction}
+            
+            # 3. Sentiment analysis prediction
+            yield {"step": "sentiment", "status": "running", "message": "Analyzing emotional tone and urgency..."}
+            sentiment_prediction = self._get_sentiment_prediction(text)
+            model_predictions.append(sentiment_prediction)
+            yield {"step": "sentiment", "status": "completed", "result": sentiment_prediction}
+            
+            # 4. Finalize
+            yield {"step": "ensemble", "status": "running", "message": "Calculating final risk score..."}
+            final_score, confidence = self._calculate_ensemble_score(model_predictions)
+            risk_level = self._determine_risk_level(final_score)
+            
+            explanations = []
+            if explain:
+                yield {"step": "explanation", "status": "running", "message": "Generating detailed explanation..."}
+                explanations = self._generate_explanations(model_predictions, final_score)
+            
+            processing_time = (datetime.now() - start_time).total_seconds()
+            
+            result = EnsembleResult(
+                final_score=final_score,
+                risk_level=risk_level,
+                confidence=confidence,
+                explanation=explanations,
+                model_predictions=model_predictions,
+                processing_time=processing_time,
+                timestamp=datetime.now()
+            )
+            
+            yield {"step": "final", "status": "completed", "result": result}
+            
+        except Exception as e:
+            logger.error(f"Error in ensemble prediction stream: {e}")
+            yield {"step": "error", "message": str(e)}
+
     def predict_single(self, text: str, explain: bool = True) -> EnsembleResult:
         """
         Generate ensemble prediction for single text.

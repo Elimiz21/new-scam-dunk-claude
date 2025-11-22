@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  MessageSquare, 
+import {
+  MessageSquare,
   CheckCircle2,
   AlertTriangle,
   XCircle,
@@ -24,7 +24,9 @@ export default function ChatAnalysisPage() {
   const [scanComplete, setScanComplete] = useState(false);
   const [scanResult, setScanResult] = useState<ChatAnalysisResult | null>(null);
   const [progress, setProgress] = useState(0);
-  
+  const [currentStep, setCurrentStep] = useState<string>('');
+  const [streamMessage, setStreamMessage] = useState<string>('');
+
   const [inputData, setInputData] = useState({
     chatContent: '',
     platform: 'whatsapp'
@@ -44,29 +46,44 @@ export default function ChatAnalysisPage() {
     setScanComplete(false);
     setScanResult(null);
     setProgress(0);
+    setCurrentStep('initializing');
+    setStreamMessage('Initializing analysis...');
 
     const messages = inputData.chatContent.split('\n').filter(msg => msg.trim());
 
     try {
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 10, 90));
-      }, 300);
+      await detectionService.analyzeChatStream(
+        {
+          messages,
+          platform: inputData.platform
+        },
+        (update) => {
+          if (update.status === 'running') {
+            setStreamMessage(update.message || '');
+            setCurrentStep(update.step);
 
-      const result = await detectionService.analyzeChat({ 
-        messages,
-        platform: inputData.platform
-      });
-      
-      clearInterval(progressInterval);
-      setProgress(100);
-      setScanResult(result);
-      setScanComplete(true);
-      
-      toast({
-        title: 'Analysis Complete',
-        description: 'Chat analysis completed successfully.',
-      });
+            // Map steps to progress percentage
+            const stepProgress = {
+              'bert': 20,
+              'pattern': 40,
+              'sentiment': 60,
+              'ensemble': 80,
+              'explanation': 90,
+              'final': 100
+            };
+            setProgress(stepProgress[update.step as keyof typeof stepProgress] || 0);
+          } else if (update.status === 'completed' && update.step === 'final') {
+            setScanResult(update.result);
+            setScanComplete(true);
+            setIsScanning(false);
+            setProgress(100);
+            toast({
+              title: 'Analysis Complete',
+              description: 'Chat analysis completed successfully.',
+            });
+          }
+        }
+      );
     } catch (error) {
       console.error('Chat analysis failed:', error);
       toast({
@@ -74,7 +91,6 @@ export default function ChatAnalysisPage() {
         description: 'Failed to analyze chat. Please try again.',
         variant: 'destructive',
       });
-    } finally {
       setIsScanning(false);
     }
   };
@@ -104,7 +120,7 @@ export default function ChatAnalysisPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to All Tests
           </Link>
-          
+
           <div className="flex items-center gap-4">
             <div className="relative">
               <Image
@@ -135,7 +151,7 @@ export default function ChatAnalysisPage() {
           className="glass-card p-8 mb-6"
         >
           <h2 className="text-xl font-bold text-white mb-6">Upload Chat Conversation</h2>
-          
+
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -180,8 +196,8 @@ John: It's a guaranteed return of 200% in just 30 days..."
               </p>
             </div>
 
-            <button 
-              onClick={handleScan} 
+            <button
+              onClick={handleScan}
               disabled={isScanning || !inputData.chatContent.trim()}
               className="w-full holo-button text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -207,16 +223,25 @@ John: It's a guaranteed return of 200% in just 30 days..."
             animate={{ opacity: 1, scale: 1 }}
             className="glass-card p-6 mb-6"
           >
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-300">Analysis Progress</span>
-                <span className="text-holo-green">{progress}%</span>
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm items-center">
+                <span className="text-gray-300 font-medium flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-holo-green animate-pulse" />
+                  {streamMessage}
+                </span>
+                <span className="text-holo-green font-mono">{progress}%</span>
               </div>
-              <div className="w-full bg-gray-700 rounded-full h-3">
-                <div 
-                  className="h-3 rounded-full bg-gradient-to-r from-holo-green to-holo-green-light transition-all animate-pulse"
+              <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-3 rounded-full bg-gradient-to-r from-holo-green to-holo-green-light transition-all duration-500 ease-out"
                   style={{ width: `${progress}%` }}
                 />
+              </div>
+              <div className="flex justify-between text-xs text-gray-500">
+                <span className={currentStep === 'bert' ? 'text-holo-cyan' : ''}>AI Models</span>
+                <span className={currentStep === 'pattern' ? 'text-holo-cyan' : ''}>Patterns</span>
+                <span className={currentStep === 'sentiment' ? 'text-holo-cyan' : ''}>Sentiment</span>
+                <span className={currentStep === 'ensemble' ? 'text-holo-cyan' : ''}>Scoring</span>
               </div>
             </div>
           </motion.div>
@@ -277,14 +302,14 @@ John: It's a guaranteed return of 200% in just 30 days..."
               <div className="space-y-3">
                 {(scanResult.keyFindings && scanResult.keyFindings.length > 0)
                   ? scanResult.keyFindings.map((finding, index) => (
-                      <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 border border-gray-700/50">
-                        <div className="h-2 w-2 bg-holo-amber rounded-full mt-1.5 flex-shrink-0" />
-                        <div className="text-sm text-gray-300">{finding}</div>
-                      </div>
-                    ))
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-gray-800/30 border border-gray-700/50">
+                      <div className="h-2 w-2 bg-holo-amber rounded-full mt-1.5 flex-shrink-0" />
+                      <div className="text-sm text-gray-300">{finding}</div>
+                    </div>
+                  ))
                   : (
-                      <p className="text-sm text-gray-400">No significant risk indicators detected in the conversation.</p>
-                    )}
+                    <p className="text-sm text-gray-400">No significant risk indicators detected in the conversation.</p>
+                  )}
               </div>
             </div>
 
@@ -317,19 +342,19 @@ John: It's a guaranteed return of 200% in just 30 days..."
               <ul className="space-y-2">
                 {(scanResult.recommendations && scanResult.recommendations.length > 0)
                   ? scanResult.recommendations.map((recommendation, index) => (
-                      <li
-                        key={`${recommendation}-${index}`}
-                        className="flex items-start gap-3 text-sm text-gray-300"
-                      >
-                        <CheckCircle2 className="w-4 h-4 text-holo-green mt-0.5" />
-                        <span>{recommendation}</span>
-                      </li>
-                    ))
+                    <li
+                      key={`${recommendation}-${index}`}
+                      className="flex items-start gap-3 text-sm text-gray-300"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-holo-green mt-0.5" />
+                      <span>{recommendation}</span>
+                    </li>
+                  ))
                   : (
-                      <li className="text-sm text-gray-400">
-                        Maintain normal vigilance and continue monitoring the conversation.
-                      </li>
-                    )}
+                    <li className="text-sm text-gray-400">
+                      Maintain normal vigilance and continue monitoring the conversation.
+                    </li>
+                  )}
               </ul>
             </div>
 

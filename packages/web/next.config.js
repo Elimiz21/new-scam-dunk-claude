@@ -8,12 +8,12 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
-  
+
   // Production optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  
+
   // Image optimization
   images: {
     domains: ['localhost', 'vercel.com', 'scam-dunk-production.vercel.app'],
@@ -26,19 +26,21 @@ const nextConfig = {
       },
     ],
   },
-  
+
   // Environment variables
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'https://scam-dunk-production.vercel.app',
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production',
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '/api',
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:4000',
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://scam-dunk-production.vercel.app',
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || '1.0.0',
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
     NEXT_PUBLIC_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA || 'development',
+    JWT_SECRET: process.env.JWT_SECRET,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   },
-  
+
   // Security headers
   async headers() {
     return [
@@ -83,7 +85,7 @@ const nextConfig = {
       },
     ]
   },
-  
+
   // Redirects for common patterns
   async redirects() {
     return [
@@ -99,40 +101,40 @@ const nextConfig = {
       }
     ]
   },
-  
+
   // Production build output
   // output: 'standalone', // Commenting out for Vercel deployment
-  
+
   transpilePackages: [],
-  
+
   // Experimental features
   experimental: {
     // optimizeCss: true,
     // scrollRestoration: true,
   },
-  
+
   // TypeScript
   typescript: {
     ignoreBuildErrors: false,
   },
-  
+
   // ESLint
   eslint: {
     ignoreDuringBuilds: false,
   },
-  
+
   webpack: (config, { isServer }) => {
     config.experiments = {
       ...config.experiments,
       topLevelAwait: true,
     }
-    
+
     // Optimizations for production
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname),
     }
-    
+
     // Bundle analyzer (only in development with ANALYZE=true)
     if (process.env.ANALYZE === 'true') {
       const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
@@ -144,7 +146,7 @@ const nextConfig = {
         })
       )
     }
-    
+
     return config
   },
 }
@@ -161,6 +163,6 @@ const sentryWebpackPluginOptions = {
 };
 
 // Export with Sentry only if DSN is configured
-module.exports = process.env.NEXT_PUBLIC_SENTRY_DSN 
+module.exports = process.env.NEXT_PUBLIC_SENTRY_DSN
   ? withSentryConfig(nextConfig, sentryWebpackPluginOptions)
   : nextConfig

@@ -6,7 +6,9 @@ from typing import List, Dict, Any
 import uuid
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
+from dataclasses import asdict
+import json
 
 from app.api.schemas import (
     AnalyzeTextRequest, AnalyzeTextResponse,
@@ -53,7 +55,7 @@ async def analyze_text(request: AnalyzeTextRequest) -> AnalyzeTextResponse:
     - **text**: Text content to analyze
     - **include_explanation**: Whether to include detailed explanation
     - **include_evidence**: Whether to highlight evidence in text
-    - **model_config**: Optional model configuration overrides
+    - **model_settings**: Optional model configuration overrides
     """
     try:
         # Validate request
@@ -145,6 +147,58 @@ async def analyze_text(request: AnalyzeTextRequest) -> AnalyzeTextResponse:
             status_code=500,
             detail=f"Internal server error during analysis: {str(e)}"
         )
+
+
+@router.post(
+    "/stream/analyze",
+    summary="Stream analysis results",
+    description="Stream analysis results step-by-step using Server-Sent Events (SSE)"
+)
+async def stream_analyze_text(request: AnalyzeTextRequest):
+    """
+    Stream analysis results for a single text.
+    
+    - **text**: Text content to analyze
+    - **include_explanation**: Whether to include detailed explanation
+    """
+    try:
+        await validate_request_size(request.text)
+        
+        async def event_generator():
+            try:
+                # Custom JSON encoder for datetime and dataclasses
+                def json_serial(obj):
+                    if isinstance(obj, datetime):
+                        return obj.isoformat()
+                    raise TypeError(f"Type {type(obj)} not serializable")
+
+                for step_data in ensemble_scorer.predict_stream(request.text, explain=request.include_explanation):
+                    # Convert dataclass objects to dicts
+                    if "result" in step_data and hasattr(step_data["result"], "__dataclass_fields__"):
+                        step_data["result"] = asdict(step_data["result"])
+                        
+                        # Handle nested dataclasses in list (like model_predictions)
+                        if "model_predictions" in step_data["result"]:
+                            step_data["result"]["model_predictions"] = [
+                                asdict(p) if hasattr(p, "__dataclass_fields__") else p 
+                                for p in step_data["result"]["model_predictions"]
+                            ]
+                    
+                    yield f"data: {json.dumps(step_data, default=json_serial)}\n\n"
+                    # Add a small delay to simulate processing if it's too fast (optional, but good for UX testing)
+                    # await asyncio.sleep(0.1) 
+                    
+            except Exception as e:
+                logger.error(f"Stream error: {e}")
+                yield f"data: {json.dumps({'step': 'error', 'message': str(e)})}\n\n"
+
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error setting up stream: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post(

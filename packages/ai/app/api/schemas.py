@@ -20,7 +20,7 @@ class TextAnalysisRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=10000, description="Text to analyze")
     include_explanation: bool = Field(default=True, description="Include detailed explanation")
     include_evidence: bool = Field(default=True, description="Highlight evidence in text")
-    model_config: Optional[Dict[str, Any]] = Field(default=None, description="Model configuration overrides")
+    model_settings: Optional[Dict[str, Any]] = Field(default=None, description="Model configuration overrides")
     
     @validator('text')
     def validate_text(cls, v):
