@@ -87,37 +87,8 @@ export default function TradingAnalysisPage() {
     return { color: 'bg-green-500', text: 'Low Risk' };
   };
 
-  const [probeStatus, setProbeStatus] = useState<'Idle' | 'Running' | 'Success' | 'Error'>('Idle');
-  const [probeMessage, setProbeMessage] = useState('');
-
-  React.useEffect(() => {
-    const runProbe = async () => {
-      setProbeStatus('Running');
-      setProbeMessage('Probe started...');
-      try {
-        const result = await detectionService.analyzeTradingActivity({
-          ticker: 'ETH',
-          assetType: 'crypto',
-          timeframe: '1M'
-        });
-        setProbeStatus('Success');
-        setProbeMessage(JSON.stringify(result, null, 2));
-      } catch (error) {
-        setProbeStatus('Error');
-        setProbeMessage(error instanceof Error ? error.message : String(error));
-      }
-    };
-    runProbe();
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-holo-dark via-gray-900 to-black">
-      {/* Diagnostic Probe UI */}
-      <div id="debug-probe" className="fixed top-0 left-0 right-0 bg-black/90 text-white p-4 z-50 border-b border-red-500 font-mono text-xs overflow-auto max-h-48">
-        <div><strong>Probe Status:</strong> {probeStatus}</div>
-        <pre className="mt-1 whitespace-pre-wrap">{probeMessage}</pre>
-      </div>
-
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 right-1/3 w-96 h-96 bg-holo-gray/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-holo-gray/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />

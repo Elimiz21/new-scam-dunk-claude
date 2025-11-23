@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { corsOptionsResponse, corsResponse } from '@/lib/cors'
-import { createClient } from '@/lib/supabase/server'
 import { analyzeTrading } from '@/lib/detection-helpers'
+import jwt from 'jsonwebtoken'
 import { fetchTradingProvider, combineScores, deriveRiskLevel } from '@/lib/providers'
 
 export async function OPTIONS() {
@@ -9,18 +9,25 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createClient()
+  // JWT Verification
+  const authHeader = request.headers.get('authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return corsResponse({ success: false, error: 'Unauthorized: Missing or invalid token' }, 401)
+  }
 
-  // Debug logging
-  const cookies = request.cookies.getAll()
-  console.log('Debug: Cookies present:', cookies.map(c => c.name))
+  const token = authHeader.split(' ')[1]
+  const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXT_PUBLIC_JWT_SECRET
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  console.log('Debug: Auth check result:', { user: !!user, authError: authError?.message })
+  if (!JWT_SECRET) {
+    console.error('Server misconfiguration: missing JWT secret')
+    return corsResponse({ success: false, error: 'Server error' }, 500)
+  }
 
-  if (authError || !user) {
-    console.error('Debug: Unauthorized access attempt', { authError, user })
-    return corsResponse({ success: false, error: 'Unauthorized: ' + (authError?.message || 'No user found') }, 401)
+  try {
+    jwt.verify(token, JWT_SECRET)
+  } catch (error) {
+    console.error('JWT verification failed:', error)
+    return corsResponse({ success: false, error: 'Unauthorized: Invalid token' }, 401)
   }
 
   try {

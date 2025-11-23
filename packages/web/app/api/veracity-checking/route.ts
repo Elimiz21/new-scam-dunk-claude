@@ -1,19 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { corsOptionsResponse, corsResponse } from '@/lib/cors'
-import { createClient } from '@/lib/supabase/server'
 import { checkVeracity } from '@/lib/detection-helpers'
-import { fetchVeracityProvider, deriveRiskLevel } from '@/lib/providers'
+import { fetchVeracityProvider } from '@/lib/providers'
+import jwt from 'jsonwebtoken' // Added import for jsonwebtoken
 
 export async function OPTIONS() {
   return corsOptionsResponse()
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  // JWT Verification
+  const authHeader = request.headers.get('authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return corsResponse({ success: false, error: 'Unauthorized: Missing or invalid token' }, 401)
+  }
 
-  if (authError || !user) {
-    return corsResponse({ success: false, error: 'Unauthorized' }, 401)
+  const token = authHeader.split(' ')[1]
+  const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXT_PUBLIC_JWT_SECRET
+
+  if (!JWT_SECRET) {
+    console.error('Server misconfiguration: missing JWT secret')
+    return corsResponse({ success: false, error: 'Server error' }, 500)
+  }
+
+  try {
+    jwt.verify(token, JWT_SECRET)
+  } catch (error) {
+    console.error('JWT verification failed:', error)
+    return corsResponse({ success: false, error: 'Unauthorized: Invalid token' }, 401)
   }
 
   try {
