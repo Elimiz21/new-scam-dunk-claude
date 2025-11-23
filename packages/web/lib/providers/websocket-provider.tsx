@@ -32,6 +32,13 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
   const { user, token } = useAuthStore()
 
   useEffect(() => {
+    // WebSockets are not supported on Vercel Serverless. 
+    // Disabling connection to prevent errors.
+    console.log('WebSockets disabled for Vercel deployment')
+    setConnected(false)
+    return
+
+    /* 
     if (!token) {
       // Disconnect socket if no token
       if (socket) {
@@ -74,6 +81,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     return () => {
       newSocket.disconnect()
     }
+    */
   }, [token])
 
   const emit = (event: string, data?: any) => {

@@ -10,10 +10,17 @@ export async function OPTIONS() {
 
 export async function POST(request: NextRequest) {
   const supabase = createClient()
+
+  // Debug logging
+  const cookies = request.cookies.getAll()
+  console.log('Debug: Cookies present:', cookies.map(c => c.name))
+
   const { data: { user }, error: authError } = await supabase.auth.getUser()
+  console.log('Debug: Auth check result:', { user: !!user, authError: authError?.message })
 
   if (authError || !user) {
-    return corsResponse({ success: false, error: 'Unauthorized' }, 401)
+    console.error('Debug: Unauthorized access attempt', { authError, user })
+    return corsResponse({ success: false, error: 'Unauthorized: ' + (authError?.message || 'No user found') }, 401)
   }
 
   try {
