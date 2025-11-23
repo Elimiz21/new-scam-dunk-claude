@@ -69,6 +69,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Trading analysis error:', error)
-    return corsResponse({ success: false, error: 'Internal server error' }, 500)
+    return corsResponse({ success: false, error: error instanceof Error ? error.message : String(error) }, 500)
   }
 }
