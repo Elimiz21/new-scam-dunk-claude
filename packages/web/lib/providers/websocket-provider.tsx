@@ -43,8 +43,10 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     }
 
     // Use environment variable or derive from current location for production
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL ||
-      (typeof window !== 'undefined' ? window.location.origin.replace(/^http/, 'ws') : 'ws://localhost:3001')
+    const isProduction = process.env.NODE_ENV === 'production'
+    const protocol = isProduction ? 'wss' : 'ws'
+    const host = typeof window !== 'undefined' ? window.location.host : 'localhost:3001'
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || `${protocol}://${host}`
     const newSocket = io(wsUrl, {
       auth: {
         token,
