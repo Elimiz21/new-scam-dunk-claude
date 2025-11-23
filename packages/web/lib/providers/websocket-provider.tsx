@@ -42,11 +42,10 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       return
     }
 
-    // Use environment variable or derive from current location for production
     const isProduction = process.env.NODE_ENV === 'production'
-    const protocol = isProduction ? 'wss' : 'ws'
-    const host = typeof window !== 'undefined' ? window.location.host : 'localhost:3001'
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || `${protocol}://${host}`
+    // Fallback to hardcoded production URL if env var is missing
+    const productionUrl = 'wss://scam-dunk-production.vercel.app'
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || (isProduction ? productionUrl : 'ws://localhost:3001')
     const newSocket = io(wsUrl, {
       auth: {
         token,
