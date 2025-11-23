@@ -233,7 +233,7 @@ export default function LoginPage() {
 
         <div style={styles.card}>
           <div style={styles.header}>
-            <h1 style={styles.title}>Welcome back</h1>
+            <h1 style={styles.title}>Welcome back (Debug)</h1>
             <p style={styles.subtitle}>Sign in to your account to continue</p>
           </div>
 
