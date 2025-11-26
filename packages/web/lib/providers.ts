@@ -1,9 +1,32 @@
 import { RiskLevel, riskLevelFromScore } from './detection-helpers';
+import { createClient } from './supabase/server';
+import { ApiKeysStorage } from './api-keys-storage';
 
 const PROVIDER_HEADERS = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
 };
+
+async function getApiKey(keyName: string): Promise<string | null> {
+    // Try process.env first for performance
+    if (process.env[keyName]) return process.env[keyName]!;
+
+    // Fallback to DB/Memory storage
+    try {
+        const supabase = createClient();
+        const storage = new ApiKeysStorage(supabase);
+        return await storage.getKey(keyName);
+    } catch (error) {
+        console.warn(`Failed to fetch API key ${keyName} from storage`, error);
+        // Try memory-only storage if supabase fails
+        try {
+             const storage = new ApiKeysStorage();
+             return await storage.getKey(keyName);
+        } catch (e) {
+            return null;
+        }
+    }
+}
 
 async function postJson<T>(url: string, payload: unknown): Promise<T | null> {
     if (!url) return null;
@@ -59,7 +82,7 @@ export async function fetchContactProvider(contactType: string, contactValue: st
     // Feature flag check (simplified: assume enabled if keys exist)
 
     if (contactType === 'email') {
-        const key = process.env.EMAILREP_API_KEY;
+        const key = await getApiKey('EMAILREP_API_KEY');
         if (!key) return null;
 
         try {
@@ -112,7 +135,7 @@ export async function fetchContactProvider(contactType: string, contactValue: st
     }
 
     if (contactType === 'phone') {
-        const key = process.env.NUMVERIFY_API_KEY;
+        const key = await getApiKey('NUMVERIFY_API_KEY');
         if (!key) return null;
 
         try {
@@ -198,7 +221,7 @@ type CoinMarketCapResponse = {
 };
 
 export async function fetchTradingProvider(symbol: string) {
-    const alphaKey = process.env.ALPHA_VANTAGE_API_KEY;
+    const alphaKey = await getApiKey('ALPHA_VANTAGE_API_KEY');
     if (alphaKey) {
         try {
             const url = new URL('https://www.alphavantage.co/query');
@@ -250,7 +273,7 @@ export async function fetchTradingProvider(symbol: string) {
         }
     }
 
-    const cmcKey = process.env.COINMARKETCAP_API_KEY;
+    const cmcKey = await getApiKey('COINMARKETCAP_API_KEY');
     if (cmcKey) {
         try {
             const response = await fetch(
