@@ -316,97 +316,60 @@ export type VeracityProviderPayload = {
 };
 
 export async function fetchVeracityProvider(targetType: string, targetIdentifier: string) {
-    const identifier = targetIdentifier.trim().toLowerCase();
-    const isEmail = targetType === 'email' || identifier.includes('@');
+    // The user requested to replace HIBP with a simple asset existence check.
+    // We reuse the trading provider logic to verify if the ticker exists.
 
-    if (!isEmail) {
-        return null;
-    }
+    const identifier = targetIdentifier.trim().toUpperCase();
 
-    const apiKey = process.env.HIBP_API_KEY;
-    if (!apiKey) {
+    // If targetType is 'email' or 'phone', we skip external verification as HIBP is removed.
+    // The UI currently asks for Ticker/Asset Type, so this is the primary use case.
+    if (targetType !== 'stock' && targetType !== 'crypto') {
         return null;
     }
 
     try {
-        const url = `https://haveibeenpwned.com/api/v3/breachedaccount/${encodeURIComponent(identifier)}?truncateResponse=true`;
-        const response = await fetch(url, {
-            headers: {
-                'hibp-api-key': apiKey,
-                'user-agent': 'ScamDunk-Web/1.0',
-            },
-        });
+        // Reuse the trading provider to check for existence
+        const tradingData = await fetchTradingProvider(identifier);
 
-        if (response.status === 404) {
+        if (tradingData) {
+            // Asset found and data retrieved -> Verified
             return {
                 isVerified: true,
                 verificationStatus: 'VERIFIED',
-                overallConfidence: 90,
+                overallConfidence: 95,
                 riskLevel: 'LOW',
-                summary: 'No breaches reported for this email address by Have I Been Pwned.',
-                keyFindings: ['Email address not found in breach databases.'],
-                recommendations: ['Continue monitoring for new breach disclosures.', 'Rotate passwords periodically.', 'Enable multi-factor authentication.'],
+                summary: `Asset '${identifier}' successfully verified. Market data is available.`,
+                keyFindings: [
+                    `Asset found in ${targetType === 'crypto' ? 'CoinMarketCap' : 'Alpha Vantage'} database.`,
+                    `Active trading data retrieved.`
+                ],
+                recommendations: [
+                    'Proceed with standard due diligence.',
+                    'Verify the exchange or platform you are using is legitimate.'
+                ],
             } satisfies VeracityProviderPayload;
-        }
-
-        if (!response.ok) {
-            throw new Error(`Have I Been Pwned responded with status ${response.status}`);
-        }
-
-        const breaches = (await response.json()) as Array<{
-            Name?: string;
-            BreachDate?: string;
-            DataClasses?: string[];
-        }>;
-
-        const breachCount = Array.isArray(breaches) ? breaches.length : 0;
-
-        if (!breachCount) {
+        } else {
+            // Asset not found or API error -> Unverified
             return {
-                isVerified: true,
-                verificationStatus: 'VERIFIED',
-                overallConfidence: 88,
-                riskLevel: 'LOW',
-                summary: 'No breaches reported for this email address by Have I Been Pwned.',
-                keyFindings: ['Email address not found in breach databases.'],
-                recommendations: ['Continue monitoring for new breach disclosures.', 'Rotate passwords periodically.', 'Enable multi-factor authentication.'],
+                isVerified: false,
+                verificationStatus: 'UNVERIFIED',
+                overallConfidence: 70,
+                riskLevel: 'HIGH',
+                summary: `Asset '${identifier}' could not be verified in major market databases.`,
+                keyFindings: [
+                    `Asset not found in ${targetType === 'crypto' ? 'CoinMarketCap' : 'Alpha Vantage'} database.`,
+                    'No active trading data available.'
+                ],
+                recommendations: [
+                    'Exercise extreme caution.',
+                    'This could be a fake or delisted asset.',
+                    'Do not transfer funds until verified by other sources.'
+                ],
             } satisfies VeracityProviderPayload;
         }
 
-        const riskScore = Math.min(100, 50 + breachCount * 15);
-        const overallConfidence = Math.max(10, 100 - riskScore);
-        const riskLevel = riskLevelFromScore(riskScore);
-
-        const keyFindings = breaches.slice(0, 3).map((breach) => {
-            const classes = breach.DataClasses?.slice(0, 3).join(', ') || 'Unknown data classes';
-            return `${breach.Name ?? 'Unknown breach'} (${breach.BreachDate ?? 'unknown date'}) — data exposed: ${classes}`;
-        });
-
-        return {
-            isVerified: false,
-            verificationStatus: 'BREACHED',
-            overallConfidence,
-            riskLevel,
-            summary:
-                breachCount === 1
-                    ? 'Email address appears in one known data breach.'
-                    : `Email address appears in ${breachCount} known data breaches.`,
-            keyFindings,
-            recommendations:
-                riskLevel === 'HIGH'
-                    ? [
-                        'Reset associated passwords immediately.',
-                        'Enable multi-factor authentication on all linked accounts.',
-                        'Monitor financial activity for suspicious behaviour.',
-                    ]
-                    : [
-                        'Reset affected service passwords.',
-                        'Enable multi-factor authentication.',
-                        'Monitor for phishing attempts referencing the breach.',
-                    ],
-        } satisfies VeracityProviderPayload;
     } catch (error) {
-        console.warn('Have I Been Pwned query failed', { err: error, targetIdentifier });
+        console.warn('Veracity check (asset existence) failed', { err: error, targetIdentifier });
         return null;
     }
 }
