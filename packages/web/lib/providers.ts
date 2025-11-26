@@ -344,9 +344,14 @@ export async function fetchVeracityProvider(targetType: string, targetIdentifier
 
     const identifier = targetIdentifier.trim().toUpperCase();
 
+    // Handle mapping from detection service types
+    const checkType = (targetType === 'entity' || targetType === 'stock') ? 'stock' 
+        : (targetType === 'token' || targetType === 'crypto') ? 'crypto' 
+        : targetType;
+
     // If targetType is 'email' or 'phone', we skip external verification as HIBP is removed.
     // The UI currently asks for Ticker/Asset Type, so this is the primary use case.
-    if (targetType !== 'stock' && targetType !== 'crypto') {
+    if (checkType !== 'stock' && checkType !== 'crypto') {
         return null;
     }
 
@@ -363,7 +368,7 @@ export async function fetchVeracityProvider(targetType: string, targetIdentifier
                 riskLevel: 'LOW',
                 summary: `Asset '${identifier}' successfully verified. Market data is available.`,
                 keyFindings: [
-                    `Asset found in ${targetType === 'crypto' ? 'CoinMarketCap' : 'Alpha Vantage'} database.`,
+                    `Asset found in ${checkType === 'crypto' ? 'CoinMarketCap' : 'Alpha Vantage'} database.`,
                     `Active trading data retrieved.`
                 ],
                 recommendations: [
@@ -380,7 +385,7 @@ export async function fetchVeracityProvider(targetType: string, targetIdentifier
                 riskLevel: 'HIGH',
                 summary: `Asset '${identifier}' could not be verified in major market databases.`,
                 keyFindings: [
-                    `Asset not found in ${targetType === 'crypto' ? 'CoinMarketCap' : 'Alpha Vantage'} database.`,
+                    `Asset not found in ${checkType === 'crypto' ? 'CoinMarketCap' : 'Alpha Vantage'} database.`,
                     'No active trading data available.'
                 ],
                 recommendations: [
