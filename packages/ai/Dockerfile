@@ -70,6 +70,7 @@ RUN mkdir -p \
 
 # Copy start script
 COPY --chown=scamdunk:scamdunk start.sh .
+RUN chmod +x start.sh
 
 # Expose port (documentary only, Railway ignores this but good for local)
 EXPOSE 8001

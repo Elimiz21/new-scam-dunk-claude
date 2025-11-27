@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Debugging
+echo "Current directory: $(pwd)"
+echo "User: $(whoami)"
+echo "PATH: $PATH"
+ls -la
+
 # Use PORT environment variable provided by Railway, default to 8001
 PORT="${PORT:-8001}"
 
