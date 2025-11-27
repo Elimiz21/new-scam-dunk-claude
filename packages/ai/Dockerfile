@@ -68,12 +68,11 @@ RUN mkdir -p \
     data/training \
     data/validation
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8001}/health/ || exit 1
+# Copy start script
+COPY --chown=scamdunk:scamdunk start.sh .
 
-# Expose port
+# Expose port (documentary only, Railway ignores this but good for local)
 EXPOSE 8001
 
 # Start command
-CMD sh -c "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8001} --workers 1"
+CMD ["./start.sh"]
