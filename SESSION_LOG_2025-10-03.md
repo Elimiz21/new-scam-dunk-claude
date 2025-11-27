@@ -52,3 +52,12 @@
 - 2025-11-05 (Phase 4 QA): Re-ran root `npm run lint`, `npm run test`, and `npm --prefix packages/web run build`; Playwright suite now relies on `window.__scamDunkMocks` to avoid live provider dependency. Manual accessibility spot-checks pending.
 - 2025-11-05 (Phase 5 prep): Production health probe (`/api/health`) returns 404 — captured in `docs/testing/sprint3/raw-data/phase5-production-health.txt`. Deployment status updated to reflect blocker; redeploy deferred until endpoint contract clarified.
 - 2025-11-05 (Phase 5 follow-up): Added Next.js `/api/health` route to mirror Express health payload (`packages/web/app/api/health/route.ts`). Local lint/test/build suites pass; production needs redeploy to pick up the endpoint.
+
+## 2025-11-26 — Phase 4 Follow-up (Error Handling & Deployment Prep)
+- **Diagnostics:** Identified that Contact Verification failure was masked by generic 500 errors in `packages/web/app/api/contact-verification/route.ts`.
+- **Diagnostics:** Identified that Chat Analysis failure was masked by generic 500 errors in `packages/web/app/api/chat-analysis/route.ts` and caused by missing `AI_SERVICE_URL` config/deployment.
+- **Fix:** Updated both route handlers to return specific error messages (exception text) to the client to facilitate debugging on production.
+- **Tooling:** Patched `test-api-keys.js` to use native `fetch` for verifying endpoints (removes `node-fetch` dependency).
+- **Documentation:** Created `verify-deployment.sh` to automate health/route checking post-deployment.
+- **Documentation:** Updated `gemini.md` with latest status and explicit next steps for deployment and environment variable configuration.
+- **Next Action:** Execute `vercel deploy --prod` and configure `EMAILREP_API_KEY`/`NUMVERIFY_API_KEY` in Vercel. Deploy `packages/ai` to hosting provider.

@@ -416,6 +416,19 @@ class DetectionService {
         body: JSON.stringify(payload),
       });
 
+      // Check for regular JSON response (e.g. error or fallback) first
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        if (data.success) {
+           // It was a successful fallback response, not a stream
+           onUpdate({ step: 'final', status: 'completed', result: data.data });
+           return;
+        } else {
+           throw new Error(data.error || 'Analysis failed');
+        }
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

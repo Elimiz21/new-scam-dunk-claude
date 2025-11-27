@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+// const fetch = require('node-fetch');
 
 // Admin credentials
 const ADMIN_EMAIL = 'elimizroch@gmail.com';

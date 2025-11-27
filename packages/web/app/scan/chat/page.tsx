@@ -52,12 +52,28 @@ export default function ChatAnalysisPage() {
     const messages = inputData.chatContent.split('\n').filter(msg => msg.trim());
 
     try {
-      await detectionService.analyzeChatStream(
-        {
-          messages,
+      if (inputData.chatContent.length > 5000) {
+        // For very long content, fallback to non-streaming analysis
+        const response = await detectionService.analyzeChat({
+          messages: messages,
           platform: inputData.platform
-        },
-        (update) => {
+        });
+        
+        setScanResult(response);
+        setScanComplete(true);
+        setIsScanning(false);
+        setProgress(100);
+        toast({
+          title: 'Analysis Complete',
+          description: 'Chat analysis completed successfully.',
+        });
+      } else {
+        await detectionService.analyzeChatStream(
+          {
+            messages,
+            platform: inputData.platform
+          },
+          (update) => {
           if (update.status === 'running') {
             setStreamMessage(update.message || '');
             setCurrentStep(update.step);

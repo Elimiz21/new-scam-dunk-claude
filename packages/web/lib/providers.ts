@@ -1,3 +1,4 @@
+
 import { RiskLevel, riskLevelFromScore } from './detection-helpers';
 import { createClient } from './supabase/server';
 import { ApiKeysStorage } from './api-keys-storage';
@@ -83,7 +84,10 @@ export async function fetchContactProvider(contactType: string, contactValue: st
 
     if (contactType === 'email') {
         const key = await getApiKey('EMAILREP_API_KEY');
-        if (!key) return null;
+        if (!key) {
+            console.warn('Skipping EmailRep check: API Key missing');
+            return null;
+        }
 
         try {
             const response = await fetch(`https://emailrep.io/${encodeURIComponent(contactValue)}`, {
