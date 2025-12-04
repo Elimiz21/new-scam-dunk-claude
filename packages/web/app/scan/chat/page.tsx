@@ -74,32 +74,33 @@ export default function ChatAnalysisPage() {
             platform: inputData.platform
           },
           (update) => {
-          if (update.status === 'running') {
-            setStreamMessage(update.message || '');
-            setCurrentStep(update.step);
+            if (update.status === 'running') {
+              setStreamMessage(update.message || '');
+              setCurrentStep(update.step);
 
-            // Map steps to progress percentage
-            const stepProgress = {
-              'bert': 20,
-              'pattern': 40,
-              'sentiment': 60,
-              'ensemble': 80,
-              'explanation': 90,
-              'final': 100
-            };
-            setProgress(stepProgress[update.step as keyof typeof stepProgress] || 0);
-          } else if (update.status === 'completed' && update.step === 'final') {
-            setScanResult(update.result);
-            setScanComplete(true);
-            setIsScanning(false);
-            setProgress(100);
-            toast({
-              title: 'Analysis Complete',
-              description: 'Chat analysis completed successfully.',
-            });
+              // Map steps to progress percentage
+              const stepProgress = {
+                'bert': 20,
+                'pattern': 40,
+                'sentiment': 60,
+                'ensemble': 80,
+                'explanation': 90,
+                'final': 100
+              };
+              setProgress(stepProgress[update.step as keyof typeof stepProgress] || 0);
+            } else if (update.status === 'completed' && update.step === 'final') {
+              setScanResult(update.result);
+              setScanComplete(true);
+              setIsScanning(false);
+              setProgress(100);
+              toast({
+                title: 'Analysis Complete',
+                description: 'Chat analysis completed successfully.',
+              });
+            }
           }
-        }
-      );
+        );
+      }
     } catch (error) {
       console.error('Chat analysis failed:', error);
       toast({
