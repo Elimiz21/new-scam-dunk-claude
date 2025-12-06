@@ -17,7 +17,7 @@ vercel login
 
 ### Step 3: Deploy
 ```bash
-cd /Users/elimizroch/ai_projects/new-scam-dunk-claude
+cd /Users/elimizroch/ai_projects/scam-dunk-re-write-codex
 vercel --prod
 ```
 
@@ -73,7 +73,7 @@ npm install -g netlify-cli
 
 ### Step 2: Build the app
 ```bash
-cd /Users/elimizroch/ai_projects/new-scam-dunk-claude/packages/web
+cd /Users/elimizroch/ai_projects/scam-dunk-re-write-codex/packages/web
 npm run build
 ```
 

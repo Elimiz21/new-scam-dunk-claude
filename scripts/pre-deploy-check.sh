@@ -6,7 +6,8 @@ echo "===================================="
 
 # 1. Check Web Package
 echo "📦 Checking Web Package..."
-cd new-scam-dunk-claude/packages/web || cd packages/web
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$repo_root/packages/web"
 echo "   - Linting..."
 npm run lint
 echo "   - Building..."
