@@ -3,7 +3,7 @@
 
 **Prepared:** November 4, 2025  
 **Scope:** Sprint 3 – Remediation & Executive Reporting  
-**Repository:** new-scam-dunk-claude (`feature/live-testing-prep`)
+**Repository:** scam-dunk-re-write-codex (`feature/live-testing-prep`)
 
 ---
 

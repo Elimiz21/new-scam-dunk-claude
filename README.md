@@ -81,8 +81,8 @@ Follow these steps if you need to continue this project on a different machine:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Elimiz21/new-scam-dunk-claude.git
-   cd new-scam-dunk-claude
+   git clone https://github.com/Elimiz21/scam-dunk-re-write-codex.git
+   cd scam-dunk-re-write-codex
    ```
 2. **Install dependencies**
    ```bash
@@ -96,7 +96,7 @@ Follow these steps if you need to continue this project on a different machine:
    ```bash
    git remote -v
    ```
-   Ensure `origin` points to `https://github.com/Elimiz21/new-scam-dunk-claude.git`. Update it with `git remote set-url origin <url>` if needed.
+   Ensure `origin` points to `https://github.com/Elimiz21/scam-dunk-re-write-codex.git`. Update it with `git remote set-url origin <url>` if needed.
 5. **Optional tooling**
    ```bash
    npm --prefix packages/api install prisma

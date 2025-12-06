@@ -10,9 +10,9 @@ This guide explains how to resume the Sprint 3 remediation program from any ma
 ```
 git clone git@github.com:<org>/prompt-library.git
 cd prompt-library
-git submodule update --init --recursive   # if new-scam-dunk-claude is tracked as a submodule
+git submodule update --init --recursive   # if scam-dunk-re-write-codex is tracked as a submodule
 ```
-If the `new-scam-dunk-claude` repository is independent, clone it separately alongside the prompt library.
+If the `scam-dunk-re-write-codex` repository is independent, clone it separately alongside the prompt library.
 
 ---
 
@@ -79,7 +79,7 @@ Run this snippet in every new terminal (or add it to your shell profile with car
 From the prompt-library root:
 ```
 npm install
-cd new-scam-dunk-claude
+cd scam-dunk-re-write-codex
 npm install
 npm --prefix packages/api install
 npm --prefix packages/web install
@@ -91,7 +91,7 @@ This ensures both the monorepo tooling and individual packages have their lockfi
 ## 6. Sync Vercel Environment Variables
 Ensure the tokens in the secrets file are current, then run:
 ```
-cd new-scam-dunk-claude
+cd scam-dunk-re-write-codex
 node scripts/sync-vercel-env.mjs
 ```
 The script upserts all required environment variables (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, etc.) to both production and preview environments. The script emits masked summaries for audit trails.
@@ -101,7 +101,7 @@ The script upserts all required environment variables (`SUPABASE_URL`, `SUPABASE
 ## 7. Purge Legacy Perf Artefacts
 Before running integration or load tests, clean the Supabase database of stale `perf-*` users:
 ```
-cd new-scam-dunk-claude
+cd scam-dunk-re-write-codex
 npm run cleanup:perf
 ```
 This deletes test accounts, associated scans, and any `perf-*` api keys.
